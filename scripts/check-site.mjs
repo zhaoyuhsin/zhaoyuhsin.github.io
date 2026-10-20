@@ -4,10 +4,11 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 import {fileURLToPath} from 'node:url';
 
-const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'),docs=path.join(root,'docs');
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'),docs=root;
 const walk=dir=>fs.readdirSync(dir,{withFileTypes:true}).flatMap(entry=>entry.isDirectory()?walk(path.join(dir,entry.name)):[path.join(dir,entry.name)]);
+const siteFiles=[path.join(docs,'index.html'),path.join(docs,'404.html'),...walk(path.join(docs,'assets')),...walk(path.join(docs,'megamoe'))];
 let localLinks=0,scripts=0;
-for(const file of walk(docs)){
+for(const file of siteFiles){
   const content=fs.readFileSync(file,'utf8');
   if(file.endsWith('.js')){new vm.Script(content,{filename:file});scripts++;}
   if(!file.endsWith('.html'))continue;
@@ -26,7 +27,7 @@ for(const file of walk(docs)){
   assert.ok(!/file:\/\/\/|(?:C|D):[\\/]/i.test(content),'不应发布本地文件路径：'+file);
 }
 assert.ok(fs.existsSync(path.join(docs,'.nojekyll')));
-assert.ok(!walk(docs).some(file=>/before-|test-|original\.html|rank_\d.*\.json/i.test(path.basename(file))),'备份或真实流水不应出现在发布目录');
+assert.ok(!siteFiles.some(file=>/before-|test-|original\.html|rank_\d.*\.json/i.test(path.basename(file))),'备份或真实流水不应出现在发布目录');
 // 首页互动使用同一引擎；验证按钮和拓扑变更确实改变比例及带宽阈值。
 const sandbox={};vm.runInNewContext(fs.readFileSync(path.join(docs,'assets','ratio-model.js'),'utf8'),sandbox);
 const nodes=new Map();const node=id=>{if(!nodes.has(id))nodes.set(id,{value:'',textContent:'',style:{},dataset:{},handlers:{},attrs:{},addEventListener(event,handler){this.handlers[event]=handler;},setAttribute(k,v){this.attrs[k]=v;}});return nodes.get(id);};

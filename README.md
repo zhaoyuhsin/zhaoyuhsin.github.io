@@ -1,22 +1,22 @@
 # YuHsin · 算子性能工作台
 
-个人网站及MegaMoE工具的静态发布仓库。站点文件在 `docs/`，不需要服务端或npm依赖。
+个人网站及MegaMoE工具的静态发布仓库。站点入口是根目录 `index.html`，不需要服务端或npm依赖。
 
-计划地址：`https://zhaoyuhsin.github.io/`。仿真工具位于 `/megamoe/`，交互Wiki位于 `/megamoe/wiki.html#ratio-lab`。
+访问地址：`https://zhaoyuhsin.github.io/`。仿真工具位于 `/megamoe/`，交互Wiki位于 `/megamoe/wiki.html#ratio-lab`。
 
 ## 本地查看
 
-直接打开 `docs/index.html`，或在仓库目录运行 `python -m http.server 8765 --bind 127.0.0.1 --directory docs`，访问 `http://127.0.0.1:8765/`。
+直接打开 `index.html`，或在仓库目录运行 `python -m http.server 8765 --bind 127.0.0.1`，访问 `http://127.0.0.1:8765/`。
 
 ## GitHub Pages
 
-仓库名使用 `zhaoyuhsin.github.io`，将本目录提交到该仓库的 `main` 分支。在仓库 **Settings → Pages** 中选择 **Deploy from a branch → main → /docs → Save**。
+仓库名使用 `zhaoyuhsin.github.io`，将本目录提交到该仓库的 `main` 分支。在仓库 **Settings → Pages** 中选择 **Deploy from a branch → main → /(root) → Save**。
 
-`docs/.nojekyll` 保留纯静态发布方式。后续提交到main会触发更新。仓库中不包含真实Trace文件、账号凭据、设备配置或原算子工程。
+根目录 `.nojekyll` 保留纯静态发布方式。后续提交到main会触发更新。仓库中不包含真实Trace文件、账号凭据、设备配置或原算子工程。
 
 ## 更新工具
 
-首页源文件是 `docs/index.html`、`docs/assets/home.css` 和 `docs/assets/home.js`。工具目录来自已维护的离线网页：
+首页源文件是 `index.html`、`assets/home.css` 和 `assets/home.js`。工具目录来自已维护的离线网页：
 
 ```text
 node scripts/build-tools.mjs <MegaMoe-Offline目录>
