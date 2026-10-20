@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MegaMoe 实测流水带宽分析</title>
+  <style>
+    :root{--bg:#f5f7fb;--ink:#172033;--muted:#667085;--line:#e4e7ec;--blue:#3157d5;--teal:#178b8b}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.6 "Segoe UI","Microsoft YaHei",sans-serif}
+    header{padding:22px 28px;color:white;background:linear-gradient(120deg,#172554,#3157d5 62%,#3674e8)}
+    .header-inner{display:flex;justify-content:space-between;align-items:center;gap:18px}h1{font-size:24px;margin:0}header p{margin:4px 0;color:#dbe5ff}
+    .top-nav{display:flex;flex-wrap:wrap;gap:8px}.top-nav a{color:#eef4ff;text-decoration:none;border:1px solid #ffffff55;border-radius:7px;padding:7px 11px;white-space:nowrap}.top-nav a.active{background:#fff;color:#172554}
+    .layout{max-width:1800px;margin:auto;display:grid;grid-template-columns:300px minmax(0,1fr);gap:16px;padding:16px}
+    aside,main{min-width:0}.panel{padding:18px;background:#fff;border:1px solid var(--line);border-radius:12px;margin-bottom:14px;box-shadow:0 1px 2px #10182806}
+    h2{font-size:18px;margin:0 0 12px}h3{font-size:15px;margin:12px 0 6px}p{margin:7px 0}.hint{font-size:12px;color:var(--muted)}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.wide{grid-column:1/-1}label{display:block;font-size:12px;color:#475467}
+    input,select,textarea,button{font:inherit}input:not([type=checkbox]),select,textarea{width:100%;border:1px solid #cdd5e1;border-radius:6px;padding:8px;background:white;color:var(--ink);margin-top:4px}input[type=checkbox]{vertical-align:middle}
+    button{padding:8px 12px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;color:#344054;cursor:pointer}button.primary{background:var(--blue);color:#fff;border-color:var(--blue)}button:disabled{opacity:.45;cursor:default}
+    button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #93b4ff;outline-offset:2px}
+    .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.drop{border:2px dashed #b4c5f0;border-radius:9px;text-align:center;padding:25px;background:#f8faff}.drop.over{background:#e8efff;border-color:var(--blue)}.drop strong{display:block;font-size:18px;margin-bottom:6px}.drop input{border:0!important;background:transparent!important;max-width:340px}
+    #status{white-space:pre-wrap;margin-top:10px;color:#475467}#status.error{color:#b42318;background:#fff1f0;padding:12px;border-radius:6px}
+    .metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.metric{padding:16px;border:1px solid var(--line);border-top:3px solid var(--blue);border-radius:9px}.metric.combine{border-top-color:var(--teal)}.value{font-size:25px;font-weight:750;margin:6px 0}.metric .hint{line-height:1.5}
+    .scroll{overflow:auto}table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:12px}th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}th{background:#f7f9fc;color:#475467}th:first-child,td:first-child{text-align:left}thead tr:first-child th{color:var(--blue)}thead tr:first-child th:last-child{color:var(--teal)}tr.missing{color:#98a2b3}tbody tr:hover{background:#f5f8ff}
+    .note{padding:12px 14px;background:#fff6ed;border-left:3px solid #f79009;border-radius:5px}.formulas{padding:12px 14px;background:#f8faff;border:1px solid #e0e7ff;border-radius:7px;line-height:1.9}code{color:#273b8f}ul{padding-left:20px}li{margin:5px 0}summary{cursor:pointer;font-weight:650}details textarea{min-height:100px}.hidden{display:none!important}
+    @media(max-width:1100px){.metrics{grid-template-columns:1fr 1fr}.header-inner{align-items:flex-start;flex-direction:column}}
+    @media(max-width:760px){.layout{grid-template-columns:1fr;padding:10px}header{padding:18px}.metrics{grid-template-columns:1fr 1fr}.value{font-size:21px}}
+  </style>
+</head>
+<body>
+<div style="padding:9px 20px;background:#f6f7f2;color:#245c48;font:12px/1.6 system-ui,sans-serif;display:flex;gap:20px;flex-wrap:wrap"><a style="color:inherit" href="../index.html">← YuHsin 个人主页</a><a style="color:inherit" href="index.html">流水仿真</a><a style="color:inherit" href="wiki.html#ratio-lab">通算比例</a><a style="color:inherit" href="trace-v2.html">Trace分析</a></div>
+  <header><div class="header-inner"><div><h1>MegaMoe 实测流水分析</h1><p>实测累计时间 × Shape 通信量 · 逐 AIV1 与单 Rank 汇总</p></div>
+    <nav class="top-nav" aria-label="页面导航"><a href="index.html">流水仿真</a><a href="benchmark.html">Benchmark 与计算器</a><a href="wiki.html">公式 Wiki</a><a class="active" aria-current="page" href="trace.html">实测流水分析</a></nav>
+  </div></header>
+  <div class="layout">
+    <aside>
+      <section class="panel"><h2>1. Shape 与字节口径</h2>
+        <p id="defaultSummary" class="hint"></p>
+        <form id="shapeForm"><div class="form-grid">
+          <label>bs / Rank<input id="bs" type="number" min="1" step="1" value="4096"></label>
+          <label>H<input id="hidden" type="number" min="1" step="1" value="7168"></label>
+          <label>TopK<input id="topk" type="number" min="1" step="1" value="6"></label>
+          <label>E / EP Rank 数<input id="ep" type="number" min="1" step="1" value="64"></label>
+          <label>专家数 / Rank<input id="experts" type="number" min="1" step="1" value="6"></label>
+          <label>核组数（每组1个 AIV1）<input id="cores" type="number" min="1" max="128" step="1" value="32"></label>
+          <label>Dispatch Byte/元素<input id="dispatchBytes" type="number" min="1" step="1" value="1"></label>
+          <label>Combine Byte/元素<input id="combineBytes" type="number" min="1" step="1" value="2"></label>
+          <label class="wide"><input id="includeScale" type="checkbox"> Dispatch 计入 Scale（每组1 Byte）</label>
+          <label>Scale 分组大小<input id="scaleGroup" type="number" min="1" step="1" value="32"></label>
+          <label>FullMesh 组大小<input id="fmGroup" type="number" min="1" step="1" value="8"></label>
+          <label class="wide">通信量范围<select id="scope"><option value="all">全部数据行，含本地（默认）</option><option value="remote">远端估算：× (E−1)/E</option><option value="clos">Clos 估算：× 组外Rank数/E</option></select></label>
+          <label class="wide">JSON ts/dur 单位<select id="unit"><option value="us">μs：标准 Chrome Trace（默认）</option><option value="ns">ns：仅用于自定义导出</option><option value="ms">ms：仅用于自定义导出</option></select></label>
+        </div><div class="actions"><button class="primary" type="submit">重新分析</button><button id="resetDefaults" type="button">恢复默认配置</button><button id="readShape" type="button">读取仿真页 Shape</button></div></form>
+        <p class="hint">路由：均衡（当前支持）。默认 FP8 Dispatch；Combine 不量化，BF16 每元素2 Byte。N 不影响通信字节。仅支持 Base 每路由一行；去冗余或量化 Combine 需另行核对字节公式。核组数要填真实配置，不能改为文件里截取的核数。再次打开会恢复上次设置，可点击“恢复默认配置”。</p>
+      </section>
+      <section class="panel"><h2>2. 如何解释带宽</h2><p>每核字节采用 <b>Rank 总字节 / 参与 AIV1 数</b>，是均分估算，不按事件次数分摊。</p><p class="hint">不同 Tile/Token 调度可能导致分工不均；Trace 没有逐核字节时无法声称这是硬件实测带宽。</p><p class="note">“Rank折算”只是用全 Rank 字节除以时间的指标。逐核带宽相加、累计核时带宽、墙钟带宽是不同量，不能混用或直接与140 GB/s比较。</p></section>
+    </aside>
+    <main>
+      <section class="panel"><h2>导入一次实测流水</h2>
+        <div id="drop" class="drop"><strong>拖入流水 JSON 或 TXT</strong><div>也可选择文件；支持事件数组、traceEvents 对象、MEGAMOE_TRACE_TEXT_V1</div><input id="file" type="file" accept=".json,.txt,application/json,text/plain" aria-label="选择流水文件"></div>
+        <p class="hint">完全离线处理，不上传。仅统计 AIV1 的 Dispatch/Combine，排除 WAIT、SYNC、AllGather；事件编号不视作 Tile 数。不会把多 Rank 的时间轴合并。</p>
+        <details><summary>或粘贴流水文本 / JSON</summary><textarea id="paste" aria-label="粘贴流水内容" placeholder="粘贴 JSON 或 MEGAMOE_TRACE_TEXT_V1…"></textarea><button id="parsePaste" type="button">分析粘贴内容</button></details>
+        <div id="status" role="status" aria-live="polite">尚未导入文件。</div>
+        <div id="rankControls" class="actions hidden"><label>观察 Rank / 进程<select id="rank"></select></label><button id="csv" disabled>下载逐核 CSV</button><button id="json" disabled>下载分析 JSON</button></div>
+      </section>
+      <div id="results" class="hidden">
+        <section class="panel"><h2>当前 Rank · 累计时间与带宽</h2><p id="volume" class="hint"></p><div id="metrics" class="metrics"></div></section>
+        <section class="panel"><h2>逐 AIV1 统计</h2><p class="hint">Tᵢ=该核同阶段所有事件 dur 之和；Vᵢ=Vrank/AIV1数。分摊带宽=Vᵢ/Tᵢ，Rank折算=Vrank/Tᵢ。缺失不等于0；MiB=2²⁰ Byte，GB/s=10⁹ Byte/s。</p>
+          <div class="scroll"><table id="coreTable"><thead><tr><th rowspan="2">AIV1</th><th colspan="5">Dispatch</th><th colspan="5">Combine</th></tr><tr><th>事件数</th><th>累计 μs</th><th>估算 MiB</th><th>分摊 GB/s</th><th>Rank折算 GB/s</th><th>事件数</th><th>累计 μs</th><th>估算 MiB</th><th>分摊 GB/s</th><th>Rank折算 GB/s</th></tr></thead><tbody></tbody></table></div>
+        </section>
+        <section class="panel"><h2>所有已导入 AIV1 · 汇总口径</h2><div class="scroll"><table id="summaryTable"><thead><tr><th>指标</th><th>Dispatch</th><th>Combine</th></tr></thead><tbody></tbody></table></div>
+          <div class="formulas"><b>V</b> 为单 Rank 所选范围的全量字节，<b>C</b> 为配置核数，<b>P</b> 为有记录核数，<b>Tᵢ</b> 为单核累计时间：<br>
+            已导入核带宽之和 = Σ[(V/C)/Tᵢ]；分摊累计核时带宽 = [(P/C)×V]/ΣTᵢ。<br>
+            全核平均累计时间折算 = V/(ΣTᵢ/C)；仅全核都有正耗时记录时显示。<br>
+            墙钟并集带宽 = V/所有通信区间并集长度；阶段包络带宽 = V/(最晚结束−最早开始)。<br>
+            Byte ÷ μs ÷ 1000 = GB/s。分摊带宽相加不是 NIC 墙钟吞吐；并集仍是打点活动区间，不是链路 PMU。
+          </div>
+        </section>
+        <section class="panel"><h2>数据检查与限制</h2><ul id="warnings"></ul><p class="hint">存在全部核心也不证明时间上完整；请确认不是多次运行拼接或裁剪片段。导出包含有效 Shape、文件名、Rank、字节假设、公式口径及逐核统计。设置保存在本浏览器，原始流水不自动存储。</p></section>
+      </div>
+    </main>
+  </div>
+  <script src="trace-analysis.js"></script><script src="trace-page.js"></script>
+</body>
+</html>

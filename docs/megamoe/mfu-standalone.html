@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MegaMoe · EP32 / 64 / 128 MFU</title>
+<style>
+:root{font:16px/1.6 "Segoe UI","Microsoft YaHei",sans-serif;color:#18253b;background:#f3f6fb}*{box-sizing:border-box}body{margin:0}header{background:#142c51;color:white;padding:30px max(24px,calc((100vw - 1240px)/2))}h1{font-size:28px;margin:4px 0}header p{margin:0;color:#bfd1ea}.badge{font-size:12px;letter-spacing:2px;color:#85c9fc}main{max-width:1288px;margin:auto;padding:24px}section{background:white;border:1px solid #dce3ee;border-radius:12px;padding:24px;margin-bottom:20px}h2{font-size:19px;margin:0 0 16px}.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}label{display:block;font-size:14px;color:#4a5d75}input,select,button{font:inherit}input,select{display:block;width:100%;border:1px solid #b9c7da;border-radius:7px;background:#fff;padding:9px;color:#18253b;margin-top:6px}input:focus,select:focus{outline:3px solid #a5d6ff}small,.hint{font-size:13px;color:#586b83}.hint{margin:12px 0 0}.scroll{overflow-x:auto}table{width:100%;border-collapse:collapse;white-space:nowrap;font-variant-numeric:tabular-nums}th{font-size:13px;text-align:left;color:#536981;background:#f4f7fb}th,td{padding:14px 12px;border-bottom:1px solid #e5ebf3}td input{min-width:100px;max-width:150px;margin:0}td strong{font-size:25px;color:#146854}.warn{color:#aa3b16!important;font-size:13px}.error{color:#ad2929;background:#fff1f0;padding:12px;border-radius:6px}.formula{background:#edf4ff;border-left:4px solid #3976d2;padding:16px 20px;font-size:18px;overflow-x:auto}.formula p{margin:4px 0}details{margin-top:18px}summary{cursor:pointer;color:#2a5489}code{overflow-wrap:anywhere;font-size:13px}button{border:1px solid #b9c7da;background:white;padding:8px 14px;border-radius:6px;cursor:pointer}footer{font-size:12px;color:#677b95}#status{font-size:13px;margin:10px 0} [hidden]{display:none!important}@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}main{padding:12px}section{padding:18px}header{padding:22px}h1{font-size:23px}}@media print{body{background:white}button{display:none}section{break-inside:avoid}header{background:white;color:#18253b}}
+</style>
+</head>
+<body>
+<header><div class="badge">MEGAMOE / MEASURED PERFORMANCE</div><h1>EP32 · EP64 · EP128 MFU 对比</h1><p>swiglu-first-b07 · 输入实测端到端耗时，计算有效 FFN 算力利用率</p></header>
+<main>
+<section><h2>1. 共同 Shape 与单卡峰值</h2>
+<div class="grid">
+<label>H · Hidden<input id="h" type="number" min="1" step="1"></label>
+<label>N · Gate+Up 融合宽度<input id="n" type="number" min="2" step="2"></label>
+<label>TopK<input id="topk" type="number" min="1" step="1"></label>
+<label>950 FP8 峰值预设<select id="preset"><option value="865">32 Cube · 865 TFLOPS</option><option value="756">28 Cube · 756 TFLOPS</option><option value="973">35 Cube · 973 TFLOPS</option><option value="custom">自定义单卡峰值</option></select></label>
+<label>P · 单卡峰值 TFLOPS<input id="peak" type="number" min="0" step="any"></label>
+</div>
+<p class="hint">N=2I，默认 I=3072。峰值为用户提供的工程口径，不是本页测得；W4 权重存储不代表直接使用 FP4 峰值。请选择与实际 Cube 计算精度、启用核数一致的单卡峰值，不再乘核数或折乘实测效率。</p>
+</section>
+<section><h2>2. 分别填写端到端耗时</h2>
+<p class="hint">bs 是每个源 Rank 的 Token 数，不是整个 EP 的总 Token 数。优先填写同一测试口径、timer-off 的完整算子耗时；比较整个 EP 时应使用覆盖最慢 Rank 的完成时间，而非某一核或 GMM 阶段时间。</p>
+<div id="error" class="error" role="alert" hidden></div>
+<div class="scroll"><table><thead><tr><th>EP</th><th>bs / Rank</th><th>专家 / Rank</th><th>E2E 耗时（μs）</th><th>FFN / Rank<br>TFLOP（计算量）</th><th>理想计算<br>时间（μs）</th><th>MFU</th></tr></thead><tbody id="rows"></tbody></table></div>
+<p id="comparison" class="hint"></p><p id="status" role="status"></p><button id="reset" type="button">恢复默认（清空耗时）</button>
+</section>
+<section><h2>3. 计算公式 · 分子只计有效 GMM FLOPs</h2>
+<div class="formula"><p>GMM1 / Rank = 2 × bs × TopK × H × N</p><p>GMM2 / Rank = 2 × bs × TopK × (N / 2) × H</p><p><b>MFU = [3 × bs × TopK × H × N / (P × 10⁶ × t<sub>μs</sub>)] × 100%</b></p></div>
+<p class="hint">1 MAC = 2 FLOPs。TFLOP 是计算量，TFLOPS 是每秒算力：理想时间（秒）= FFN TFLOP ÷ 峰值 TFLOPS。μs 换算为秒需要乘 10⁻⁶。</p>
+<p class="hint">全 EP 口径完全等价：总 FLOPs = E × 每卡平均 FLOPs；集群峰值 = E × P，因此 E 约掉。固定 bs/Rank 时，EP 增大不直接改变每卡有效计算量；MFU 的变化来自实测耗时。若固定全局 Token 数，应把各行 bs 填为「全局 Token 数 ÷ E」。</p>
+<p class="hint">分母包含 Dispatch、SwiGLU/Quant、权重搬运、Combine 和同步等所有算子开销；分子不计这些操作、Padding、重复计算与共享专家。此指标是路由 FFN 的端到端 MFU，不是整个模型 MFU，也不是 AIC 活跃比例或硬件 profiler 的 Cube 指标。GMM1/GMM2 有重叠时，不相加阶段耗时。</p>
+<details><summary>配置来源与对比边界</summary>
+<p class="hint">本页依据本地分支 <code>pod-dev-timer-catlass-token-combine-swiglu-first-b07</code>，提交 <code>7de37276d3111446130d1c90f0bf697bc5d5b907</code>。没有声称已拉取远端最新提交。</p>
+<p class="hint"><code>st/cases/pod.json</code>：H7168、N6144、TopK6、每卡6专家、均衡路由、无共享专家、A8W4、FP8 E4M3 激活；源用例 EP8，本页按需求比较 EP32/64/128，默认 bs/Rank=4096 是可改的选定用例。</p>
+<p class="hint"><code>st/reference/gen_input_and_golden.py:577–581</code>：W1 的逻辑矩阵为 H×N，W2 为 (N/2)×H。每专家平均 Token = bs×TopK / 每卡专家数。专家数会影响调度和实际耗时，但只要每个 Token 执行 TopK 个同宽专家，有效总 FLOPs 不额外乘专家数。</p>
+<p class="hint">每卡6专家时，EP32/64/128 的总专家数分别为192/384/768，并非同一个固定专家数模型。若固定384个专家，应分别设为12/6/3；请确保填写的耗时确实来自对应配置。路由不均时本公式仍可计算集群有效 MFU，但单卡计算量只是平均值。</p>
+</details>
+</section>
+<footer>单文件离线工具 · 无外部依赖 · 不上传数据 · 设置仅保存在当前浏览器；分享 HTML 不包含你填入的实测数据。</footer>
+</main>
+<script id="model">
+"use strict";
+const MfuModel=(()=>{
+  const defaults={h:7168,n:6144,topk:6,peak:865,preset:"865",cases:[32,64,128].map(ep=>({ep,bs:4096,experts:6,time:""}))};
+  function calculate(c,r){
+    const positive=(x,name,integer=false)=>{if(!Number.isFinite(x)||x<=0||(integer&&!Number.isSafeInteger(x)))throw Error(`${name} 必须为正${integer?"整数":"数"}`);};
+    for(const k of ["h","n","topk"])positive(c[k],k,true);
+    if(c.n%2)throw Error("N 是 Gate+Up 融合宽度，必须为偶数");
+    positive(c.peak,"单卡峰值 P");for(const k of ["ep","bs","experts"])positive(r[k],`EP${r.ep} ${k}`,true);
+    const experts=r.ep*r.experts;if(c.topk>experts)throw Error(`EP${r.ep} TopK 超过总专家数`);
+    const rows=r.bs*c.topk,gmm1=2*rows*c.h*c.n,gmm2=rows*c.h*c.n,flops=gmm1+gmm2;
+    if(!Number.isSafeInteger(flops)||!Number.isSafeInteger(flops*r.ep))throw Error(`EP${r.ep} FLOPs 超出精确整数范围，请减小 Shape`);
+    const idealUs=flops/(c.peak*1e6),tf=flops/1e12;
+    if(!Number.isFinite(idealUs)||idealUs<=0)throw Error("峰值 P 超出可计算范围");
+    let mfu=null,time=null;
+    if(String(r.time).trim()!==""){time=Number(r.time);positive(time,`EP${r.ep} 耗时`);mfu=idealUs/time*100;if(!Number.isFinite(mfu))throw Error(`EP${r.ep} 耗时超出可计算范围`);}
+    return {ep:r.ep,experts,globalTokens:r.ep*r.bs,tokensPerExpert:rows/r.experts,gmm1,gmm2,flops,tf,idealUs,time,mfu};
+  }
+  return {defaults,calculate};
+})();
+</script>
+<script id="page">
+(()=>{
+  const $=id=>document.getElementById(id),key="megamoe.mfu.b07.v1",D=MfuModel.defaults;
+  $("rows").innerHTML=D.cases.map(r=>`<tr><td><b>EP${r.ep}</b><br><small id="meta${r.ep}"></small></td><td><input id="bs${r.ep}" aria-label="EP${r.ep} 每Rank Token数" type="number" min="1" step="1"></td><td><input id="experts${r.ep}" aria-label="EP${r.ep} 每Rank专家数" type="number" min="1" step="1"></td><td><input id="time${r.ep}" aria-label="EP${r.ep} 端到端耗时微秒" type="number" min="0" step="any" placeholder="填入实测 μs"></td><td id="flops${r.ep}">—</td><td id="ideal${r.ep}">—</td><td><strong id="mfu${r.ep}">—</strong><div id="warn${r.ep}" class="warn"></div></td></tr>`).join("");
+  const fmt=(n,d=3)=>n.toLocaleString("zh-CN",{maximumFractionDigits:d,minimumFractionDigits:d});
+  function apply(c){for(const k of ["h","n","topk","peak","preset"])$(k).value=c[k];for(const r of c.cases)for(const k of ["bs","experts","time"])$(k+r.ep).value=r[k];}
+  function read(){return {h:Number($("h").value),n:Number($("n").value),topk:Number($("topk").value),peak:Number($("peak").value),preset:$("preset").value,cases:D.cases.map(({ep})=>({ep,bs:Number($("bs"+ep).value),experts:Number($("experts"+ep).value),time:$("time"+ep).value}))};}
+  function render(){
+    $("error").hidden=true;$("status").textContent="";$("comparison").textContent="";
+    for(const {ep} of D.cases){for(const k of ["flops","ideal","mfu"])$(k+ep).textContent="—";$("warn"+ep).textContent="";$("meta"+ep).textContent="";}
+    const c=read(),valid=[];
+    for(const r of c.cases){try{
+      const v=MfuModel.calculate(c,r);valid.push(v);
+      $("meta"+r.ep).textContent=`${v.experts} 总专家`;
+      $("flops"+r.ep).textContent=fmt(v.tf,6);$("ideal"+r.ep).textContent=fmt(v.idealUs);
+      $("mfu"+r.ep).textContent=v.mfu===null?"待填耗时":fmt(v.mfu,2)+"%";
+      if(v.mfu>100)$("warn"+r.ep).textContent="超过100%：请核对 Shape、单位、峰值及计时范围；不应作为有效利用率结论。";
+    }catch(e){$("warn"+r.ep).textContent=e.message;}}
+    if(valid.length!==3){$("error").hidden=false;$("error").textContent="存在无效输入，对应行结果已清空；请按行内提示修改。";return;}
+    $("comparison").textContent=`全 EP Token 数：${valid.map(v=>`EP${v.ep}=${v.globalTokens.toLocaleString()}`).join("；")}。`+(new Set(valid.map(v=>v.experts)).size>1?" 注意：总专家数不同；固定384专家对比时，请将每卡专家数改为12 / 6 / 3。":" 当前三组总专家数一致。");
+    try{localStorage.setItem(key,JSON.stringify(c));$("status").textContent="参数与耗时已保存在当前浏览器。";}catch{$("status").textContent="浏览器不允许本地保存；当前计算仍可使用，关闭后输入不保留。";}
+  }
+  let c=D,restoreWarning="";
+  try{const s=JSON.parse(localStorage.getItem(key)||"null");if(s){if(!Array.isArray(s.cases)||s.cases.length!==3||s.cases.some((r,i)=>r.ep!==D.cases[i].ep)||!["865","756","973","custom"].includes(s.preset))throw Error("无效保存配置");s.cases.forEach(r=>MfuModel.calculate(s,r));c=s;}}catch{restoreWarning="未能恢复本地配置，已使用默认参数。";}
+  apply(c);render();if(restoreWarning)$("status").textContent=restoreWarning;
+  for(const k of ["h","n","topk","peak",...D.cases.flatMap(r=>["bs","experts","time"].map(k=>k+r.ep))])$(k).addEventListener("input",()=>{if(k==="peak")$("preset").value="custom";render();});
+  $("preset").addEventListener("change",()=>{if($("preset").value!=="custom")$("peak").value=$("preset").value;render();});
+  $("reset").addEventListener("click",()=>{apply(D);render();});
+})();
+</script>
+</body>
+</html>

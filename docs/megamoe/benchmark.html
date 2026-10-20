@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MegaMoe Benchmark 与计算器</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --ink: #172033;
+      --muted: #667085;
+      --line: #e4e7ec;
+      --blue: #3157d5;
+      --blue-soft: #eef2ff;
+      --green: #19764a;
+      --green-soft: #ecfdf3;
+      --orange: #b54708;
+      --orange-soft: #fff6ed;
+      --danger: #b42318;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+      font: 14px/1.5 Inter, "Segoe UI", "Microsoft YaHei", sans-serif;
+    }
+    header {
+      padding: 22px 28px 18px;
+      color: #fff;
+      background: linear-gradient(120deg, #172554, #3157d5 62%, #3674e8);
+    }
+    .header-inner { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    header h1 { margin: 0 0 5px; font-size: 24px; }
+    header p { margin: 0; color: #dbe5ff; }
+    .top-nav { display: flex; gap: 8px; flex-wrap: wrap; }
+    .top-nav a {
+      padding: 7px 11px;
+      color: #eef4ff;
+      border: 1px solid rgba(255,255,255,.34);
+      border-radius: 7px;
+      text-decoration: none;
+      font-weight: 650;
+    }
+    .top-nav a.active { color: #172554; background: #fff; border-color: #fff; }
+    main { max-width: 1440px; margin: 0 auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+    .panel {
+      min-width: 0;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: 0 1px 2px rgba(16,24,40,.04);
+    }
+    .section { padding: 16px; }
+    h2 { margin: 0 0 4px; font-size: 18px; }
+    h3 { margin: 0 0 10px; font-size: 15px; }
+    .section-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; margin-bottom: 12px; }
+    .section-head p, .note { margin: 0; color: var(--muted); font-size: 12px; }
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+    .summary { padding: 14px; border-top: 4px solid var(--accent); }
+    .summary .label { color: var(--muted); font-size: 12px; }
+    .summary .value { margin: 3px 0; font-size: 23px; font-weight: 760; }
+    .summary .sub { color: var(--muted); font-size: 11px; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 850px; }
+    th, td { padding: 10px 9px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+    th { color: var(--muted); background: #f8fafc; font-size: 12px; font-weight: 700; }
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    tr:last-child td { border-bottom: 0; }
+    code { color: #344054; background: #f2f4f7; padding: 1px 4px; border-radius: 4px; }
+    .tag { display: inline-block; padding: 2px 7px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+    .tag.good { color: var(--green); background: var(--green-soft); }
+    .tag.warn { color: var(--orange); background: var(--orange-soft); }
+    .calculators { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
+    .calculator { padding: 16px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    label { display: flex; flex-direction: column; gap: 4px; color: var(--muted); font-size: 12px; }
+    label.wide { grid-column: 1 / -1; }
+    input, select {
+      width: 100%;
+      min-height: 35px;
+      padding: 6px 8px;
+      color: var(--ink);
+      background: #fff;
+      border: 1px solid #cfd4dc;
+      border-radius: 7px;
+      font: inherit;
+    }
+    input:focus, select:focus { outline: 2px solid #c7d7fe; border-color: var(--blue); }
+    input[readonly] { background: #f8fafc; }
+    .result-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 12px; }
+    .result { padding: 10px; background: #f8fafc; border-radius: 8px; }
+    .result span { display: block; color: var(--muted); font-size: 11px; }
+    .result b { display: block; margin-top: 2px; font-size: 18px; }
+    .formula { margin-top: 10px; padding: 10px 12px; color: #344054; background: var(--blue-soft); border-radius: 8px; font-size: 12px; white-space: pre-line; }
+    .error { color: var(--danger); }
+    @media (max-width: 960px) {
+      .calculators { grid-template-columns: 1fr; }
+      .summary-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 620px) {
+      header { padding: 18px; }
+      .header-inner { align-items: flex-start; flex-direction: column; }
+      main { padding: 10px; }
+      .form-grid, .result-grid { grid-template-columns: 1fr; }
+      label.wide { grid-column: auto; }
+    }
+  </style>
+</head>
+<body>
+<div style="padding:9px 20px;background:#f6f7f2;color:#245c48;font:12px/1.6 system-ui,sans-serif;display:flex;gap:20px;flex-wrap:wrap"><a style="color:inherit" href="../index.html">← YuHsin 个人主页</a><a style="color:inherit" href="index.html">流水仿真</a><a style="color:inherit" href="wiki.html#ratio-lab">通算比例</a><a style="color:inherit" href="trace-v2.html">Trace分析</a></div>
+  <p style="margin:12px 24px"><a href="memory.html">新增：decode-master BS96 · AIC / AIV0 / AIV1 的 MTE、UB 资源账本与行环反压实验</a></p>
+  <header>
+    <div class="header-inner">
+      <div>
+        <h1>MegaMoe Benchmark 与计算器</h1>
+        <p>硬件峰值 · MTE2/HBM · 实测校准 · 计算与通信时间快速估算</p>
+      </div>
+      <nav class="top-nav" aria-label="页面导航">
+        <a href="index.html">流水仿真</a>
+        <a class="active" href="benchmark.html" aria-current="page">Benchmark 与计算器</a>
+        <a href="wiki.html">公式 Wiki</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="summary-grid" aria-label="当前推荐基准">
+      <div class="panel summary" style="--accent:#3157d5">
+        <div class="label">当前 MegaMoe 计算精度</div>
+        <div class="value">MXFP8 E5M2</div>
+        <div class="sub">E5M2×E5M2 · E8M0 scale · FP32 累加 · BF16 输出</div>
+      </div>
+      <div class="panel summary" style="--accent:#37a66a">
+        <div class="label">BS96 活跃 Tile 效率</div>
+        <div class="value">54.8% / 55.9%</div>
+        <div class="sub">GMM1 / GMM2，相对28 Cube、756 TFLOPS FP8峰值</div>
+      </div>
+      <div class="panel summary" style="--accent:#ef8a31">
+        <div class="label">C FullMesh Dispatch 效率</div>
+        <div class="value">62.253%</div>
+        <div class="sub">理论15.289 μs / 实测24.56 μs；同shape校准</div>
+      </div>
+      <div class="panel summary" style="--accent:#805ad5">
+        <div class="label">BS4096 Prefill 仿真假设</div>
+        <div class="value">100% / 100%</div>
+        <div class="sub">GMM1/GMM2计算效率；通信利用率100%，均为理想上界</div>
+      </div>
+      <div class="panel summary" style="--accent:#0f8b8d">
+        <div class="label">950DT 读 HBM 上限</div>
+        <div class="value">153 GB/s</div>
+        <div class="sub">单AIC峰值；核间竞争，单Rank共享上限4 TB/s</div>
+      </div>
+    </section>
+
+    <section class="panel section">
+      <div class="section-head">
+        <div>
+          <h2>MTE2 / HBM 搬运基准</h2>
+          <p>当前用于仿真的950DT工程输入。GB/s与TB/s均按十进制；不同AIC同时读权重时受单核和单Rank两级上限共同约束。</p>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>硬件 / 资源</th><th>资源口径</th><th class="num">峰值带宽</th><th>竞争关系</th><th>仿真用法</th><th>状态</th></tr></thead>
+          <tbody>
+            <tr><td>950DT 单AIC读HBM</td><td>一个AIC通过MTE2执行GM→L1读</td><td class="num">153 GB/s</td><td>单核上限</td><td><code>Bcore = 153 GB/s</code></td><td><span class="tag warn">工程输入</span></td></tr>
+            <tr><td>950DT 单Rank HBM</td><td>该Rank全部AIC共享的聚合读带宽</td><td class="num">4 TB/s</td><td>并发核共享</td><td><code>Brank/Cmte2</code></td><td><span class="tag warn">工程输入</span></td></tr>
+            <tr><td>单核实际可用带宽</td><td>静态并发近似</td><td class="num"><code>min(153, 4000/Cmte2)</code> GB/s</td><td><code>Cmte2</code>为同时搬权重的核数</td><td>逐Tile动态仿真时按时间片重新分配</td><td><span class="tag good">模型公式</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">BS96 GMM1每专家有12个物理Tile，静态近似下4 TB/s聚合上限不触发；GMM2每专家有28个Tile，若28核同时读权重，则单核上限变为142.857 GB/s。实际并发数应由逐核流水事件决定，不能固定用AIC总数平摊。</p>
+    </section>
+
+    <section class="panel section">
+      <div class="section-head">
+        <div>
+          <h2>Cube 计算峰值</h2>
+          <p>统一采用 2 FLOPs/MAC。当前已确认的是 FP8 峰值；其他精度不根据倍数关系擅自推算。</p>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>硬件配置</th><th>精度 / 累加</th><th class="num">AIC数</th><th class="num">整卡峰值</th><th class="num">单AIC峰值</th><th class="num">GMM1理想Tile</th><th class="num">GMM2理想Tile</th></tr></thead>
+          <tbody>
+            <tr><td>28 Cube SKU</td><td>FP8；当前算子E5M2×E5M2→FP32</td><td class="num">28</td><td class="num">756 TFLOPS</td><td class="num">27.000 TFLOPS</td><td class="num">26.098 μs</td><td class="num">5.592 μs</td></tr>
+            <tr><td>32 Cube SKU</td><td>FP8；当前算子E5M2×E5M2→FP32</td><td class="num">32</td><td class="num">865 TFLOPS</td><td class="num">27.031 TFLOPS</td><td class="num">26.068 μs</td><td class="num">5.586 μs</td></tr>
+            <tr><td>35 Cube SKU</td><td>FP8；当前算子E5M2×E5M2→FP32</td><td class="num">35</td><td class="num">973 TFLOPS</td><td class="num">27.800 TFLOPS</td><td class="num">25.347 μs</td><td class="num">5.431 μs</td></tr>
+            <tr><td>自定义</td><td>BF16 / FP16 / INT8 等</td><td class="num">—</td><td class="num">待输入</td><td class="num">自动计算</td><td class="num">自动计算</td><td class="num">自动计算</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">理想Tile列使用BS96均衡路由：M=96、Ntile=256、H=7168、I=3072；GMM1一个物理Tile包含gate/up两个投影。</p>
+    </section>
+
+    <section class="panel section">
+      <div class="section-head">
+        <div>
+          <h2>通信带宽基准</h2>
+          <p>FullMesh是逐Peer独占链路；Clos是每NPU共享出口，不能乘Peer数当作可用总带宽。</p>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>路径</th><th>资源口径</th><th class="num">标称带宽</th><th>基础修正</th><th class="num">基础有效带宽</th><th class="num">Decode η=62.253%</th><th class="num">Prefill η=100%</th><th>校准状态</th></tr></thead>
+          <tbody>
+            <tr><td>FullMesh</td><td>单Peer、点到点独占</td><td class="num">59 GB/s</td><td>Payload 59%</td><td class="num">34.81 GB/s / Peer</td><td class="num">21.670 GB/s / Peer</td><td class="num">34.810 GB/s / Peer</td><td><span class="tag good">Decode实测</span></td></tr>
+            <tr><td>POD Clos</td><td>单NPU聚合出口</td><td class="num">140 GB/s</td><td>无额外Payload项</td><td class="num">140 GB/s</td><td class="num">87.155 GB/s</td><td class="num">140.000 GB/s</td><td><span class="tag warn">Prefill为上界</span></td></tr>
+            <tr><td>PC16 Clos</td><td>单NPU聚合出口</td><td class="num">230 GB/s</td><td>无额外Payload项</td><td class="num">230 GB/s</td><td class="num">143.182 GB/s</td><td class="num">230.000 GB/s</td><td><span class="tag warn">Prefill为上界</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">POD/PC16没有匹配shape实机数据：Decode列把C环境Dispatch效率迁移到Clos；Prefill列按用户当前假设取100%理论上界，均不是POD/PC16实测带宽。</p>
+    </section>
+
+    <section class="panel section">
+      <div class="section-head">
+        <div>
+          <h2>当前实测校准用例</h2>
+          <p>只有shape、分支、Tile定义和timer范围一致时才能直接迁移效率。</p>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>项目</th><th>环境与配置</th><th>实测</th><th>理论 / 回放</th><th>反推效率</th><th>使用建议</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Decode GMM1</td>
+              <td>C950 FullMesh8；28 AIC；EP8；BS96；TopK6；6专家/卡；H7168；N6144；MXFP8 E5M2</td>
+              <td>阶段包络147 μs</td>
+              <td>反标47.6356 μs/物理Tile；理想26.0979 μs</td>
+              <td><strong>54.79%</strong></td>
+              <td><span class="tag good">主校准</span> Tile时间是由阶段包络反标，不是原始单Tile timer。</td>
+            </tr>
+            <tr>
+              <td>Decode GMM2</td>
+              <td>同上；M96、Ntile256、K3072</td>
+              <td>约10 μs/Tile；阶段包络114 μs</td>
+              <td>理想5.5924 μs；流水回放107.636 μs，残差6.364 μs</td>
+              <td><strong>55.92%</strong></td>
+              <td><span class="tag good">主校准</span> 残差不强行归因给GMM1或SwiGLU。</td>
+            </tr>
+            <tr>
+              <td>Decode Dispatch</td>
+              <td>同上；Base；每Peer每专家12行；行宽7392 B；7条独占Peer链路</td>
+              <td>六专家共24.56 μs</td>
+              <td>59×59% GB/s下理论15.289 μs</td>
+              <td><strong>62.253%</strong></td>
+              <td><span class="tag good">通信校准</span> 可暂迁移到POD/PC16做敏感性分析。</td>
+            </tr>
+            <tr>
+              <td>Prefill参考</td>
+              <td>FullMesh8；BS4096；H7168；N6144；TopK6；6专家/卡</td>
+              <td>GMM1 560 μs、GMM2 285 μs、Dispatch 682 μs（原始记录口径）</td>
+              <td>timer是否覆盖单物理Tile仍需确认</td>
+              <td>暂不反推</td>
+              <td><span class="tag warn">待核口径</span> 当前网页先按100%计算/通信效率给出理想上界，不把560/285 μs直接反推为Tile效率。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="calculators" aria-label="性能计算器">
+      <div class="panel calculator">
+        <h2>计算时间 / 效率计算器</h2>
+        <p class="note">既可用峰值和效率预测时间，也可用实测时间反推活跃Tile效率。</p>
+        <div class="form-grid" style="margin-top:12px">
+          <label class="wide">计算预设
+            <select id="computePreset">
+              <option value="gmm1" selected>BS96 GMM1物理Tile（gate/up成对）</option>
+              <option value="gmm2">BS96 GMM2 Tile</option>
+              <option value="prefill-gmm1">BS4096 Prefill GMM1 Tile · 100%</option>
+              <option value="prefill-gmm2">BS4096 Prefill GMM2 Tile · 100%</option>
+              <option value="custom">自定义GEMM</option>
+            </select>
+          </label>
+          <label>硬件峰值预设
+            <select id="computeHardware">
+              <option value="28" selected>28 Cube · 756 TFLOPS</option>
+              <option value="32">32 Cube · 865 TFLOPS</option>
+              <option value="35">35 Cube · 973 TFLOPS</option>
+              <option value="custom">自定义</option>
+            </select>
+          </label>
+          <label>精度<input id="computePrecision" value="MXFP8 E5M2×E5M2→FP32" readonly></label>
+          <label>AIC数<input id="computeCores" type="number" min="1" step="1" value="28"></label>
+          <label>整卡峰值（TFLOPS）<input id="computePeak" type="number" min="0.001" step="1" value="756"></label>
+          <label>M<input id="computeM" type="number" min="1" step="1" value="96"></label>
+          <label>N Tile<input id="computeN" type="number" min="1" step="1" value="256"></label>
+          <label>K<input id="computeK" type="number" min="1" step="1" value="7168"></label>
+          <label>投影次数<input id="computeProj" type="number" min="1" step="1" value="2"></label>
+          <label>活跃Tile效率（%）<input id="computeEff" type="number" min="0.01" max="100" step="0.01" value="54.7866"></label>
+          <label>实测时间（μs，可选）<input id="computeMeasured" type="number" min="0" step="0.001" value="47.6356"></label>
+        </div>
+        <div class="result-grid">
+          <div class="result"><span>有用计算量</span><b id="computeFlops">—</b></div>
+          <div class="result"><span>单AIC理论峰值</span><b id="computePerCore">—</b></div>
+          <div class="result"><span>100%理想时间</span><b id="computeIdeal">—</b></div>
+          <div class="result"><span>按输入效率预测</span><b id="computeModeled">—</b></div>
+          <div class="result"><span>实测反推效率</span><b id="computeInferred">—</b></div>
+          <div class="result"><span>实测有效单核算力</span><b id="computeEffective">—</b></div>
+        </div>
+        <div class="formula" id="computeFormula"></div>
+      </div>
+
+      <div class="panel calculator">
+        <h2>通信时间计算器</h2>
+        <p class="note">同组Peer链路并行；跨组Peer共享Clos出口。两条路径并行时取较慢者。</p>
+        <div class="form-grid" style="margin-top:12px">
+          <label class="wide">场景预设
+            <select id="commPreset">
+              <option value="c-dispatch" selected>C环境 · 六专家Dispatch校准</option>
+              <option value="pod-dispatch">POD EP64 · Base Dispatch</option>
+              <option value="pc16-dispatch">PC16 EP64 · Base Dispatch</option>
+              <option value="pod-combine">POD EP64 · Base Combine</option>
+              <option value="pc16-combine">PC16 EP64 · Base Combine</option>
+              <option value="prefill-pod-dispatch">Prefill BS4096 POD · Dispatch 100%</option>
+              <option value="prefill-pod-combine">Prefill BS4096 POD · Combine 100%</option>
+              <option value="custom">自定义</option>
+            </select>
+          </label>
+          <label>每Peer行数 / 任务<input id="commRows" type="number" min="0" step="0.001" value="12"></label>
+          <label>每行字节<input id="commRowBytes" type="number" min="0" step="1" value="7392"></label>
+          <label>串行任务数<input id="commTasks" type="number" min="1" step="1" value="6"></label>
+          <label>同组FullMesh Peer数<input id="commFmPeers" type="number" min="0" step="1" value="7"></label>
+          <label>跨组Clos Peer数<input id="commClosPeers" type="number" min="0" step="1" value="0"></label>
+          <label>FullMesh原始带宽（GB/s）<input id="commFmRaw" type="number" min="0.001" step="1" value="59"></label>
+          <label>FullMesh Payload（%）<input id="commPayload" type="number" min="0.01" max="100" step="0.01" value="59"></label>
+          <label>Clos共享出口（GB/s）<input id="commClosBw" type="number" min="0.001" step="1" value="140"></label>
+          <label>通信效率η（%）<input id="commEff" type="number" min="0.01" max="100" step="0.001" value="62.253"></label>
+          <label>每任务启动开销（μs）<input id="commStartup" type="number" min="0" step="0.001" value="0"></label>
+        </div>
+        <div class="result-grid">
+          <div class="result"><span>每Peer字节 / 任务</span><b id="commBytes">—</b></div>
+          <div class="result"><span>FullMesh有效带宽</span><b id="commFmEffBw">—</b></div>
+          <div class="result"><span>Clos有效共享出口</span><b id="commClosEffBw">—</b></div>
+          <div class="result"><span>FullMesh服务时间</span><b id="commFmUs">—</b></div>
+          <div class="result"><span>Clos服务时间</span><b id="commClosUs">—</b></div>
+          <div class="result"><span>并行路径总时间</span><b id="commTotalUs">—</b></div>
+        </div>
+        <div class="formula" id="commFormula"></div>
+      </div>
+
+      <div class="panel calculator" id="mte2-calculator">
+        <h2>MTE2 / Cube Tile 计算器</h2>
+        <p class="note">拆分权重GM→L1与Cube MMAD时间；并发核先竞争单Rank HBM，再与单核153 GB/s上限取较小值。</p>
+        <div class="form-grid" style="margin-top:12px">
+          <label class="wide">Tile预设
+            <select id="mte2Preset">
+              <option value="gmm1" selected>BS96 GMM1物理Tile（gate/up成对）</option>
+              <option value="gmm2">BS96 GMM2 Tile</option>
+              <option value="custom">自定义</option>
+            </select>
+          </label>
+          <label>M<input id="mte2M" type="number" min="1" step="1" value="96"></label>
+          <label>N Tile<input id="mte2N" type="number" min="1" step="1" value="256"></label>
+          <label>K<input id="mte2K" type="number" min="1" step="1" value="7168"></label>
+          <label>投影 / 权重块数<input id="mte2Proj" type="number" min="1" step="1" value="2"></label>
+          <label>权重元素字节<input id="mte2WeightBytes" type="number" min="0.125" step="0.125" value="1"></label>
+          <label>Scale Group<input id="mte2ScaleGroup" type="number" min="1" step="1" value="32"></label>
+          <label>每个Scale字节<input id="mte2ScaleBytes" type="number" min="0" step="0.125" value="1"></label>
+          <label>额外搬运字节 / Tile<input id="mte2ExtraBytes" type="number" min="0" step="1" value="0"></label>
+          <label>单核Cube峰值（TFLOPS）<input id="mte2CubePeak" type="number" min="0.001" step="0.001" value="27"></label>
+          <label>单核读HBM峰值（GB/s）<input id="mte2CoreBw" type="number" min="0.001" step="1" value="153"></label>
+          <label>单Rank HBM上限（GB/s）<input id="mte2RankBw" type="number" min="0.001" step="100" value="4000"></label>
+          <label>同时搬权重核数<input id="mte2Readers" type="number" min="1" step="1" value="12"></label>
+          <label>MTE2与Cube重叠（%）<input id="mte2Overlap" type="number" min="0" max="100" step="0.01" value="12.93"></label>
+          <label>实测Tile时间（μs，可选）<input id="mte2Measured" type="number" min="0" step="0.001" value="47.6356"></label>
+        </div>
+        <div class="result-grid">
+          <div class="result"><span>权重 + Scale字节</span><b id="mte2BytesOut">—</b></div>
+          <div class="result"><span>单核有效HBM带宽</span><b id="mte2EffBw">—</b></div>
+          <div class="result"><span>MTE2权重搬运</span><b id="mte2MemoryUs">—</b></div>
+          <div class="result"><span>Cube理想计算</span><b id="mte2CubeUs">—</b></div>
+          <div class="result"><span>重叠后Tile时间</span><b id="mte2TileUs">—</b></div>
+          <div class="result"><span>Tile内Cube时间占比</span><b id="mte2CubeDuty">—</b></div>
+          <div class="result"><span>实测反推重叠</span><b id="mte2InferredOverlap">—</b></div>
+          <div class="result"><span>Rank聚合带宽占用</span><b id="mte2RankDemand">—</b></div>
+        </div>
+        <div class="formula" id="mte2Formula"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+  (() => {
+    "use strict";
+    const $ = id => document.getElementById(id);
+    const num = id => Number($(id).value);
+    const fmt = (x, d=3) => Number.isFinite(x) ? x.toLocaleString("zh-CN", {maximumFractionDigits:d, minimumFractionDigits:d}) : "—";
+    const all = selector => Array.from(document.querySelectorAll(selector));
+
+    const hardware = {"28":[28,756], "32":[32,865], "35":[35,973]};
+    const computePresets = {
+      gmm1: {m:96,n:256,k:7168,proj:2,eff:54.7866,measured:47.6356},
+      gmm2: {m:96,n:256,k:3072,proj:1,eff:55.9241,measured:10},
+      "prefill-gmm1": {m:256,n:256,k:7168,proj:2,eff:100,measured:0,hardware:"32"},
+      "prefill-gmm2": {m:256,n:256,k:3072,proj:1,eff:100,measured:0,hardware:"32"}
+    };
+    function syncComputePreset() {
+      const p=computePresets[$("computePreset").value];
+      if(!p)return;
+      $("computeM").value=p.m;$("computeN").value=p.n;$("computeK").value=p.k;
+      $("computeProj").value=p.proj;$("computeEff").value=p.eff;$("computeMeasured").value=p.measured;
+      if(p.hardware){$("computeHardware").value=p.hardware;syncComputeHardware();}
+    }
+    function syncComputeHardware() {
+      const p=hardware[$("computeHardware").value];
+      if(!p)return;
+      $("computeCores").value=p[0];$("computePeak").value=p[1];
+    }
+    function computeCalculator() {
+      const cores=num("computeCores"), peak=num("computePeak"), m=num("computeM"), n=num("computeN"), k=num("computeK"), proj=num("computeProj"), eff=num("computeEff")/100, measured=num("computeMeasured");
+      const values=[cores,peak,m,n,k,proj,eff];
+      if(values.some(x=>!Number.isFinite(x)||x<=0)) {$("computeFormula").textContent="请输入正数参数。";$("computeFormula").classList.add("error");return;}
+      $("computeFormula").classList.remove("error");
+      const flops=2*proj*m*n*k;
+      const perCore=peak/cores;
+      const ideal=flops/(perCore*1e12)*1e6;
+      const modeled=ideal/eff;
+      const inferred=measured>0?ideal/measured*100:NaN;
+      const effective=measured>0?flops/(measured*1e-6)/1e12:NaN;
+      $("computeFlops").textContent=`${fmt(flops/1e6,3)} MFLOPs`;
+      $("computePerCore").textContent=`${fmt(perCore,3)} TFLOPS`;
+      $("computeIdeal").textContent=`${fmt(ideal,3)} μs`;
+      $("computeModeled").textContent=`${fmt(modeled,3)} μs`;
+      $("computeInferred").textContent=measured>0?`${fmt(inferred,2)}%`:"未输入";
+      $("computeEffective").textContent=measured>0?`${fmt(effective,3)} TFLOPS`:"未输入";
+      $("computeFormula").textContent=`FLOPs = 2 × 投影次数 × M × N × K = 2 × ${proj} × ${m} × ${n} × ${k} = ${fmt(flops,0)}\n单AIC峰值 = ${peak} ÷ ${cores} = ${fmt(perCore,6)} TFLOPS\n预测时间 = FLOPs ÷ (单AIC峰值 × η) = ${fmt(modeled,6)} μs${measured>0?`\n实测反推η = 理想时间 ÷ 实测时间 = ${fmt(ideal,6)} ÷ ${fmt(measured,6)} = ${fmt(inferred,3)}%`:""}`;
+    }
+
+    const commPresets = {
+      "c-dispatch": {rows:12,rowBytes:7392,tasks:6,fmPeers:7,closPeers:0,fmRaw:59,payload:59,closBw:140,eff:62.253,startup:0},
+      "pod-dispatch": {rows:1.5,rowBytes:7392,tasks:6,fmPeers:7,closPeers:56,fmRaw:59,payload:59,closBw:140,eff:62.253,startup:0},
+      "pc16-dispatch": {rows:1.5,rowBytes:7392,tasks:6,fmPeers:7,closPeers:56,fmRaw:59,payload:59,closBw:230,eff:62.253,startup:0},
+      "pod-combine": {rows:1.5,rowBytes:14336,tasks:6,fmPeers:7,closPeers:56,fmRaw:59,payload:59,closBw:140,eff:62.253,startup:0},
+      "pc16-combine": {rows:1.5,rowBytes:14336,tasks:6,fmPeers:7,closPeers:56,fmRaw:59,payload:59,closBw:230,eff:62.253,startup:0},
+      "prefill-pod-dispatch": {rows:64,rowBytes:7392,tasks:6,fmPeers:7,closPeers:56,fmRaw:59,payload:59,closBw:140,eff:100,startup:0},
+      "prefill-pod-combine": {rows:64,rowBytes:14336,tasks:6,fmPeers:7,closPeers:56,fmRaw:59,payload:59,closBw:140,eff:100,startup:0}
+    };
+    const commFieldMap={rows:"commRows",rowBytes:"commRowBytes",tasks:"commTasks",fmPeers:"commFmPeers",closPeers:"commClosPeers",fmRaw:"commFmRaw",payload:"commPayload",closBw:"commClosBw",eff:"commEff",startup:"commStartup"};
+    function syncCommPreset() {
+      const p=commPresets[$("commPreset").value];
+      if(!p)return;
+      Object.entries(commFieldMap).forEach(([key,id])=>$(id).value=p[key]);
+    }
+    function commCalculator() {
+      const rows=num("commRows"),rowBytes=num("commRowBytes"),tasks=num("commTasks"),fmPeers=num("commFmPeers"),closPeers=num("commClosPeers"),fmRaw=num("commFmRaw"),payload=num("commPayload")/100,closBw=num("commClosBw"),eta=num("commEff")/100,startup=num("commStartup");
+      if([rows,rowBytes,tasks,fmPeers,closPeers,fmRaw,payload,closBw,eta,startup].some(x=>!Number.isFinite(x)||x<0)||tasks<=0||fmRaw<=0||closBw<=0||payload<=0||eta<=0) {$("commFormula").textContent="请输入有效的非负参数，任务数和带宽必须为正。";$("commFormula").classList.add("error");return;}
+      $("commFormula").classList.remove("error");
+      const bytes=rows*rowBytes;
+      const fmEff=fmRaw*payload*eta;
+      const closEff=closBw*eta;
+      const fmUs=fmPeers>0?tasks*bytes/(fmEff*1000):0;
+      const closUs=closPeers>0?tasks*closPeers*bytes/(closEff*1000):0;
+      const total=Math.max(fmUs,closUs)+tasks*startup;
+      const bottleneck=fmUs>closUs?"FullMesh":closUs>fmUs?"Clos":"两者相同";
+      $("commBytes").textContent=`${fmt(bytes,1)} B`;
+      $("commFmEffBw").textContent=`${fmt(fmEff,3)} GB/s`;
+      $("commClosEffBw").textContent=`${fmt(closEff,3)} GB/s`;
+      $("commFmUs").textContent=`${fmt(fmUs,3)} μs`;
+      $("commClosUs").textContent=`${fmt(closUs,3)} μs`;
+      $("commTotalUs").textContent=`${fmt(total,3)} μs`;
+      $("commFormula").textContent=`每Peer字节/任务 = 行数 × 行字节 = ${rows} × ${rowBytes} = ${fmt(bytes,3)} B\nFullMesh = 任务数 × 每Peer字节 ÷ (原始带宽 × Payload × η) = ${fmt(fmUs,6)} μs；${fmPeers}条Peer链路并行，不再乘Peer数\nClos = 任务数 × 跨组Peer数 × 每Peer字节 ÷ (共享出口 × η) = ${fmt(closUs,6)} μs\n总时间 = max(FullMesh, Clos) + 任务数 × 启动开销 = ${fmt(total,6)} μs；瓶颈：${bottleneck}`;
+    }
+
+    const mte2Presets = {
+      gmm1: {m:96,n:256,k:7168,proj:2,weightBytes:1,scaleGroup:32,scaleBytes:1,extraBytes:0,cubePeak:27,coreBw:153,rankBw:4000,readers:12,overlap:12.9319,measured:47.6356},
+      gmm2: {m:96,n:256,k:3072,proj:1,weightBytes:1,scaleGroup:32,scaleBytes:1,extraBytes:0,cubePeak:27,coreBw:153,rankBw:4000,readers:28,overlap:22.6997,measured:10}
+    };
+    const mte2FieldMap={m:"mte2M",n:"mte2N",k:"mte2K",proj:"mte2Proj",weightBytes:"mte2WeightBytes",scaleGroup:"mte2ScaleGroup",scaleBytes:"mte2ScaleBytes",extraBytes:"mte2ExtraBytes",cubePeak:"mte2CubePeak",coreBw:"mte2CoreBw",rankBw:"mte2RankBw",readers:"mte2Readers",overlap:"mte2Overlap",measured:"mte2Measured"};
+    function syncMte2Preset() {
+      const p=mte2Presets[$("mte2Preset").value];
+      if(!p)return;
+      Object.entries(mte2FieldMap).forEach(([key,id])=>$(id).value=p[key]);
+    }
+    function mte2Calculator() {
+      const m=num("mte2M"),n=num("mte2N"),k=num("mte2K"),proj=num("mte2Proj"),weightBytes=num("mte2WeightBytes"),scaleGroup=num("mte2ScaleGroup"),scaleBytes=num("mte2ScaleBytes"),extraBytes=num("mte2ExtraBytes"),cubePeak=num("mte2CubePeak"),coreBw=num("mte2CoreBw"),rankBw=num("mte2RankBw"),readers=num("mte2Readers"),overlap=num("mte2Overlap")/100,measured=num("mte2Measured");
+      const positive=[m,n,k,proj,weightBytes,scaleGroup,cubePeak,coreBw,rankBw,readers];
+      if(positive.some(x=>!Number.isFinite(x)||x<=0)||[scaleBytes,extraBytes,overlap,measured].some(x=>!Number.isFinite(x)||x<0)||overlap>1) {
+        $("mte2Formula").textContent="请输入有效参数：带宽、Shape和并发核数必须为正，重叠比例应位于0%到100%。";
+        $("mte2Formula").classList.add("error");return;
+      }
+      $("mte2Formula").classList.remove("error");
+      const weightData=proj*k*n*weightBytes;
+      const weightScale=proj*Math.ceil(k/scaleGroup)*n*scaleBytes;
+      const bytes=weightData+weightScale+extraBytes;
+      const rankShare=rankBw/readers;
+      const effBw=Math.min(coreBw,rankShare);
+      const memoryUs=bytes/(effBw*1000);
+      const flops=2*proj*m*n*k;
+      const cubeUs=flops/(cubePeak*1e6);
+      const overlapUs=overlap*Math.min(cubeUs,memoryUs);
+      const tileUs=cubeUs+memoryUs-overlapUs;
+      const cubeDuty=cubeUs/tileUs*100;
+      const inferred=measured>0?(cubeUs+memoryUs-measured)/Math.min(cubeUs,memoryUs)*100:NaN;
+      const demand=effBw*readers;
+      const bottleneck=coreBw<=rankShare?"单核153 GB/s上限":"单Rank 4 TB/s共享上限";
+      $("mte2BytesOut").textContent=`${fmt(bytes/1e6,4)} MB`;
+      $("mte2EffBw").textContent=`${fmt(effBw,3)} GB/s`;
+      $("mte2MemoryUs").textContent=`${fmt(memoryUs,3)} μs`;
+      $("mte2CubeUs").textContent=`${fmt(cubeUs,3)} μs`;
+      $("mte2TileUs").textContent=`${fmt(tileUs,3)} μs`;
+      $("mte2CubeDuty").textContent=`${fmt(cubeDuty,2)}%`;
+      $("mte2InferredOverlap").textContent=measured>0?`${fmt(inferred,2)}%`:"未输入";
+      $("mte2RankDemand").textContent=`${fmt(demand,1)} / ${fmt(rankBw,1)} GB/s`;
+      $("mte2Formula").textContent=`权重字节 = 投影数 × K × N × 元素字节 = ${proj} × ${k} × ${n} × ${weightBytes} = ${fmt(weightData,0)} B\nScale字节 = 投影数 × ceil(K / Scale Group) × N × Scale字节 = ${fmt(weightScale,0)} B\n单核有效带宽 = min(单核上限, 单Rank上限 ÷ 同时搬运核数) = min(${coreBw}, ${rankBw} ÷ ${readers}) = ${fmt(effBw,6)} GB/s；瓶颈：${bottleneck}\nMTE2时间 = (${fmt(weightData,0)} + ${fmt(weightScale,0)} + ${fmt(extraBytes,0)}) ÷ ${fmt(effBw,6)} = ${fmt(memoryUs,6)} μs\nCube时间 = 2 × 投影数 × M × N × K ÷ 单核Cube峰值 = ${fmt(cubeUs,6)} μs\nTile时间 = Cube + MTE2 − 重叠比例 × min(Cube, MTE2) = ${fmt(tileUs,6)} μs\nTile内Cube时间占比 = Cube时间 ÷ Tile时间 = ${fmt(cubeDuty,3)}%${measured>0?`\n实测反推重叠 = (Cube + MTE2 − 实测) ÷ min(Cube, MTE2) = ${fmt(inferred,3)}%`:""}`;
+    }
+
+    $("computePreset").addEventListener("input",()=>{syncComputePreset();computeCalculator();});
+    $("computeHardware").addEventListener("input",()=>{syncComputeHardware();computeCalculator();});
+    ["computeCores","computePeak","computeM","computeN","computeK","computeProj","computeEff","computeMeasured"].forEach(id=>$(id).addEventListener("input",()=>{if((id==="computeCores"||id==="computePeak")&&document.activeElement===$(id))$("computeHardware").value="custom";if(["computeM","computeN","computeK","computeProj"].includes(id)&&document.activeElement===$(id))$("computePreset").value="custom";computeCalculator();}));
+    $("commPreset").addEventListener("input",()=>{syncCommPreset();commCalculator();});
+    Object.values(commFieldMap).forEach(id=>$(id).addEventListener("input",()=>{if(document.activeElement===$(id))$("commPreset").value="custom";commCalculator();}));
+    $("mte2Preset").addEventListener("input",()=>{syncMte2Preset();mte2Calculator();});
+    Object.values(mte2FieldMap).forEach(id=>$(id).addEventListener("input",()=>{if(document.activeElement===$(id))$("mte2Preset").value="custom";mte2Calculator();}));
+    computeCalculator();commCalculator();mte2Calculator();
+  })();
+  </script>
+</body>
+</html>

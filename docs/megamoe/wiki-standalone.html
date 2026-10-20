@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MegaMoe 模型通算比例 · 独立离线 Wiki</title>
+  <style>
+    :root {
+      --bg:#f5f7fb;--panel:#fff;--ink:#172033;--muted:#667085;--line:#e4e7ec;
+      --blue:#3157d5;--blue-soft:#eef2ff;--green:#067647;--green-soft:#ecfdf3;
+      --orange:#b54708;--orange-soft:#fff6ed;--danger:#b42318;--danger-soft:#fef3f2;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;color:var(--ink);background:var(--bg);font:14px/1.65 Inter,"Segoe UI","Microsoft YaHei",sans-serif}
+    header{padding:22px 28px 18px;color:#fff;background:linear-gradient(120deg,#172554,#3157d5 62%,#3674e8)}
+    .header-inner{display:flex;align-items:center;justify-content:space-between;gap:24px}
+    header h1{margin:0 0 5px;font-size:24px;letter-spacing:.2px}
+    header p{margin:0;color:#dbe5ff}
+    .top-nav{display:flex;gap:8px;flex-wrap:wrap}
+    .top-nav a{padding:7px 11px;color:#eef4ff;border:1px solid rgba(255,255,255,.34);border-radius:7px;text-decoration:none;font-weight:650}
+    .top-nav a.active{color:#172554;background:#fff;border-color:#fff}
+    .layout{display:grid;grid-template-columns:245px minmax(0,1fr);gap:16px;max-width:1380px;margin:0 auto;padding:16px}
+    .toc{position:sticky;top:16px;align-self:start;padding:14px;background:var(--panel);border:1px solid var(--line);border-radius:12px}
+    .toc b{display:block;margin-bottom:8px}
+    .toc a{display:block;padding:6px 7px;color:#344054;text-decoration:none;border-radius:6px}
+    .toc a:hover{color:var(--blue);background:var(--blue-soft)}
+    main{min-width:0;display:flex;flex-direction:column;gap:12px}
+    .panel{padding:20px 22px;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+    h2{margin:0 0 12px;font-size:19px;scroll-margin-top:16px}
+    h3{margin:18px 0 8px;font-size:15px}
+    p{margin:7px 0}
+    .lead{font-size:16px}
+    .conclusion{padding:12px 14px;color:#174ea6;background:var(--blue-soft);border-left:4px solid var(--blue);border-radius:7px}
+    .note{padding:11px 13px;color:var(--orange);background:var(--orange-soft);border-radius:7px}
+    .correct{padding:11px 13px;color:var(--green);background:var(--green-soft);border-radius:7px}
+    .equation{display:flex;justify-content:center;margin:10px 0;padding:13px 15px;overflow-x:auto;color:#172554;background:#f8faff;border:1px solid #dfe7ff;border-radius:8px}
+    .equation math{min-width:max-content;font:600 18px/1.55 "Cambria Math","STIX Two Math","Times New Roman",serif}
+    .step{display:grid;grid-template-columns:30px minmax(0,1fr);gap:9px;align-items:start;margin:9px 0}
+    .step-num{display:grid;place-items:center;width:27px;height:27px;color:#fff;background:var(--blue);border-radius:50%;font-weight:700}
+    table{width:100%;border-collapse:collapse;margin:10px 0}
+    th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+    th{color:#475467;background:#f8fafc;font-size:12px}
+    td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+    code{padding:1px 5px;color:#273b8f;background:#eef2ff;border-radius:4px}
+    ul{margin:7px 0;padding-left:22px}
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .mini{padding:13px;border:1px solid var(--line);border-radius:9px;background:#fbfcfe}
+    .mini b{display:block;margin-bottom:5px}
+    .ratio{font-size:22px;font-weight:760;color:#233b92}
+    .ratio-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0}
+    .ratio-controls label{font-size:12px;color:#475467}.ratio-controls input,.ratio-controls select{display:block;width:100%;margin-top:5px;border:1px solid #bdcadc;border-radius:6px;padding:8px;font:inherit;background:white;color:var(--ink)}
+    .ratio-controls .ratio-check{grid-column:1/-1;font-size:13px}.ratio-check input{display:inline-block;width:auto;margin:0 6px 0 0}
+    .ratio-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.ratio-toolbar button{border:1px solid #bdcadc;background:#fff;color:#273b8f;border-radius:6px;padding:8px 12px;font:inherit;cursor:pointer}
+    .ratio-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0}.ratio-stats .mini strong{display:block;font-size:24px;color:#233b92;margin:6px 0}.ratio-stats small{color:var(--muted)}
+    .ratio-chart-wrap,.ratio-table-wrap{overflow-x:auto}.ratio-chart-wrap svg{display:block;width:100%;min-width:1000px}.ratio-table-wrap th{white-space:nowrap}.ratio-table-wrap td{font-size:12px}.ratio-table-wrap tr[aria-selected=true]{background:#eef2ff}.ratio-table-wrap button{border:0;background:transparent;color:#273b8f;font:inherit;cursor:pointer;text-align:left;padding:0}
+    .ratio-error{color:var(--danger);background:var(--danger-soft);padding:12px;border-radius:6px}.ratio-substitution{white-space:pre-line;font-variant-numeric:tabular-nums;background:#f8faff;padding:12px;margin:12px 0}.ratio-small{font-size:12px;color:var(--muted)}
+    @media(max-width:1050px){.ratio-controls{grid-template-columns:repeat(2,minmax(0,1fr))}.ratio-stats{grid-template-columns:1fr}}
+    footer{padding:4px 2px 18px;color:var(--muted);font-size:11px}
+    @media(max-width:900px){.layout{grid-template-columns:1fr}.toc{position:static}.toc nav{display:grid;grid-template-columns:1fr 1fr}.two-col{grid-template-columns:1fr}}
+    @media(max-width:620px){header{padding:18px}.header-inner{align-items:flex-start;flex-direction:column}.layout{padding:10px}.panel{padding:16px}.toc nav{grid-template-columns:1fr}.equation math{font-size:15px}th,td{padding:8px 6px}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div>
+        <h1>MegaMoe 性能公式 Wiki</h1>
+        <p>Base EP 通信与 GMM 计算比例 · 从 Shape 到约分结果</p>
+      </div>
+      <div>单文件离线分享版 · 下载后用浏览器打开</div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="toc">
+      <b>本页目录</b>
+      <nav>
+        <a href="#conclusion">先看结论</a>
+        <a href="#symbols">变量定义</a>
+        <a href="#compute">1. 计算时间</a>
+        <a href="#mte2">2. MTE2 / HBM</a>
+        <a href="#communication">3. 通信时间</a>
+        <a href="#cancel">4. 逐步约分与最终式</a>
+        <a href="#ratio-lab">交互：精度 / 通算比 / 模型图</a>
+        <a href="#depends">5. 比例依赖项</a>
+        <a href="#simulation">6. 仿真为何随 bs 变化</a>
+        <a href="#numbers">7. BS96 / BS4096</a>
+        <a href="#scope">口径与适用范围</a>
+      </nav>
+    </aside>
+
+    <main>
+      <section class="panel" id="conclusion">
+        <h2>先看结论</h2>
+        <p class="lead">在固定效率、带宽、拓扑和通信分支的连续模型中，计算与通信都和 <code>bs×K</code> 一次线性，二者相除后 <code>bs</code> 与 <code>K</code> 完全约掉。</p>
+        <div class="conclusion">页面按 Cube 绝对计算窗口统计：从首个 GMM1 开始到最后一个 GMM2 结束，GMM1/GMM2 重叠只计一次。Decode BS96 使用实测效率校准，Prefill BS4096 使用 100% 计算/通信效率理想上界；对应窗口比分别约 1.602、1.403，两者仍是计算侧更长，并未变成通信 bound。由于两组效率不同，不能再把比例变化只归因于 bs。</div>
+      </section>
+
+      <section class="panel" id="symbols">
+        <h2>变量定义</h2>
+        <table>
+          <thead><tr><th>变量</th><th>含义</th><th>当前典型值</th></tr></thead>
+          <tbody>
+            <tr><td><code>bs</code></td><td>每个源 Rank 的 Token 数</td><td>96 / 4096</td></tr>
+            <tr><td><code>K</code></td><td>TopK</td><td>6</td></tr>
+            <tr><td><code>E</code></td><td>EP Rank 数量</td><td>64</td></tr>
+            <tr><td><code>R</code></td><td>每个 Rank 的专家数</td><td>6</td></tr>
+            <tr><td><code>X=E×R</code></td><td>总路由专家数；不用 E 表示总专家，避免与 EP Rank 数冲突</td><td>384</td></tr>
+            <tr><td><code>H</code></td><td>hidden</td><td>7168</td></tr>
+            <tr><td><code>I=N/2</code></td><td>单专家 SwiGLU 后中间宽度</td><td>3072</td></tr>
+            <tr><td><code>P<sub>Cube</sub></code></td><td>整卡聚合 Cube 峰值</td><td>865 TFLOPS</td></tr>
+            <tr><td><code>P₈；qG、qD、qC</code></td><td>交互计算器的FP8基准峰值；GMM、Dispatch、Combine的位数。P<sub>Cube</sub>=P₈×8/qG，按所选4bit翻倍假设</td><td>865 TFLOPS；8 / 4 / 16 bit</td></tr>
+            <tr><td><code>ηcomp；ηnet</code></td><td>交互计算器中GMM1/2共同效率及通信带宽效率</td><td>均为100%</td></tr>
+            <tr><td><code>G；g；s；S</code></td><td>FullMesh每组卡数；量化Scale组大小；每组Scale字节；可选计入的共享专家数</td><td>8；32元素；1B；取截图值</td></tr>
+            <tr><td><code>P<sub>core</sub></code></td><td>单AIC Cube峰值，用于逐Tile计算</td><td>950DT 28 Cube约27 TFLOPS</td></tr>
+            <tr><td><code>η<sub>1</sub>, η<sub>2</sub></code></td><td>GMM1 / GMM2 活跃 Tile 算力效率</td><td>Decode 54.8% / 55.9%；Prefill 100% / 100%</td></tr>
+            <tr><td><code>B<sub>core</sub></code></td><td>单AIC通过MTE2读HBM的峰值</td><td>950DT：153 GB/s</td></tr>
+            <tr><td><code>B<sub>rank</sub></code></td><td>单Rank所有AIC共享的HBM聚合上限</td><td>950DT：4 TB/s，即4000 GB/s</td></tr>
+            <tr><td><code>C<sub>MTE2</sub></code></td><td>同一时间正在从GM搬权重的AIC数</td><td>由逐核流水动态变化</td></tr>
+            <tr><td><code>λ</code></td><td>MTE2与Cube重叠比例；0为完全串行，1为完全隐藏较短阶段</td><td>BS96校准：GMM1约12.93%，GMM2约22.70%</td></tr>
+            <tr><td><code>C</code></td><td>走共享 Clos 的远端 Peer 数</td><td>EP64 下通常 56</td></tr>
+            <tr><td><code>W<sub>FM</sub></code></td><td>FullMesh 单 Peer 的有效带宽，已经包含通信利用率</td><td>由拓扑预设和利用率给出</td></tr>
+            <tr><td><code>W<sub>Clos</sub></code></td><td>每 NPU 的 Clos 有效总出口带宽，已经包含通信利用率</td><td>POD 140 / PC16 230 GB/s，再乘利用率；Decode 62.253%，Prefill 100%</td></tr>
+          </tbody>
+        </table>
+        <div class="note">以下主推导针对 balanced routing、Base通信、bs为每Rank、FullMesh Peer链路独占、Clos为每NPU共享出口，并暂不计Metadata和网络启动常数。</div>
+      </section>
+
+      <section class="panel" id="compute">
+        <h2>1. 计算时间推导</h2>
+        <div class="step"><div class="step-num">1</div><div><b>每个本地专家的 Token 数</b><div class="equation"><math display="block" aria-label="M 等于 bs 乘 K 除以 R"><mi>M</mi><mo>=</mo><mfrac><mrow><mi mathvariant="normal">bs</mi><mi>K</mi></mrow><mi>R</mi></mfrac></math></div></div></div>
+        <div class="step"><div class="step-num">2</div><div><b>GMM1：gate/up 两次矩阵乘</b><div class="equation"><math display="block" aria-label="单专家 GMM1 FLOPs 等于 4MHI"><msub><mi>F</mi><mrow><mi mathvariant="normal">GMM1</mi><mo>,</mo><mi mathvariant="normal">expert</mi></mrow></msub><mo>=</mo><mn>4</mn><mi>M</mi><mi>H</mi><mi>I</mi></math></div><div class="equation"><math display="block" aria-label="所有本地专家 GMM1 FLOPs 等于 4bsKHI"><msub><mi>F</mi><mi mathvariant="normal">GMM1</mi></msub><mo>=</mo><mi>R</mi><mo>×</mo><mn>4</mn><mi>M</mi><mi>H</mi><mi>I</mi><mo>=</mo><mn>4</mn><mi mathvariant="normal">bs</mi><mi>K</mi><mi>H</mi><mi>I</mi></math></div></div></div>
+        <div class="step"><div class="step-num">3</div><div><b>GMM2</b><div class="equation"><math display="block" aria-label="所有本地专家 GMM2 FLOPs 等于 2bsKHI"><msub><mi>F</mi><mi mathvariant="normal">GMM2</mi></msub><mo>=</mo><mi>R</mi><mo>×</mo><mn>2</mn><mi>M</mi><mi>H</mi><mi>I</mi><mo>=</mo><mn>2</mn><mi mathvariant="normal">bs</mi><mi>K</mi><mi>H</mi><mi>I</mi></math></div></div></div>
+        <div class="step"><div class="step-num">4</div><div><b>纯计算服务时间</b><div class="equation"><math display="block" aria-label="纯计算服务时间"><msub><mi>T</mi><mi mathvariant="normal">comp</mi></msub><mo>=</mo><mfrac><mrow><mi mathvariant="normal">bs</mi><mi>K</mi><mi>H</mi><mi>I</mi></mrow><msub><mi>P</mi><mi mathvariant="normal">Cube</mi></msub></mfrac><mo>(</mo><mfrac><mn>4</mn><msub><mi>η</mi><mn>1</mn></msub></mfrac><mo>+</mo><mfrac><mn>2</mn><msub><mi>η</mi><mn>2</mn></msub></mfrac><mo>)</mo></math></div></div></div>
+      </section>
+
+      <section class="panel" id="mte2">
+        <h2>2. MTE2 / HBM 权重搬运仿真</h2>
+        <p>当前MXFP8/W8A8路径中，一个权重元素为1字节，Scale按K方向每32个元素配置1字节。BS96小M路径中权重B绕过L2，因此先用“权重+权重Scale”建立一阶GM→L1模型；激活A和额外指令开销可在Benchmark计算器中作为额外字节补充。</p>
+        <div class="step"><div class="step-num">1</div><div><b>核间竞争后的单核带宽</b><div class="equation"><math display="block" aria-label="MTE2单核有效HBM带宽"><msub><mi>B</mi><mi mathvariant="normal">eff</mi></msub><mo>=</mo><mi mathvariant="normal">min</mi><mo>(</mo><msub><mi>B</mi><mi mathvariant="normal">core</mi></msub><mo>,</mo><mfrac><msub><mi>B</mi><mi mathvariant="normal">rank</mi></msub><msub><mi>C</mi><mi mathvariant="normal">MTE2</mi></msub></mfrac><mo>)</mo></math></div><p>950DT当前输入为 <code>Bcore=153 GB/s</code>、<code>Brank=4000 GB/s</code>。不能固定除以AIC总数；只统计该时刻实际处于MTE2搬运段的核。</p></div></div>
+        <div class="step"><div class="step-num">2</div><div><b>一个物理Tile的权重搬运字节</b><div class="equation"><math display="block" aria-label="一个Tile的权重和Scale字节"><msub><mi>V</mi><mi mathvariant="normal">weight</mi></msub><mo>=</mo><mi>p</mi><msub><mi>N</mi><mi>t</mi></msub><mo>(</mo><msub><mi>K</mi><mi>g</mi></msub><msub><mi>b</mi><mi>w</mi></msub><mo>+</mo><mo>⌈</mo><mfrac><msub><mi>K</mi><mi>g</mi></msub><mn>32</mn></mfrac><mo>⌉</mo><msub><mi>b</mi><mi>s</mi></msub><mo>)</mo></math></div><p><code>p</code>为权重块数：GMM1 gate/up成对，所以p=2、Kg=H；GMM2 p=1、Kg=I。Nt为Tile输出宽度，当前为256；bw和bs均为1字节。</p></div></div>
+        <div class="step"><div class="step-num">3</div><div><b>MTE2与Cube各自的服务时间</b><div class="equation"><math display="block" aria-label="MTE2和Cube时间"><msub><mi>T</mi><mi mathvariant="normal">MTE2</mi></msub><mo>=</mo><mfrac><msub><mi>V</mi><mi mathvariant="normal">weight</mi></msub><msub><mi>B</mi><mi mathvariant="normal">eff</mi></msub></mfrac><mspace width="2em"/><msub><mi>T</mi><mi mathvariant="normal">Cube</mi></msub><mo>=</mo><mfrac><mrow><mn>2</mn><mi>p</mi><mi>M</mi><msub><mi>N</mi><mi>t</mi></msub><msub><mi>K</mi><mi>g</mi></msub></mrow><msub><mi>P</mi><mi mathvariant="normal">core</mi></msub></mfrac></math></div></div></div>
+        <div class="step"><div class="step-num">4</div><div><b>用重叠比例合成Tile时间</b><div class="equation"><math display="block" aria-label="MTE2和Cube重叠后的Tile时间"><msub><mi>T</mi><mi mathvariant="normal">tile</mi></msub><mo>=</mo><msub><mi>T</mi><mi mathvariant="normal">Cube</mi></msub><mo>+</mo><msub><mi>T</mi><mi mathvariant="normal">MTE2</mi></msub><mo>−</mo><mi>λ</mi><mi mathvariant="normal">min</mi><mo>(</mo><msub><mi>T</mi><mi mathvariant="normal">Cube</mi></msub><mo>,</mo><msub><mi>T</mi><mi mathvariant="normal">MTE2</mi></msub><mo>)</mo></math></div><div class="equation"><math display="block" aria-label="Tile内Cube时间占比"><msub><mi>U</mi><mrow><mi mathvariant="normal">Cube</mi><mo>,</mo><mi mathvariant="normal">tile</mi></mrow></msub><mo>=</mo><mfrac><msub><mi>T</mi><mi mathvariant="normal">Cube</mi></msub><msub><mi>T</mi><mi mathvariant="normal">tile</mi></msub></mfrac></math></div><p>λ=0时两段完全串行；λ=1时较短的一段被完全隐藏。AIC占用时间可以覆盖整个Tile，但Cube活跃时间只统计TCube，二者不能混为同一个利用率。</p></div></div>
+        <h3>BS96校准核对</h3>
+        <table>
+          <thead><tr><th>阶段</th><th class="num">并发MTE2核</th><th class="num">单核有效带宽</th><th class="num">权重+Scale</th><th class="num">MTE2时间</th><th class="num">Cube时间</th><th class="num">反推λ</th><th class="num">Tile时间 / Cube占比</th></tr></thead>
+          <tbody>
+            <tr><td>GMM1</td><td class="num">12</td><td class="num">153 GB/s</td><td class="num">3.7847 MB</td><td class="num">24.737 μs</td><td class="num">26.098 μs</td><td class="num">12.93%</td><td class="num">47.636 μs / 54.79%</td></tr>
+            <tr><td>GMM2</td><td class="num">28</td><td class="num">142.857 GB/s</td><td class="num">0.8110 MB</td><td class="num">5.677 μs</td><td class="num">5.592 μs</td><td class="num">22.70%</td><td class="num">10.000 μs / 55.92%</td></tr>
+          </tbody>
+        </table>
+        <div class="correct"><b>解释：</b>两阶段的Cube时间与MTE2时间都接近1:1，而当前只隐藏约13%～23%的较短阶段，因此Tile内Cube时间占比自然落在55%左右。更准确的表述是“Cube/MTE2均衡但重叠不足，MTE2暴露时间限制Cube利用率”，而不是只看Roofline的单一带宽bound。</div>
+        <div class="note">GMM1的47.6356 μs是由147 μs阶段包络按代码流水反标的等效Tile时间，并非原始单Tile timer；GMM2约10 μs来自实测。Benchmark页允许修改并发核数、带宽、字节数和λ复算。主流水页面目前仍以54.8%/55.9%活跃Tile效率等效表达这部分开销，尚未把MTE2与Cube绘成两个独立事件。</div>
+      </section>
+
+      <section class="panel" id="communication">
+        <h2>3. 通信时间推导</h2>
+        <div class="step"><div class="step-num">1</div><div><b>每个源 Rank 到每个目标专家的路由行数</b><div class="equation"><math display="block" aria-label="n pair 等于 bsK 除以 ER"><msub><mi>n</mi><mi mathvariant="normal">pair</mi></msub><mo>=</mo><mfrac><mrow><mi mathvariant="normal">bs</mi><mi>K</mi></mrow><mrow><mi>E</mi><mi>R</mi></mrow></mfrac></math></div></div></div>
+        <div class="step"><div class="step-num">2</div><div><b>一个目标 Rank 有 R 个专家</b><div class="equation"><math display="block" aria-label="n peer 等于 bsK 除以 E"><msub><mi>n</mi><mi mathvariant="normal">peer</mi></msub><mo>=</mo><mi>R</mi><mo>×</mo><mfrac><mrow><mi mathvariant="normal">bs</mi><mi>K</mi></mrow><mrow><mi>E</mi><mi>R</mi></mrow></mfrac><mo>=</mo><mfrac><mrow><mi mathvariant="normal">bs</mi><mi>K</mi></mrow><mi>E</mi></mfrac></math></div></div></div>
+        <div class="step"><div class="step-num">3</div><div><b>每行字节数</b><div class="equation"><math display="block" aria-label="Dispatch 和 Combine 每行字节数"><msub><mi>d</mi><mi>D</mi></msub><mo>=</mo><mi>H</mi><mo>+</mo><mo>⌈</mo><mfrac><mi>H</mi><mn>32</mn></mfrac><mo>⌉</mo><mspace width="2em"/><msub><mi>d</mi><mi>C</mi></msub><mo>=</mo><mn>2</mn><mi>H</mi></math></div><p>当 H 可被 32 整除时，<code>d<sub>D</sub>+d<sub>C</sub>=H(3+1/32)</code>。</p></div></div>
+        <div class="step"><div class="step-num">4</div><div><b>FullMesh 与 Clos 的瓶颈等效带宽</b><div class="equation"><math display="block" aria-label="有效带宽等于 FullMesh 带宽与 Clos 出口带宽除以 Clos peer 数的较小值"><msub><mi>W</mi><mi mathvariant="normal">eff</mi></msub><mo>=</mo><mi mathvariant="normal">min</mi><mo>(</mo><msub><mi>W</mi><mi mathvariant="normal">FM</mi></msub><mo>,</mo><mfrac><msub><mi>W</mi><mi mathvariant="normal">Clos</mi></msub><mi>C</mi></mfrac><mo>)</mo></math></div><p><code>W<sub>eff</sub></code> 是两条路径中更慢一侧折算出的有效带宽。FullMesh 各 Peer 链路独占；Clos 的 <code>C</code> 个远端 Peer 共享同一出口，所以其等效带宽为 <code>W<sub>Clos</sub>/C</code>。</p></div></div>
+        <div class="step"><div class="step-num">5</div><div><b>Dispatch + Combine 通信服务时间</b><div class="equation"><math display="block" aria-label="通信服务时间"><msub><mi>T</mi><mi mathvariant="normal">comm</mi></msub><mo>=</mo><mfrac><mrow><mi mathvariant="normal">bs</mi><mi>K</mi><mo>(</mo><msub><mi>d</mi><mi>D</mi></msub><mo>+</mo><msub><mi>d</mi><mi>C</mi></msub><mo>)</mo></mrow><mrow><mi>E</mi><msub><mi>W</mi><mi mathvariant="normal">eff</mi></msub></mrow></mfrac></math></div></div></div>
+      </section>
+
+      <section class="panel" id="cancel">
+        <h2>4. 计算/通信比例的逐步约分与最终式</h2>
+        <p>定义 <code>ρ=T<sub>comp</sub>/T<sub>comm</sub></code>。中间推导可以使用前面定义的辅助量：</p>
+        <h3>代入计算与通信服务时间</h3>
+        <div class="equation"><math display="block" aria-label="代入计算与通信服务时间"><mi>ρ</mi><mo>=</mo><mfrac><mrow><mfrac><mrow><mi mathvariant="normal">bs</mi><mi>K</mi><mi>H</mi><mi>I</mi></mrow><msub><mi>P</mi><mi mathvariant="normal">Cube</mi></msub></mfrac><mo>(</mo><mfrac><mn>4</mn><msub><mi>η</mi><mn>1</mn></msub></mfrac><mo>+</mo><mfrac><mn>2</mn><msub><mi>η</mi><mn>2</mn></msub></mfrac><mo>)</mo></mrow><mrow><mfrac><mrow><mi mathvariant="normal">bs</mi><mi>K</mi><mo>(</mo><msub><mi>d</mi><mi>D</mi></msub><mo>+</mo><msub><mi>d</mi><mi>C</mi></msub><mo>)</mo></mrow><mrow><mi>E</mi><msub><mi>W</mi><mi mathvariant="normal">eff</mi></msub></mrow></mfrac></mrow></mfrac></math></div>
+        <h3>约掉 bs 与 K</h3>
+        <div class="equation"><math display="block" aria-label="约掉 bs 与 K 后的中间结果"><mi>ρ</mi><mo>=</mo><mfrac><mrow><mi>E</mi><mi>H</mi><mi>I</mi><msub><mi>W</mi><mi mathvariant="normal">eff</mi></msub></mrow><mrow><msub><mi>P</mi><mi mathvariant="normal">Cube</mi></msub><mo>(</mo><msub><mi>d</mi><mi>D</mi></msub><mo>+</mo><msub><mi>d</mi><mi>C</mi></msub><mo>)</mo></mrow></mfrac><mo>(</mo><mfrac><mn>4</mn><msub><mi>η</mi><mn>1</mn></msub></mfrac><mo>+</mo><mfrac><mn>2</mn><msub><mi>η</mi><mn>2</mn></msub></mfrac><mo>)</mo></math></div>
+        <h3>最终结果：展开所有辅助变量</h3>
+        <div class="equation"><math display="block" aria-label="只包含原始定义变量的计算通信时间最终比例"><msub><mi>ρ</mi><mi mathvariant="normal">ideal</mi></msub><mo>=</mo><mfrac><mrow><mi>E</mi><mi>I</mi></mrow><mrow><msub><mi>P</mi><mi mathvariant="normal">Cube</mi></msub><mo>(</mo><mn>3</mn><mo>+</mo><mfrac><mn>1</mn><mn>32</mn></mfrac><mo>)</mo></mrow></mfrac><mi mathvariant="normal">min</mi><mo>(</mo><msub><mi>W</mi><mi mathvariant="normal">FM</mi></msub><mo>,</mo><mfrac><msub><mi>W</mi><mi mathvariant="normal">Clos</mi></msub><mi>C</mi></mfrac><mo>)</mo><mo>(</mo><mfrac><mn>4</mn><msub><mi>η</mi><mn>1</mn></msub></mfrac><mo>+</mo><mfrac><mn>2</mn><msub><mi>η</mi><mn>2</mn></msub></mfrac><mo>)</mo></math></div>
+        <div class="correct"><b>约分结论：</b>最终式右侧只包含变量定义表中的原始变量。<code>bs</code>、Base 分支的 <code>K</code>、每卡专家数 <code>R</code> 和 <code>H</code> 均被约掉；<code>M</code>、<code>d<sub>D</sub></code>、<code>d<sub>C</sub></code>、<code>W<sub>eff</sub></code> 等辅助变量也已全部展开。</div>
+      </section>
+
+      <section class="panel" id="ratio-lab">
+        <h2>交互计算：精度、硬件与各模型通算时间比</h2>
+        <p>连续均衡 Base 模型，比较 <b>计算服务时间 /（Dispatch + Combine 通信服务时间）</b>。输入使用整卡峰值和单卡共享出口。图中模型参数来自你提供的截图，MoE Hidden Dim 作为激活后宽度 <code>I</code>。</p>
+        <div class="ratio-toolbar"><button id="ratio-reset" type="button">恢复默认</button><button id="ratio-export" type="button">导出配置与结果 JSON</button><span id="ratio-save-status" class="ratio-small" role="status"></span></div>
+        <form id="ratio-form" class="ratio-controls">
+          <label>观察模型<select id="ratio-model"></select></label>
+          <label>EP Rank 数量 E<select id="ratio-ep"><option>8</option><option>16</option><option>32</option><option selected>64</option><option>128</option><option>256</option></select></label>
+          <label>GMM 运算精度<select id="ratio-gmmBits"><option value="8">8bit · 使用FP8峰值</option><option value="4">4bit · 峰值按FP8的2倍</option></select></label>
+          <label>芯片 FP8 峰值预设<select id="ratio-chip"><option value="756">28 Cube · 756 TFLOPS</option><option value="865" selected>32 Cube · 865 TFLOPS</option><option value="973">35 Cube · 973 TFLOPS</option><option value="custom">自定义</option></select></label>
+          <label>整卡 FP8 基准峰值 P₈（TFLOPS）<input id="ratio-peak8" type="number" min="0" step="any" value="865" required></label>
+          <label>算力利用率 ηcomp（%）<input id="ratio-computeUtil" type="number" min="0" max="100" step="any" value="100" required></label>
+          <label>Dispatch 数据精度<select id="ratio-dispatchBits"><option value="4" selected>4bit · 0.5 B/元素</option><option value="8">8bit · 1 B/元素</option></select></label>
+          <label>Combine 数据精度<select id="ratio-combineBits"><option value="16" selected>16bit · 2 B/元素</option><option value="8">8bit · 1 B/元素</option></select></label>
+          <label>通信利用率 ηnet（%）<input id="ratio-networkUtil" type="number" min="0" max="100" step="any" value="100" required></label>
+          <label>组网带宽预设<select id="ratio-topology"><option value="pod" selected>POD · Clos 140 GB/s</option><option value="pc16">PC16 · Clos 230 GB/s</option><option value="custom">自定义</option></select></label>
+          <label>Clos 单卡共享带宽（GB/s）<input id="ratio-clos" type="number" min="0" step="any" value="140" required></label>
+          <label>FullMesh 单Peer带宽（GB/s）<input id="ratio-fm" type="number" min="0" step="any" value="34.81" required></label>
+          <label>FullMesh 每组卡数 G<input id="ratio-group" type="number" min="2" step="1" value="8" required></label>
+          <label>量化 Scale 每组元素数 g<input id="ratio-scaleGroup" type="number" min="1" step="1" value="32" required></label>
+          <label>每组 Scale 字节 s（0可忽略）<input id="ratio-scaleBytes" type="number" min="0" step="any" value="1" required></label>
+          <label class="ratio-check"><input id="ratio-includeShared" type="checkbox">额外计入截图中的共享专家计算（假设共享专家与路由专家同 I、本地执行，无 EP Dispatch/Combine）</label>
+        </form>
+        <p class="ratio-small">100%通信利用率基于上述可用带宽；FullMesh默认34.81=59×59% GB/s，59%为沿用的链路有效载荷系数。ηcomp同时应用于GMM1/GMM2。4bit翻倍是本次选定的硬件假设；W4展开成W8的GMM请选择8bit峰值。</p>
+        <div id="ratio-error" class="ratio-error" role="alert" hidden></div>
+        <div id="ratio-output">
+          <div id="ratio-stats" class="ratio-stats" aria-live="polite"></div>
+          <div id="ratio-substitution" class="ratio-substitution"></div>
+          <h3>展开后的可调最终式（未计共享专家）</h3>
+          <div class="equation"><math display="block" aria-label="计算通信比等于E乘I乘通信利用率，除以1000乘FP8峰值乘精度倍率乘算力利用率乘每元素通信字节，再乘最慢路径等效带宽乘6"><mi>ρ</mi><mo>=</mo><mfrac><mrow><mn>6</mn><mi>E</mi><mi>I</mi><msub><mi>η</mi><mi mathvariant="normal">net</mi></msub></mrow><mrow><mn>1000</mn><msub><mi>P</mi><mn>8</mn></msub><mo>(</mo><mfrac><mn>8</mn><msub><mi>q</mi><mi>G</mi></msub></mfrac><mo>)</mo><msub><mi>η</mi><mi mathvariant="normal">comp</mi></msub><mo>[</mo><mfrac><msub><mi>q</mi><mi>D</mi></msub><mn>8</mn></mfrac><mo>+</mo><mfrac><msub><mi>q</mi><mi>C</mi></msub><mn>8</mn></mfrac><mo>+</mo><mfrac><mi>s</mi><mi>g</mi></mfrac><mo>(</mo><mn>1</mn><mo>+</mo><msub><mn>1</mn><mrow><msub><mi>q</mi><mi>C</mi></msub><mo>=</mo><mn>8</mn></mrow></msub><mo>)</mo><mo>]</mo></mrow></mfrac><mi mathvariant="normal">min</mi><mo>(</mo><msub><mi>W</mi><mi mathvariant="normal">FM</mi></msub><mo>,</mo><mfrac><msub><mi>W</mi><mi mathvariant="normal">Clos</mi></msub><mrow><mi>E</mi><mo>−</mo><mi mathvariant="normal">min</mi><mo>(</mo><mi>E</mi><mo>,</mo><mi>G</mi><mo>)</mo></mrow></mfrac><mo>)</mo></math></div>
+          <p class="ratio-small">qG/qD/qC分别是GMM、Dispatch、Combine位数；P₈单位TFLOPS，W单位GB/s，故带有1/1000换算。η以0～1代入。Dispatch计一份Scale，8bit Combine再计一份，16bit Combine不加Scale；1下标qC=8表示条件成立取1，否则取0。没有Clos Peer时第二个带宽分项视作∞。4bit/8bit量化Scale沿用可调s/g假设。</p>
+          <p class="ratio-small">开启共享专家时，最终式再乘 <code>1+S/K</code>（同I与同计算效率假设）；此时K不能完全约掉。关闭时沿用原结论，模型总专家数、TopK只用于展示与均匀放置校验，同I模型的点会重合在同一横坐标。</p>
+          <h3>各模型的计算/通信时间比例</h3>
+          <p class="ratio-small">横轴为ρ，虚线为ρ=1。点旁直接标注模型名和MoE中间维度I（激活后宽度，不是主干隐藏维度H）。左侧通信服务时间更长，右侧计算服务时间更长。点击点或模型名称可查看代入值；完整流水的实际瓶颈还受依赖、MTE与气泡影响。</p>
+          <div id="ratio-chart" class="ratio-chart-wrap"></div>
+          <p class="ratio-small">图右侧新增 <b>ρ=1所需通信带宽</b>：有Clos Peer时为单卡Clos出口带宽，无Clos时为每Peer FullMesh专线带宽，单位GB/s。按当前通信利用率折算为与输入框相同口径的带宽设定值；达到该值且FullMesh满足条件时，计算服务时间不短于通信。低于当前带宽的阈值表示当前已超过需求。</p>
+          <details><summary>带宽阈值怎么算？</summary><p>先求达到ρ=1所需的每Peer带宽，再汇总Clos Peer：<code>WFM,req = Weff / ρ</code>；<code>WClos,req = [E−min(E,G)] × Weff / ρ</code>。这里Weff是利用率折减前的等效带宽；ρ已包含当前通信/算力利用率。当前Clos为瓶颈时，可简化为 <code>WClos,req = 当前Clos带宽 / ρ</code>。</p><p>若当前FullMesh低于WFM,req，仅提升Clos无法达到ρ=1，图中会标注还需提升FullMesh。无Clos Peer时直接调整FullMesh达到WFM,req。阈值随精度、利用率、EP及共享专家开关实时变化。</p></details>
+          <div class="ratio-table-wrap"><table><thead><tr><th>模型（截图参数）</th><th>I</th><th>总专家</th><th>K / S</th><th>专家/Rank</th><th>ρ</th><th>ρ=1所需带宽 GB/s</th><th>较长的服务时间</th></tr></thead><tbody id="ratio-model-table"></tbody></table></div>
+          <p class="ratio-small">截图中尚未核实的未来模型也按所给数值展示。默认模型表保留全部13行；不能均分到所选EP的行会提示并暂不画点。连续模型假设均衡路由、同源Rank bs、FullMesh和Clos可并行；不计启动、包头、Scale对齐、MTE、向量及实际调度开销。</p>
+        </div>
+        <noscript><p class="ratio-error">此交互计算需要浏览器启用JavaScript；其余Wiki公式仍可直接阅读。</p></noscript>
+      </section>
+
+      <section class="panel" id="depends">
+        <h2>5. 最终比例与什么有关</h2>
+        <div class="two-col">
+          <div class="mini"><b>被约掉或基本约掉</b><ul><li>bs</li><li>Base分支下的TopK K</li><li>每卡专家数R</li><li>H（仅保留ceil(H/32)的微小边界差异）</li></ul></div>
+          <div class="mini"><b>仍然保留</b><ul><li>EP Rank数E及Clos Peer数C</li><li>中间宽度I=N/2</li><li>Cube峰值P<sub>Cube</sub></li><li>η<sub>1</sub>、η<sub>2</sub></li><li>FullMesh/Clos有效带宽</li><li>通信数据精度和Scale开销</li></ul></div>
+        </div>
+        <p>去冗余分支的通信行数约为 <code>bs×q</code>，而计算量仍为 <code>bs×K</code>，所以比例会依赖 <code>K/q</code>；q由TopK、总专家数和目标Rank专家数决定。</p>
+      </section>
+
+      <section class="panel" id="simulation">
+        <h2>6. 为什么仿真结果仍随 bs 变化</h2>
+        <p>仿真页面的计算分子采用 Cube 绝对窗口，而不是把 GMM1、GMM2 包络相加：</p>
+        <div class="equation"><math display="block" aria-label="Cube 绝对计算窗口"><msub><mi>T</mi><mrow><mi mathvariant="normal">Cube</mi><mo>,</mo><mi mathvariant="normal">window</mi></mrow></msub><mo>=</mo><msub><mi mathvariant="normal">max</mi><mrow><mi mathvariant="normal">GMM2</mi></mrow></msub><mo>(</mo><msub><mi>t</mi><mi mathvariant="normal">end</mi></msub><mo>)</mo><mo>−</mo><msub><mi mathvariant="normal">min</mi><mrow><mi mathvariant="normal">GMM1</mi></mrow></msub><mo>(</mo><msub><mi>t</mi><mi mathvariant="normal">start</mi></msub><mo>)</mo></math></div>
+        <div class="equation"><math display="block" aria-label="页面展示的计算通信比例"><msub><mi>ρ</mi><mi mathvariant="normal">shown</mi></msub><mo>=</mo><mfrac><msub><mi>T</mi><mrow><mi mathvariant="normal">Cube</mi><mo>,</mo><mi mathvariant="normal">window</mi></mrow></msub><mrow><msub><mi>T</mi><mrow><mi mathvariant="normal">Dispatch</mi><mo>,</mo><mi mathvariant="normal">service</mi></mrow></msub><mo>+</mo><msub><mi>T</mi><mrow><mi mathvariant="normal">Combine</mi><mo>,</mo><mi mathvariant="normal">service</mi></mrow></msub></mrow></mfrac></math></div>
+        <p>这样 GMM1/GMM2 重叠区间只统计一次，但 Cube 窗口仍不等于纯计算服务时间，主要有四个非线性来源：</p>
+        <ul>
+          <li><b>Tile取整：</b><code>ceil(M/256)</code> 是分段函数，不随bs连续线性。</li>
+          <li><b>AIC尾波：</b>总Tile数不能整除AIC数时，最后一波只有部分核工作。</li>
+          <li><b>阶段就绪：</b>GMM1等待对应专家Dispatch；GMM2等待该专家GMM1/SwiGLU完成。</li>
+          <li><b>Combine回压：</b>Tile-ready分支中，GMM2还会等待较早的Combine释放ping-pong槽，因此GMM2包络混入通信等待。</li>
+        </ul>
+        <table>
+          <thead><tr><th>bs</th><th>M/专家</th><th>GMM1 Tile/专家</th><th>六专家GMM1波数</th><th>GMM2 Tile/专家</th><th>六专家GMM2波数</th></tr></thead>
+          <tbody>
+            <tr><td>96</td><td>96</td><td>1×12=12</td><td>ceil(72/32)=3，存在尾波</td><td>1×28=28</td><td>ceil(168/32)=6，存在尾波</td></tr>
+            <tr><td>4096</td><td>4096</td><td>16×12=192</td><td>1152/32=36，满波</td><td>16×28=448</td><td>2688/32=84，满波</td></tr>
+          </tbody>
+        </table>
+        <p>因此大bs使AIC铺得更满，单位Token的 Cube 窗口反而更短；通信服务量仍严格随bs线性，最终窗口比会向理想比例收敛。</p>
+      </section>
+
+      <section class="panel" id="numbers">
+        <h2>7. BS96与BS4096数值核对</h2>
+        <h3>对应配置</h3>
+        <table>
+          <thead><tr><th>配置标签</th><th>场景</th><th class="num">bs</th><th>共同参数</th></tr></thead>
+          <tbody>
+            <tr><td><code>dsv4-decode-bs96</code></td><td>Decode</td><td class="num">96</td><td>H=7168，N=6144，TopK=6，EP=64，6专家/Rank，32 AIC，P<sub>Cube</sub>=865 TFLOPS，η<sub>1</sub>/η<sub>2</sub>=54.8%/55.9%，POD 140 GB/s，通信利用率62.253%</td></tr>
+            <tr><td><code>dsv4-prefill-bs4096</code></td><td>Prefill</td><td class="num">4096</td><td>H=7168，N=6144，TopK=6，EP=64，6专家/Rank，32 AIC，P<sub>Cube</sub>=865 TFLOPS，η<sub>1</sub>/η<sub>2</sub>=100%/100%，POD 140 GB/s，通信利用率100%（理想上界）</td></tr>
+          </tbody>
+        </table>
+        <h3>各配置效率下的纯服务量</h3>
+        <table>
+          <thead><tr><th>bs</th><th class="num">理想计算服务</th><th class="num">通信服务</th><th class="num">计算/通信</th></tr></thead>
+          <tbody>
+            <tr><td>96</td><td class="num">159.49 μs</td><td class="num">125.65 μs</td><td class="num">1.269</td></tr>
+            <tr><td>4096</td><td class="num">3753.75 μs</td><td class="num">3337.42 μs</td><td class="num">1.125</td></tr>
+          </tbody>
+        </table>
+        <p>如果效率保持不变，两边都会乘以 <code>4096/96=42.6667</code>，理想比例不变；但当前 Prefill 同时把计算效率和通信利用率改为 100%，因此这是两组不同校准参数，不能只约掉 bs 后直接比较。</p>
+
+        <h3>页面中的 Cube 窗口比</h3>
+        <div class="two-col">
+          <div class="mini"><b>BS96 · dsv4-decode-bs96</b><div class="ratio">1.602</div><div class="equation"><math display="block" aria-label="BS96 Cube 窗口与通信服务比例"><mfrac><mn>201.327</mn><mrow><mn>42.747</mn><mo>+</mo><mn>82.903</mn></mrow></mfrac></math></div><p>Cube窗口：209.438−8.111=201.327 μs；GMM1/GMM2重叠47.569 μs。窗口/纯计算膨胀：201.327/159.492=1.262。</p></div>
+          <div class="mini"><b>BS4096 · dsv4-prefill-bs4096</b><div class="ratio">1.403</div><div class="equation"><math display="block" aria-label="BS4096 Cube 窗口与通信服务比例"><mfrac><mn>4681.873</mn><mrow><mn>1135.411</mn><mo>+</mo><mn>2202.010</mn></mrow></mfrac></math></div><p>Cube窗口：4871.723−189.850=4681.873 μs；本配置中GMM1/GMM2首尾相接。窗口/纯计算膨胀：4681.873/3753.752=1.247。</p></div>
+        </div>
+        <h3>Bound 判断：BS4096并未变成通信 bound</h3>
+        <table>
+          <thead><tr><th>判断口径</th><th class="num">BS96</th><th class="num">BS4096</th><th>结论</th></tr></thead>
+          <tbody>
+            <tr><td>理想计算服务/通信服务</td><td class="num">1.269</td><td class="num">1.125</td><td>两者均大于1，计算服务量更大</td></tr>
+            <tr><td>Cube窗口/通信服务</td><td class="num">1.602</td><td class="num">1.403</td><td>两者均大于1，仍偏计算侧</td></tr>
+            <tr><td>Cube窗口/E2E</td><td class="num">95.90%</td><td class="num">95.37%</td><td>绝大多数端到端时间位于Cube窗口</td></tr>
+          </tbody>
+        </table>
+        <div class="correct"><b>为什么比例会下降：</b>主要原因不是 bs 本身，而是 Prefill 的计算效率由54.8%/55.9%提高到100%，通信利用率由62.253%提高到100%。相对Decode，纯计算服务放大23.536倍，通信服务放大26.561倍；再叠加满波后窗口膨胀由1.262小幅降至1.247，最终窗口比从1.602降至1.403，但尚未越过通信bound阈值1。</div>
+        <h3>哪些变量变化才会导致通信 bound</h3>
+        <p>这两个配置不仅 <code>bs</code> 不同，最终约分式保留的 <code>η<sub>1</sub></code>、<code>η<sub>2</sub></code> 和有效带宽也发生了变化；本次没有切换到通信bound，但已经使 <code>ρ</code> 降低。一般会使比例继续下降的变化包括：</p>
+        <ul>
+          <li><b>有效带宽下降：</b><code>W<sub>FM</sub></code>或<code>W<sub>Clos</sub></code>下降，或者通信利用率下降。</li>
+          <li><b>拓扑因子变差：</b><code>E×min(W<sub>FM</sub>,W<sub>Clos</sub>/C)</code>整体下降；例如更多流量共享Clos出口使<code>C</code>增大。</li>
+          <li><b>单专家中间宽度变小：</b><code>I=N/2</code>下降，单行通信不变而每Token计算量减少。</li>
+          <li><b>计算侧变快：</b><code>P<sub>Cube</sub></code>增大，或<code>η<sub>1</sub>/η<sub>2</sub></code>提高，都会缩短计算时间并降低<code>ρ</code>。</li>
+        </ul>
+        <p><code>bs</code>、Base分支的<code>K</code>、每卡专家数<code>R</code>和<code>H</code>在理想式中约掉；它们只有通过Tile取整、实际Tile效率、启动常数和调度等待等非连续效应，才会间接改变页面窗口比。</p>
+        <div class="note"><b>0.7是反向比例：</b>更新后的BS4096通信/计算窗口为3337.421/4681.873=0.713，可近似说约0.7；若口径写成计算/通信，则应为1.403。</div>
+      </section>
+
+      <section class="panel" id="scope">
+        <h2>口径与适用范围</h2>
+        <ul>
+          <li>950DT的153 GB/s单核读HBM峰值与4 TB/s单Rank聚合上限是当前工程输入；正式报告引用前仍需用同机型PMU或带宽微基准确认测试口径。</li>
+          <li>Metadata和每任务网络启动时间含常数项，计入后会破坏严格的bs约分，尤其影响小bs。</li>
+          <li>η<sub>1</sub>、η<sub>2</sub>若随M、Tile Shape或精度变化，则比例会通过η间接依赖bs。</li>
+          <li>GMM1/GMM2阶段包络也不能直接相加；计算窗口应取首个GMM1开始到最后一个GMM2结束，重叠区间只计一次。</li>
+          <li>判断bound优先使用纯服务量、临界路径暴露时间和带宽敏感性，不把AIC活跃时间直接等同于Cube PMU利用率。</li>
+          <li>Prefill实测校准使用560/285 μs每Tile，与网站自动FLOPs模式不是同一计算效率口径，不能直接混算。</li>
+        </ul>
+      </section>
+
+      <footer>单文件离线分享版：公式、模型参数、图表和计算脚本均在此HTML内；无需网络或安装软件。模型采用Base balanced通信口径。</footer>
+    </main>
+  </div>
+<script>
+/* 单卡连续Base服务模型，位数与字节换算集中在此；不使用Tile活跃率代替吞吐效率。 */
+(function(root){
+  'use strict';
+  const defaults={model:'ds-v4-pro',ep:64,gmmBits:8,peak8:865,computeUtil:100,dispatchBits:4,combineBits:16,networkUtil:100,clos:140,fm:34.81,group:8,scaleGroup:32,scaleBytes:1,includeShared:false};
+  const models=[
+    {id:'ds-v4-pro',name:'DeepSeek V4 Pro',I:3072,experts:384,K:6,S:1},
+    {id:'ds-v41-flash',name:'DeepSeek V4.1 flash',I:2304,experts:384,K:6,S:1},
+    {id:'ds-next10',name:'DeepSeek Next-10T',I:3072,experts:2048,K:18,S:2},
+    {id:'ds-next20',name:'DeepSeek Next-20T',I:4096,experts:3072,K:20,S:4},
+    {id:'hy-preview',name:'hunyuan 4 preview',I:2048,experts:256,K:8,S:1},
+    {id:'hy-next10',name:'hunyuan Next-10T',I:3072,experts:2048,K:18,S:2},
+    {id:'kimi-k3',name:'Kimi K3',I:3072,experts:896,K:16,S:2},
+    {id:'kimi-next10',name:'Kimi Next-10T',I:4096,experts:2048,K:32,S:2},
+    {id:'kimi-next20',name:'Kimi Next-20T',I:4096,experts:3072,K:48,S:2},
+    {id:'glm-52',name:'GLM 5.2/5.3',I:2048,experts:256,K:8,S:1},
+    {id:'glm-next10',name:'GLM Next-10T',I:3072,experts:2048,K:18,S:2},
+    {id:'qwen-max',name:'Qwen 3.8-Max-2.4T-A95B',I:2048,experts:512,K:10,S:1},
+    {id:'qwen-35',name:'Qwen 3.5-35B-A3B',I:512,experts:256,K:8,S:1}
+  ];
+  function validate(p){
+    for(const k of ['ep','group','scaleGroup'])if(!Number.isSafeInteger(p[k])||p[k]<(k==='group'?2:1))throw Error(k+' 必须为范围内正整数（FullMesh组≥2卡）');
+    if(![8,16,32,64,128,256].includes(p.ep)||p.group>4096||p.scaleGroup>1048576)throw Error('EP请选择8/16/32/64/128/256，FullMesh组和Scale组大小应在范围内');
+    if(p.ep>p.group&&p.ep%p.group)throw Error('FullMesh每组卡数须整除EP，或覆盖整个EP组');
+    for(const k of ['peak8','clos','fm'])if(!(Number.isFinite(p[k])&&p[k]>0))throw Error(k+' 必须为有限正数');
+    for(const k of ['computeUtil','networkUtil'])if(!(Number.isFinite(p[k])&&p[k]>0&&p[k]<=100))throw Error('算力/通信利用率必须大于0且不超过100%');
+    if(![4,8].includes(p.gmmBits)||![4,8].includes(p.dispatchBits)||![8,16].includes(p.combineBits))throw Error('不支持的GMM/通信精度');
+    if(!(Number.isFinite(p.scaleBytes)&&p.scaleBytes>=0))throw Error('Scale字节必须为有限非负数');
+    if(typeof p.includeShared!=='boolean')throw Error('共享专家开关必须为布尔值');
+    if(!models.some(m=>m.id===p.model))throw Error('未知观察模型');
+  }
+  function calculate(model,options={}){
+    const p={...defaults,...options};validate(p);
+    if(!model||!Number.isSafeInteger(model.I)||model.I<=0||!Number.isSafeInteger(model.experts)||model.experts<=0||!Number.isSafeInteger(model.K)||model.K<=0||model.K>model.experts||!Number.isSafeInteger(model.S)||model.S<0)throw Error('模型I/专家数/TopK/共享专家参数无效');
+    if(model.experts%p.ep)return {valid:false,model,error:`${model.experts}专家不能均分到EP${p.ep}`};
+    const closPeers=p.ep-Math.min(p.ep,p.group),fmCost=1/p.fm,closCost=closPeers/p.clos;
+    const bottleneckCost=Math.max(fmCost,closCost),weff=1/bottleneckCost;
+    const peak=p.peak8*(8/p.gmmBits),etaC=p.computeUtil/100,etaN=p.networkUtil/100;
+    const dispatchBytes=p.dispatchBits/8+p.scaleBytes/p.scaleGroup;
+    const combineBytes=p.combineBits/8+(p.combineBits===8?p.scaleBytes/p.scaleGroup:0);
+    const sharedFactor=p.includeShared?1+model.S/model.K:1;
+    // 单位bs×K×H的服务秒数；相除时bs、K和H无需虚构具体取值。
+    const computeSeconds=model.I*6*sharedFactor/(peak*1e12*etaC);
+    const commSeconds=(dispatchBytes+combineBytes)*bottleneckCost/(p.ep*1e9*etaN);
+    const ratio=computeSeconds/commSeconds;
+    if(!(Number.isFinite(ratio)&&ratio>0))throw Error('参数量级导致比例溢出或下溢，请缩小数值范围');
+    // 两条路径都要达到计算时长约束；不能在FullMesh限速时直接用当前Clos/ρ。
+    const requiredFm=weff/ratio,requiredClos=closPeers*requiredFm;
+    if(!Number.isFinite(requiredFm)||!Number.isFinite(requiredClos))throw Error('带宽阈值超出可表示范围，请调整参数量级');
+    const fmEnoughForBalance=p.fm>=requiredFm*(1-1e-12);
+    const balanceBandwidth=closPeers>0?requiredClos:requiredFm,balanceBandwidthKind=closPeers>0?'Clos单卡':'FM每Peer';
+    return {valid:true,model,ratio,computeSeconds,commSeconds,closPeers,weff,effectiveWeff:weff*etaN,peak,effectivePeak:peak*etaC,dispatchBytes,combineBytes,sharedFactor,requiredFm,requiredClos,fmEnoughForBalance,balanceBandwidth,balanceBandwidthKind,expertsPerRank:model.experts/p.ep,path:closCost>fmCost?'Clos共享出口':'FullMesh专线',longer:Math.abs(ratio-1)<1e-9?'两者相等':ratio>1?'计算服务更长':'通信服务更长'};
+  }
+  root.MegaMoeRatio={defaults,models,validate,calculate};
+})(globalThis);
+</script>
+<script>
+(function(){
+  'use strict';
+  const A=globalThis.MegaMoeRatio,$=id=>document.getElementById('ratio-'+id),storageKey='megamoe.wiki.ratio.v1';
+  const keys=Object.keys(A.defaults),numeric=keys.filter(k=>!['model','includeShared'].includes(k));let last=null,restoreNote='';
+  const fmt=(v,d=3)=>Number.isFinite(v)?v.toLocaleString('zh-CN',{maximumFractionDigits:d}):'—';
+  const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  $('model').innerHTML=A.models.map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join('');
+  function read(){const p={};for(const k of keys)p[k]=k==='includeShared'?$(k).checked:numeric.includes(k)?($(k).value===''?NaN:Number($(k).value)):$(k).value;return p;}
+  function apply(p){for(const k of keys)if(k==='includeShared')$(k).checked=p[k];else $(k).value=p[k];$('chip').value=[756,865,973].includes(p.peak8)?String(p.peak8):'custom';$('topology').value=p.clos===140?'pod':p.clos===230?'pc16':'custom';}
+  function select(id){$('model').value=id;update();}
+  function chart(results,p){
+    const width=1240,left=245,right=305,top=54,row=42,height=top+results.length*row+58;
+    const valid=results.filter(r=>r.valid),upper=Math.max(1.3,...valid.map(r=>r.ratio*1.14)),plot=width-left-right,x=v=>left+v/upper*plot;
+    const labels='<title>各模型计算服务时间除以通信服务时间</title><desc>横轴为比例rho，参考线1；每行一个模型，参数变化实时更新。不能均分专家的模型不显示点。</desc>';
+    const ticks=Array.from({length:6},(_,i)=>upper*i/5);
+    let body=`<rect x="${left}" y="${top-15}" width="${x(1)-left}" height="${results.length*row}" fill="#fff6ed"/><rect x="${x(1)}" y="${top-15}" width="${x(upper)-x(1)}" height="${results.length*row}" fill="#eef2ff"/>`;
+    body+=ticks.map(t=>`<line x1="${x(t)}" x2="${x(t)}" y1="${top-15}" y2="${height-49}" stroke="#dfe5ee"/><text x="${x(t)}" y="${height-28}" text-anchor="middle" font-size="12" fill="#475467">${fmt(t,2)}</text>`).join('');
+    body+=`<line x1="${x(1)}" x2="${x(1)}" y1="${top-20}" y2="${height-49}" stroke="#b54708" stroke-dasharray="5 4"/><text x="${x(1)}" y="22" text-anchor="middle" font-size="12" fill="#8d3c07">ρ=1</text><text x="${left}" y="${height-4}" font-size="12" fill="#475467">ρ = Tcomp / Tcomm　　&lt;1：通信服务更长　　&gt;1：计算服务更长</text>`;
+    const ratioX=width-right+14,bandwidthX=width-130,hasClos=p.ep>Math.min(p.ep,p.group);
+    body+=`<text x="${ratioX}" y="22" font-size="12" fill="#475467">当前ρ</text><text x="${bandwidthX}" y="18" text-anchor="middle" font-size="12" fill="#172554">ρ=1 所需${hasClos?'Clos':'FullMesh'}</text><text x="${bandwidthX}" y="35" text-anchor="middle" font-size="11" fill="#475467">${hasClos?'单卡出口':'每Peer'} · GB/s</text>`;
+    body+=results.map((r,i)=>{const y=top+i*row,selected=r.model.id===p.model;
+      const label=`<text x="${left-12}" y="${y+4}" text-anchor="end" font-size="12" fill="${selected?'#172554':'#475467'}">${esc(r.model.name)}</text>`;
+      if(!r.valid)return label+`<text x="${left+8}" y="${y+4}" font-size="12" fill="#b42318">${esc(r.error)}</text><text x="${bandwidthX}" y="${y+4}" text-anchor="middle" font-size="13" fill="#667085">—</text>`;
+      const targetNote=r.closPeers>0?`Clos≥${fmt(r.requiredClos,3)} GB/s，且FM每Peer≥${fmt(r.requiredFm,3)} GB/s；${r.fmEnoughForBalance?'当前FM满足':'当前FM不足，仅提升Clos无效'}`:`FullMesh每Peer≥${fmt(r.requiredFm,3)} GB/s`;
+      const tooltip=`${r.model.name}：ρ=${fmt(r.ratio,6)}；I=${r.model.I}；${r.longer}；${r.path}；有效峰值${fmt(r.effectivePeak)}TFLOPS；有效每Peer带宽${fmt(r.effectiveWeff)}GB/s；ρ=1需${targetNote}`;
+      const pointLabel=`${r.model.name} · I=${r.model.I}`;
+      // 标签随点移动，靠右的点改为向左排，给最右侧比例数值留出空间。
+      const labelWidth=Array.from(pointLabel).reduce((n,c)=>n+(c.charCodeAt(0)>255?12:6.7),0);
+      const rightFits=width-right-12-x(r.ratio)-10>=labelWidth;
+      const labelX=x(r.ratio)+(rightFits?10:-10),anchor=rightFits?'start':'end';
+      return label+`<g class="ratio-point" data-model="${r.model.id}" tabindex="0" role="button" aria-label="${esc(tooltip)}" style="cursor:pointer"><title>${esc(tooltip)}</title><text class="ratio-point-label" x="${labelX}" y="${y-10}" text-anchor="${anchor}" font-size="12" font-weight="${selected?700:400}" fill="#172033">${esc(pointLabel)}</text><circle cx="${x(r.ratio)}" cy="${y}" r="${selected?7:5}" fill="${selected?'#172554':'#3157d5'}"/><circle cx="${x(r.ratio)}" cy="${y}" r="14" fill="transparent"/><text x="${ratioX}" y="${y+4}" font-size="13" fill="#172033">${fmt(r.ratio,3)}</text><text class="ratio-required-bandwidth" x="${bandwidthX}" y="${y+4}" text-anchor="middle" font-size="13" font-weight="${selected?700:400}" fill="#172554">${fmt(r.balanceBandwidth,1)}</text>${r.closPeers>0&&!r.fmEnoughForBalance?`<text x="${bandwidthX}" y="${y+19}" text-anchor="middle" font-size="10" fill="#b42318">还需 FM≥${fmt(r.requiredFm,1)}</text>`:''}</g>`;
+    }).join('');
+    $('chart').innerHTML=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="各模型计算通信服务时间比">${labels}${body}</svg>`;
+  }
+  function update(){
+    try{const p=read();A.validate(p);const results=A.models.map(m=>A.calculate(m,p));last={version:1,source:'用户提供的模型截图',params:p,results};
+      const selected=results.find(r=>r.model.id===p.model),sample=results.find(r=>r.valid);
+      $('error').hidden=true;$('output').hidden=false;
+      $('stats').innerHTML=[['当前模型 ρ',selected.valid?fmt(selected.ratio,4):'无法均分',selected.valid?selected.longer:selected.error],['有效整卡算力',fmt(sample.effectivePeak)+' TFLOPS',`${p.peak8} × ${8/p.gmmBits} × ${p.computeUtil}%`],['等效每Peer有效带宽',fmt(sample.effectiveWeff)+' GB/s',`${sample.path}；C=${sample.closPeers}；Rank网络利用率${p.networkUtil}%`]].map(([l,v,n])=>`<div class="mini">${esc(l)}<strong>${esc(v)}</strong><small>${esc(n)}</small></div>`).join('');
+      $('substitution').textContent=selected.valid?`${selected.model.name}：Dispatch=${fmt(selected.dispatchBytes,5)} B/元素；Combine=${fmt(selected.combineBytes,5)} B/元素。\nρ = ${p.ep} × ${selected.model.I} × ${fmt(selected.effectiveWeff,6)} × 6 × ${fmt(selected.sharedFactor,6)} ÷ [1000 × ${fmt(selected.peak)} × ${p.computeUtil/100} × ${fmt(selected.dispatchBytes+selected.combineBytes,5)}] = ${fmt(selected.ratio,6)}\n${p.includeShared?`共享专家倍率=1+${selected.model.S}/${selected.model.K}=${fmt(selected.sharedFactor,6)}。`:'仅计路由FFN，共享专家未计入。'} 同效率下，ρ>1表示计算服务更长，ρ<1表示通信服务更长。`:selected.error;
+      if(selected.valid)$('substitution').textContent+=selected.closPeers>0?`\nρ=1所需单卡Clos带宽：${fmt(selected.requiredClos,3)} GB/s；同时要求FM每Peer≥${fmt(selected.requiredFm,3)} GB/s。${selected.fmEnoughForBalance?'当前FM满足该条件。':'当前FM不足，单独增加Clos无法达到ρ=1。'}（按当前${p.networkUtil}%通信利用率折算）`:`\n本EP没有Clos通信；ρ=1需要FullMesh每Peer ${fmt(selected.requiredFm,3)} GB/s（按当前${p.networkUtil}%通信利用率折算）。`;
+      chart(results,p);
+      $('model-table').innerHTML=results.map(r=>`<tr aria-selected="${r.model.id===p.model}"><td><button type="button" data-model="${r.model.id}">${esc(r.model.name)}</button></td><td class="num">${r.model.I}</td><td class="num">${r.model.experts}</td><td class="num">${r.model.K} / ${r.model.S}</td><td class="num">${r.valid?r.expertsPerRank:'—'}</td><td class="num">${r.valid?fmt(r.ratio,4):'—'}</td><td class="num">${r.valid?`${r.balanceBandwidthKind} ${fmt(r.balanceBandwidth,2)}${r.closPeers>0&&!r.fmEnoughForBalance?`<br><span style="color:#b42318">需FM≥${fmt(r.requiredFm,2)}</span>`:''}`:'—'}</td><td>${r.valid?r.longer:esc(r.error)}</td></tr>`).join('');
+      try{localStorage.setItem(storageKey,JSON.stringify({version:1,params:p}));$('save-status').textContent=restoreNote+'参数已保存在本机浏览器。';}catch(e){$('save-status').textContent=restoreNote+'本机存储不可用；仍可调整和导出参数。';}
+    }catch(e){last=null;$('error').hidden=false;$('error').textContent=e.message;$('output').hidden=true;}
+  }
+  $('form').addEventListener('submit',e=>e.preventDefault());
+  $('form').addEventListener('input',e=>{if(e.target.id==='ratio-peak8')$('chip').value='custom';if(e.target.id==='ratio-clos')$('topology').value='custom';if(!['ratio-chip','ratio-topology'].includes(e.target.id))update();});
+  $('form').addEventListener('change',e=>{if(e.target.id==='ratio-chip'&&$('chip').value!=='custom')$('peak8').value=$('chip').value;if(e.target.id==='ratio-topology'&&$('topology').value!=='custom')$('clos').value=$('topology').value==='pod'?140:230;update();});
+  for(const area of ['chart','model-table'])$(area).addEventListener('click',e=>{const target=e.target.closest('[data-model]');if(target)select(target.dataset.model);});
+  $('chart').addEventListener('keydown',e=>{if(['Enter',' '].includes(e.key)){const target=e.target.closest('[data-model]');if(target){e.preventDefault();select(target.dataset.model);}}});
+  $('reset').addEventListener('click',()=>{apply(A.defaults);restoreNote='';update();});
+  $('export').addEventListener('click',()=>{if(!last)return;const url=URL.createObjectURL(new Blob([JSON.stringify(last,null,2)],{type:'application/json'})),link=document.createElement('a');link.href=url;link.download='megamoe-model-compute-comm-ratio.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
+  apply(A.defaults);
+  try{const saved=JSON.parse(localStorage.getItem(storageKey)||'null');if(saved){if(saved.version!==1)throw Error('不支持的配置版本');const p={...A.defaults,...saved.params};A.validate(p);apply(p);}}catch(e){restoreNote='之前的配置未能恢复，已使用默认值。';apply(A.defaults);}
+  update();
+})();
+</script>
+</body>
+</html>

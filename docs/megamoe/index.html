@@ -1,0 +1,1506 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MegaMoe 离线流水仿真器</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --ink: #172033;
+      --muted: #667085;
+      --line: #e4e7ec;
+      --blue: #3157d5;
+      --blue-soft: #eef2ff;
+      --orange: #ef8a31;
+      --green: #37a66a;
+      --purple: #805ad5;
+      --teal: #178b8b;
+      --danger: #b42318;
+      --warn-bg: #fffaeb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+      font: 14px/1.45 Inter, "Segoe UI", "Microsoft YaHei", sans-serif;
+    }
+    header {
+      padding: 22px 28px 18px;
+      color: #fff;
+      background: linear-gradient(120deg, #172554, #3157d5 62%, #3674e8);
+    }
+    .header-inner { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    header h1 { margin: 0 0 5px; font-size: 24px; letter-spacing: .2px; }
+    header p { margin: 0; color: #dbe5ff; }
+    .top-nav { display: flex; gap: 8px; flex-wrap: wrap; }
+    .top-nav a {
+      padding: 7px 11px;
+      color: #eef4ff;
+      border: 1px solid rgba(255,255,255,.34);
+      border-radius: 7px;
+      text-decoration: none;
+      font-weight: 650;
+    }
+    .top-nav a.active { color: #172554; background: #fff; border-color: #fff; }
+    .app { display: grid; grid-template-columns: 370px minmax(0, 1fr); gap: 16px; padding: 16px; }
+    .sidebar, .main { min-width: 0; }
+    .sidebar { display: flex; flex-direction: column; gap: 12px; }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: 0 1px 2px rgba(16,24,40,.04);
+    }
+    details.panel { padding: 0 14px 12px; }
+    details.panel summary {
+      cursor: pointer;
+      padding: 13px 0 10px;
+      font-weight: 700;
+      user-select: none;
+    }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px 10px; }
+    label { display: flex; flex-direction: column; gap: 4px; color: var(--muted); font-size: 12px; }
+    label.wide { grid-column: 1 / -1; }
+    input, select, button {
+      border: 1px solid #cfd4dc;
+      border-radius: 7px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+    }
+    input, select { width: 100%; min-height: 34px; padding: 6px 8px; }
+    input:focus, select:focus { outline: 2px solid #c7d7fe; border-color: var(--blue); }
+    .unit { position: relative; }
+    .hint { grid-column: 1 / -1; color: var(--muted); font-size: 11px; margin-top: -2px; }
+    .config-buttons { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+    .config-status { grid-column: 1 / -1; min-height: 32px; padding: 7px 8px; color: var(--muted); font-size: 11px; border-radius: 7px; background: #f8fafc; }
+    .config-status.ok { color: #067647; background: #ecfdf3; }
+    .config-status.error { color: var(--danger); background: #fef3f2; }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; }
+    button { min-height: 37px; padding: 8px 12px; cursor: pointer; font-weight: 650; }
+    button.primary { color: #fff; background: var(--blue); border-color: var(--blue); }
+    button:hover { filter: brightness(.98); }
+    .main { display: flex; flex-direction: column; gap: 12px; }
+    .message { display: none; padding: 11px 13px; border-radius: 9px; }
+    .message.error { display: block; color: var(--danger); background: #fef3f2; border: 1px solid #fecdca; }
+    .message.warn { display: block; color: #7a2e0e; background: var(--warn-bg); border: 1px solid #fedf89; }
+    .metrics { display: grid; grid-template-columns: repeat(4, minmax(145px, 1fr)); gap: 10px; }
+    .metric { padding: 14px 15px; }
+    .metric .name { color: var(--muted); font-size: 12px; }
+    .metric .value { margin-top: 3px; font-size: 24px; font-weight: 760; letter-spacing: -.3px; }
+    .metric .sub { margin-top: 2px; color: var(--muted); font-size: 11px; }
+    .stages { display: grid; grid-template-columns: repeat(5, minmax(125px, 1fr)); gap: 8px; }
+    .stage { padding: 12px; border-top: 4px solid var(--stage-color); }
+    .stage .idx { color: var(--muted); font-size: 11px; }
+    .stage .title { margin: 2px 0 5px; font-weight: 700; }
+    .stage .time { font-size: 18px; font-weight: 760; }
+    .stage .sub { margin-top: 3px; color: var(--muted); font-size: 10.5px; }
+    .chart-panel { padding: 14px; }
+    .order-comparison { width:100%; border-collapse:collapse; font-size:12px; }
+    .order-comparison th,.order-comparison td { text-align:left; padding:10px; border-bottom:1px solid var(--line); white-space:nowrap; }
+    .order-comparison .selected-order { background:#eef5ff; }
+    .chart-head { display: flex; align-items: start; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+    .chart-head h2 { margin: 0; font-size: 16px; }
+    .chart-head p { margin: 3px 0 0; color: var(--muted); font-size: 11px; }
+    .chart-head button { min-height: 30px; padding: 5px 9px; font-size: 11px; }
+    .svg-wrap { overflow-x: auto; border: 1px solid #edf0f5; border-radius: 8px; background: #fff; }
+    svg { display: block; min-width: 980px; width: 100%; height: auto; }
+    .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; padding: 12px 14px; }
+    .fact { padding: 9px 10px; border-radius: 7px; background: #f8fafc; }
+    .fact b { display: block; margin-bottom: 2px; font-size: 13px; }
+    .fact span { color: var(--muted); font-size: 11px; }
+    .footnote { padding: 12px 14px; color: var(--muted); font-size: 11px; }
+    .hidden { display: none !important; }
+    @media (max-width: 1080px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { display: grid; grid-template-columns: repeat(2, 1fr); align-items: start; }
+      .actions { grid-column: 1 / -1; }
+      .metrics { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 680px) {
+      header { padding: 18px; }
+      .header-inner { align-items: flex-start; flex-direction: column; }
+      .app { padding: 10px; }
+      .sidebar { display: flex; }
+      .metrics, .stages, .facts { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div style="padding:9px 20px;background:#f6f7f2;color:#245c48;font:12px/1.6 system-ui,sans-serif;display:flex;gap:20px;flex-wrap:wrap"><a style="color:inherit" href="../index.html">← YuHsin 个人主页</a><a style="color:inherit" href="index.html">流水仿真</a><a style="color:inherit" href="wiki.html#ratio-lab">通算比例</a><a style="color:inherit" href="trace-v2.html">Trace分析</a></div>
+  <header>
+    <div class="header-inner">
+      <div>
+        <h1>MegaMoe 离线流水仿真器</h1>
+    <p>代码轮转分核 · FullMesh / Clos 双路径 · 无网络依赖</p>
+      </div>
+      <nav class="top-nav" aria-label="页面导航">
+        <a class="active" href="index.html" aria-current="page">流水仿真</a>
+        <a href="benchmark.html">Benchmark 与计算器</a>
+        <a href="wiki.html">公式 Wiki</a>
+        <a href="memory.html">MTE / UB 建模</a>
+        <a href="trace-v2.html">实测 Trace V2</a>
+        <a href="mfu-standalone.html">MFU 计算器</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="app">
+    <aside class="sidebar">
+      <details class="panel" open>
+        <summary>0. 本地配置</summary>
+        <div class="form-grid">
+          <label class="wide">已保存配置
+            <select id="savedConfigSelect"></select>
+          </label>
+          <label class="wide">配置标签<input id="configLabel" type="text" maxlength="60" placeholder="例如：EP8 FullMesh 对照组"></label>
+          <div class="config-buttons">
+            <button id="loadConfigBtn">加载</button>
+            <button id="saveConfigBtn" class="primary">另存为新配置</button>
+            <button id="updateConfigBtn">覆盖当前配置</button>
+            <button id="renameConfigBtn">重命名</button>
+            <button id="deleteConfigBtn">删除</button>
+          </div>
+          <div id="configStatus" class="config-status">每次成功仿真都会自动保存为“上次运行”。</div>
+          <div class="hint">配置和关键结果保存在当前浏览器本地；加载后会重新生成完整流水图。</div>
+        </div>
+      </details>
+
+      <details class="panel" open>
+        <summary>1. 模型与路由</summary>
+        <div class="form-grid">
+          <label>H（hidden）<input id="hidden" type="number" min="1" step="1" value="7168"></label>
+          <label>N（GMM1 融合宽度）<input id="intermediate" type="number" min="2" step="2" value="6144"></label>
+          <label>BS / Rank<input id="bs" type="number" min="1" step="1" value="96"></label>
+          <label>TopK<input id="topk" type="number" min="1" step="1" value="6"></label>
+          <label>EP Rank 数<input id="ep" type="number" min="1" step="1" value="64"></label>
+          <label>每卡专家数<input id="expertsPerRank" type="number" min="1" step="1" value="6"></label>
+          <label class="wide">通信分支
+            <select id="commVariant">
+              <option value="base" selected>Base：每条专家路由发一行</option>
+              <option value="dedup">去冗余：每个目标 Rank 发一行</option>
+            </select>
+          </label>
+          <div class="hint">DeepSeek V4 Pro 默认：H=7168，N=6144（N=2I），384 路由专家。</div>
+        </div>
+      </details>
+
+      <details class="panel" open>
+        <summary>2. Cube 与 Tile</summary>
+        <div class="form-grid">
+          <label class="wide">FP8 Cube 峰值预设
+            <select id="hardwarePreset">
+              <option value="28">28 Cube · 756 TFLOPS</option>
+              <option value="32" selected>32 Cube · 865 TFLOPS</option>
+              <option value="35">35 Cube · 973 TFLOPS</option>
+              <option value="custom">自定义</option>
+            </select>
+          </label>
+          <label>AIC 核数<input id="cores" type="number" min="1" step="1" value="32"></label>
+          <label>FP8 P_Cube（TFLOPS）<input id="peakTflops" type="number" min="0.01" step="1" value="865"></label>
+          <label>Tile M<input id="tileM" type="number" min="1" step="1" value="256"></label>
+          <label>GMM1 Tile N<input id="gmm1TileN" type="number" min="1" step="1" value="256"></label>
+          <label>GMM2 Tile N<input id="gmm2TileN" type="number" min="1" step="1" value="256"></label>
+          <label class="wide">执行方案
+            <select id="schedulerMode">
+              <option value="base" selected>Base：先完成全部 GMM1，再进入 GMM2</option>
+              <option value="wave">W4A8 Wave：逐 Wave 执行 GMM1 → GMM2</option>
+              <option value="catlass">W4A8 CATLASS：分支调度 + AIV 依赖</option>
+            </select>
+          </label>
+          <label>分核策略
+            <select id="tileStrategy">
+              <option value="rotating" selected>跨专家轮转（代码策略）</option>
+              <option value="reset">每个专家从 AIC0 开始</option>
+            </select>
+          </label>
+          <label class="wave-scheduler hidden">每个 Wave 的 M Group<input id="waveMGroups" type="number" min="0" step="1" value="0"></label>
+          <div id="waveSchedulerHint" class="hint wave-scheduler hidden">0 表示按 W4A8 源码公式自动计算。</div>
+          <label class="catlass-scheduler hidden">CATLASS Tile 排序<select id="catlassTileOrder"><option value="swizzle3">原版：Swizzle&lt;3,0&gt;</option><option value="mgroup">Opt-order：同 M-Block 优先</option></select></label>
+          <label class="catlass-scheduler hidden">CATLASS 游标策略<select id="catlassCursorPolicy"><option value="shared">原版：GMM1/GMM2 公共游标</option><option value="dual_same">实验：双游标，同起点 0/0</option><option value="dual_stagger">实验：双游标，自动错开余数</option></select></label>
+          <div class="hint catlass-scheduler hidden" id="catlassCursorHint">双游标只改变分核，保持当前 Tile 坐标排序；是静态分阶段数量均衡实验，不是按就绪时间动态调度。</div>
+          <label class="catlass-scheduler hidden">观察 Rank<input id="catlassRank" type="number" min="0" step="1" value="0"></label>
+          <label class="catlass-scheduler hidden">GMM1 供数暴露延迟 / Tile（μs）<input id="catlassPrologue1" type="number" min="0" step="0.01" value="0"></label>
+          <label class="catlass-scheduler hidden">GMM2 供数暴露延迟 / Tile（μs）<input id="catlassPrologue2" type="number" min="0" step="0.01" value="0"></label>
+          <div class="hint catlass-scheduler hidden">256×256 调度 Tile、整数均衡路由。原版 Swizzle&lt;3,0&gt;；Opt-order 为 Swizzle&lt;1,0&gt;，同 M-group 的 N 块先排完，奇数组 N 反向。GMM1/GMM2 及配对 AIV 共用各阶段映射，分核仍轮转，不代表单核串行执行整组。供数延迟是未被 GMM Tile 耗时吸收的额外开销，按 Tile 级交接建模；0 表示不额外计入，尚未模拟 K-block 双缓冲和 HBM 竞争。SwiGLU 间隔在此模式中表示每个 Tile 的 AIV1 服务时间。</div>
+          <label class="wide">Tile 耗时口径
+            <select id="timingMode">
+              <option value="flops" selected>按 FLOPs / P_Cube 自动计算</option>
+              <option value="manual">使用实测单 Tile 耗时</option>
+            </select>
+          </label>
+          <label class="auto-time">GMM1 活跃 Tile 算力效率（%）<input id="gmm1Eff" type="number" min="0.1" max="100" step="0.1" value="54.8"></label>
+          <label class="auto-time">GMM2 活跃 Tile 算力效率（%）<input id="gmm2Eff" type="number" min="0.1" max="100" step="0.1" value="55.9"></label>
+          <div class="hint auto-time">Decode BS96 默认 54.8%/55.9%，来自匹配 shape 的实测校准；Prefill BS4096 预设采用 100% 计算效率和 100% 通信利用率，表示理想上界，仍需 Prefill 实机复核。</div>
+          <label class="manual-time hidden">GMM1 单 Tile（μs）<input id="gmm1ManualUs" type="number" min="0.001" step="0.01" value="47.6356"></label>
+          <label class="manual-time hidden">GMM2 单 Tile（μs）<input id="gmm2ManualUs" type="number" min="0.001" step="0.01" value="10"></label>
+          <label class="manual-time hidden">实测 Tile 参考 M<input id="manualRefM" type="number" min="1" step="1" value="96"></label>
+          <label class="base-scheduler">GMM2→Combine 缓冲深度<input id="pingpongDepth" type="number" min="1" step="1" value="2"></label>
+          <label>SwiGLU 后处理间隔（μs）<input id="swigluGap" type="number" min="0" step="0.01" value="0"></label>
+          <label>GMM2 Fixpipe 间隔（μs）<input id="fixpipeGap" type="number" min="0" step="0.01" value="0"></label>
+          <label class="wide base-scheduler">Combine 释放粒度
+            <select id="combineRelease">
+              <option value="auto" selected>跟随分支（Base=Tile，去冗余=专家）</option>
+              <option value="tile">Tile ready</option>
+              <option value="expert">Expert ready</option>
+            </select>
+          </label>
+        </div>
+      </details>
+
+      <details class="panel" open>
+        <summary>3. 拓扑与通信</summary>
+        <div class="form-grid">
+          <label class="wide">拓扑预设
+            <select id="topologyPreset">
+              <option value="pod" selected>POD（Clos 140 GB/s）</option>
+              <option value="pc16">PC16（Clos 230 GB/s）</option>
+              <option value="fullmesh">FullMesh（最多 8 卡，Peer 专线）</option>
+              <option value="custom">自定义</option>
+            </select>
+          </label>
+          <label>Clos / NPU（GB/s）<input id="closGbps" type="number" min="0.01" step="1" value="140"></label>
+          <label>通信利用率（%）<input id="commUtil" type="number" min="0.1" max="100" step="0.1" value="62.253"></label>
+          <label>FullMesh 分组卡数<input id="fmGroup" type="number" min="1" step="1" value="8"></label>
+          <label>单 Peer 原始带宽（GB/s）<input id="fmRawGbps" type="number" min="0.01" step="1" value="59"></label>
+          <label>FullMesh Payload（%）<input id="fmPayload" type="number" min="0.1" max="100" step="0.1" value="59"></label>
+          <label>网络启动开销（μs）<input id="networkStartup" type="number" min="0" step="0.01" value="0"></label>
+          <div class="hint">通信利用率同时修正 FullMesh 和 Clos；FullMesh 还要乘 Payload 效率。Decode 默认 62.253%，Prefill 预设为 100% 理想上界。</div>
+        </div>
+      </details>
+
+      <div class="panel actions">
+        <button class="primary" id="runBtn">重新计算</button>
+        <button id="resetBtn">恢复 V4 默认值</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div id="message" class="message"></div>
+
+      <section class="metrics">
+        <div class="panel metric"><div class="name" id="totalMetricLabel">端到端时延</div><div class="value" id="totalMetric">—</div><div class="sub" id="totalSub"></div></div>
+        <div class="panel metric"><div class="name">AIC 活跃比例（E2E）</div><div class="value" id="activeMetric">—</div><div class="sub">Σ GMM 核时 / (核数 × E2E)</div></div>
+        <div class="panel metric"><div class="name">Cube 窗口活跃比例</div><div class="value" id="windowMetric">—</div><div class="sub">仅 GMM1 首 Tile 至 GMM2 末 Tile</div></div>
+        <div class="panel metric"><div class="name">MFU @ P_Cube</div><div class="value" id="mfuMetric">—</div><div class="sub">有用 FLOPs / (P_Cube × E2E)</div></div>
+      </section>
+
+      <section class="stages" id="stageCards"></section>
+
+      <section class="panel facts" id="facts"></section>
+
+      <section class="panel chart-panel">
+        <div class="chart-head">
+          <div><h2>整体五阶段流水</h2><p id="overallChartHint">阶段耗时是包络或通信服务量，存在重叠，不能直接相加得到端到端。</p></div>
+          <button data-download="overallSvg" data-name="megamoe_overall_pipeline.svg">下载 SVG</button>
+        </div>
+        <div class="svg-wrap" id="overallSvg"></div>
+      </section>
+
+      <section class="panel chart-panel">
+        <div class="chart-head">
+          <div><h2 id="coreChartTitle">32 AIC 逐核流水</h2><p id="coreChartHint">E0=Expert 0，T0=Tile 0；悬停 Tile 看耗时公式，悬停斜线气泡看等待对象。</p></div>
+          <button data-download="coreSvg" data-name="megamoe_aic_pipeline.svg">下载 SVG</button>
+        </div>
+        <div class="svg-wrap" id="coreSvg"></div>
+      </section>
+
+      <section class="panel chart-panel hidden" id="catlassComparison">
+        <h2>CATLASS 同配置排序对比</h2>
+        <p class="hint">只更换 GMM1/GMM2 Tile 映射；Shape、Wave 大小、计算效率、通信和 AIV 参数完全相同。选中排序对应上方流水，切换左侧排序可查看另一版。</p>
+        <div id="catlassComparisonResult" style="overflow-x:auto"></div>
+        <p class="hint" id="catlassComparisonNote"></p>
+      </section>
+
+      <section class="panel chart-panel hidden" id="catlassDetail">
+        <div class="chart-head">
+          <div><h2>CATLASS 配对执行单元</h2><p>观察同一组 AIC、AIV0、AIV1；悬停看任务、公式和直接依赖。零耗时辅助任务不画条带。</p></div>
+          <select id="catlassCoreSelect" aria-label="观察配对核心"></select>
+          <button data-download="catlassSvg" data-name="megamoe_catlass_pair.svg">下载 SVG</button>
+        </div>
+        <div class="svg-wrap" id="catlassSvg"></div>
+        <details><summary>本 Rank 专家 Token 数与每 Wave 组成</summary><pre id="catlassComposition" style="white-space:pre-wrap"></pre></details>
+      </section>
+
+      <section class="panel chart-panel hidden" id="catlassCursorComparison">
+        <h2>CATLASS 同排序游标对比</h2>
+        <p class="hint">只更换游标策略，保留当前 Tile 坐标顺序及所有耗时参数。两套游标逐 slice、跨 Wave 延续；AIC/AIV0/AIV1 同步使用各阶段分核映射。双游标为仿真实验，参考源码仍是公共游标。</p>
+        <div id="catlassCursorComparisonResult" style="overflow-x:auto"></div>
+        <details><summary>当前方案：每核计算负载（数量与耗时分开）</summary><div id="catlassCoreLoad" style="overflow-x:auto"></div></details>
+        <details><summary>当前方案：逐 slice 游标记录</summary><pre id="catlassCursorTrace" style="white-space:pre-wrap"></pre></details>
+        <p class="hint">核上计算服务 = GMM1 + GMM2 Tile 耗时之和，不含等待；内部气泡不含首 Tile 前和末 Tile 后的空闲。数量均衡不保证耗时或 Rank 窗口最优，GMM2 仍须等待同 M-group 的全部激活输出。</p>
+      </section>
+      <section class="panel footnote" id="methodNote"></section>
+    </main>
+  </div>
+
+  <script src="catlass-wave.js"></script>
+  <script>
+  (() => {
+    "use strict";
+
+    const defaults = {
+      hidden: 7168, intermediate: 6144, bs: 96, topk: 6, ep: 64, expertsPerRank: 6,
+      commVariant: "base", hardwarePreset: "32", cores: 32, peakTflops: 865, tileM: 256,
+      gmm1TileN: 256, gmm2TileN: 256, schedulerMode: "base", waveMGroups: 0,
+      catlassRank: 0, catlassPrologue1: 0, catlassPrologue2: 0, catlassTileOrder: "swizzle3",catlassCursorPolicy:"shared",
+      tileStrategy: "rotating", timingMode: "flops",
+      gmm1Eff: 54.8, gmm2Eff: 55.9, gmm1ManualUs: 47.6356, gmm2ManualUs: 10,
+      manualRefM: 96, pingpongDepth: 2, swigluGap: 0, fixpipeGap: 0,
+      combineRelease: "auto", topologyPreset: "pod", closGbps: 140, commUtil: 62.253,
+      fmGroup: 8, fmRawGbps: 59, fmPayload: 59, networkStartup: 0
+    };
+
+    const ids = Object.keys(defaults);
+    const $ = id => document.getElementById(id);
+    const n = id => Number($(id).value);
+    const v = id => $(id).value;
+    const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
+    const fmt = (x, digits = 2) => Number.isFinite(x) ? x.toLocaleString("zh-CN", {maximumFractionDigits: digits, minimumFractionDigits: digits}) : "—";
+    const pct = x => `${fmt(x, 2)}%`;
+    const us = x => `${fmt(x, x < 10 ? 3 : 2)} μs`;
+    const esc = s => String(s).replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+    const PROFILE_STORAGE_KEY="megamoe.offline.profiles.v1";
+    const DRAFT_STORAGE_KEY="megamoe.offline.last-run.v1";
+    const DRAFT_ID="__last_run__";
+    let profileState={version:2,profiles:[]};
+    let draftState=null;
+    let storageEnabled=true;
+
+    function screenshotFullMeshValues(){
+      return {...defaults,hidden:2048,intermediate:1536,bs:1394,topk:8,ep:4,expertsPerRank:32,
+        hardwarePreset:"custom",cores:28,peakTflops:865,commVariant:"base",
+        topologyPreset:"fullmesh",closGbps:140,commUtil:100};
+    }
+
+    function prefillBs4096Values(){
+      return {...defaults,bs:4096,timingMode:"flops",gmm1Eff:100,gmm2Eff:100,commUtil:100,
+        schedulerMode:"base",topologyPreset:"pod",closGbps:140};
+    }
+
+    function waveBs4096Values(){
+      return {...prefillBs4096Values(),schedulerMode:"wave"};
+    }
+
+    function seedProfiles(){
+      const now=Date.now();
+      return [
+        {id:"preset-dsv4",label:"DeepSeek V4 默认",values:{...defaults},result:null,createdAt:now,updatedAt:now},
+        {id:"preset-dsv4-decode-bs96",label:"dsv4-decode-bs96",values:{...defaults},result:null,createdAt:now,updatedAt:now},
+        {id:"preset-dsv4-prefill-bs4096",label:"dsv4-prefill-bs4096",values:prefillBs4096Values(),result:null,createdAt:now,updatedAt:now},
+        {id:"preset-dsv4-wave-bs4096",label:"DeepSeek V4 Prefill BS4096 · W4A8 Wave",values:waveBs4096Values(),result:null,createdAt:now,updatedAt:now},
+        {id:"preset-catlass-bs4096",label:"W4A8 CATLASS · BS4096 · 理论下界",values:{...prefillBs4096Values(),schedulerMode:"catlass"},result:null,createdAt:now,updatedAt:now},
+        {id:"preset-catlass-mgroup-bs4096",label:"W4A8 CATLASS · BS4096 · 同M-Block优先",values:{...prefillBs4096Values(),schedulerMode:"catlass",catlassTileOrder:"mgroup"},result:null,createdAt:now,updatedAt:now},
+        {id:"preset-catlass-dual-bs4096",label:"W4A8 CATLASS · BS4096 · 原排序+双游标错开",values:{...prefillBs4096Values(),schedulerMode:"catlass",catlassTileOrder:"swizzle3",catlassCursorPolicy:"dual_stagger"},result:null,createdAt:now,updatedAt:now},
+        {id:"preset-catlass-bs96",label:"W4A8 CATLASS · BS96 · 理论下界",values:{...prefillBs4096Values(),bs:96,schedulerMode:"catlass"},result:null,createdAt:now,updatedAt:now},
+        {id:"preset-catlass-bs1",label:"W4A8 CATLASS · BS1 · 32专家/Rank",values:{...prefillBs4096Values(),bs:1,expertsPerRank:32,schedulerMode:"catlass"},result:null,createdAt:now,updatedAt:now},
+        {id:"preset-screenshot-fullmesh",label:"截图案例 · FullMesh EP4",values:screenshotFullMeshValues(),result:null,createdAt:now,updatedAt:now}
+      ];
+    }
+
+    function storageRead(key){
+      try{const raw=localStorage.getItem(key);return raw?JSON.parse(raw):null;}
+      catch(_){storageEnabled=false;return null;}
+    }
+
+    function storageWrite(key,value){
+      try{localStorage.setItem(key,JSON.stringify(value));return true;}
+      catch(_){storageEnabled=false;return false;}
+    }
+
+    function readFormValues(){
+      return Object.fromEntries(ids.map(id=>[id,$(id).value]));
+    }
+
+    function applyFormValues(values){
+      ids.forEach(id=>{$(id).value=String(values&&Object.prototype.hasOwnProperty.call(values,id)?values[id]:defaults[id]);});
+      syncPreset();syncTiming();syncScheduler();
+    }
+
+    function valuesEqual(a,b){
+      return !!a&&!!b&&ids.every(id=>String(a[id]??defaults[id])===String(b[id]??defaults[id]));
+    }
+
+    function summarizeResult(r){
+      return {
+        savedAt:Date.now(),totalUs:r.total,activePct:r.activePct,windowPct:r.windowPct,mfuPct:r.mfuPct,
+        topology:r.c.topologyPreset,schedulerMode:r.schedulerMode,releaseMode:r.releaseMode,tokensPerExpert:r.tokensPerExpert,
+        waveCount:r.waveCount||0,mGroupsPerWave:r.mGroupsPerWave||0,
+        sourceCommit:r.sourceCommit||null,expertCounts:r.expertCounts||null,catlassTileOrder:r.catlassTileOrder||null,
+        cursorPolicy:r.cursorPolicy||null,cursorStarts:r.cursorStarts||null,cursorFinal:r.cursorFinal||null,coreLoad:r.coreLoad||null,experimentalScheduler:!!r.experimentalScheduler,
+        tileCounts:{...r.tileCounts},stage:{...r.stage},group:{...r.group}
+      };
+    }
+
+    function resultText(result){
+      if(!result)return "尚未生成结果；加载该配置后会自动仿真并保存。";
+      const time=new Date(result.savedAt).toLocaleString("zh-CN",{hour12:false});
+      return `${time} · ${result.schedulerMode==="catlass"?"Rank窗口":"E2E"} ${us(result.totalUs)} · AIC活跃 ${pct(result.activePct)} · ${String(result.topology||"").toUpperCase()}`;
+    }
+
+    function showConfigStatus(text,type=""){
+      const el=$("configStatus");el.textContent=text;el.className=`config-status${type?` ${type}`:""}`;
+    }
+
+    function selectedProfile(){
+      const id=$("savedConfigSelect").value;
+      if(id===DRAFT_ID)return draftState;
+      return profileState.profiles.find(p=>p.id===id)||null;
+    }
+
+    function refreshConfigMeta(){
+      const id=$("savedConfigSelect").value,profile=selectedProfile();
+      if(id!==DRAFT_ID)$("configLabel").value=profile?.label||"";
+      else $("configLabel").value="";
+      showConfigStatus(profile?resultText(profile.result):"还没有自动保存的运行记录。",profile?.result?"ok":"");
+    }
+
+    function renderProfileOptions(selectedId=DRAFT_ID){
+      const select=$("savedConfigSelect");select.innerHTML="";
+      const draftOption=document.createElement("option");draftOption.value=DRAFT_ID;draftOption.textContent="上次运行（自动保存）";select.appendChild(draftOption);
+      profileState.profiles.forEach(profile=>{const option=document.createElement("option");option.value=profile.id;option.textContent=profile.label;select.appendChild(option);});
+      select.value=[...select.options].some(x=>x.value===selectedId)?selectedId:DRAFT_ID;
+      refreshConfigMeta();
+    }
+
+    function initializeProfileStorage(){
+      const saved=storageRead(PROFILE_STORAGE_KEY);
+      if(saved&&Array.isArray(saved.profiles)){
+        profileState={...saved,version:2};
+        if((saved.version||1)<2){
+          profileState.profiles.forEach(profile=>{
+            const isBasePrefill=profile.label==="dsv4-prefill-bs4096"||profile.id==="preset-dsv4-prefill-bs4096";
+            const isWavePrefill=profile.id==="preset-dsv4-wave-bs4096"||profile.label==="DeepSeek V4 Prefill BS4096 · W4A8 Wave";
+            if(isBasePrefill||isWavePrefill){
+              profile.values={...profile.values,bs:4096,timingMode:"flops",gmm1Eff:100,gmm2Eff:100,commUtil:100};
+              profile.result=null;profile.updatedAt=Date.now();
+            }
+          });
+        }
+        const seeds=seedProfiles();
+        seeds.forEach(seed=>{
+          const exists=profileState.profiles.some(profile=>profile.id===seed.id||profile.label===seed.label);
+          if(!exists)profileState.profiles.push(seed);
+        });
+        storageWrite(PROFILE_STORAGE_KEY,profileState);
+      }
+      else{profileState={version:2,profiles:seedProfiles()};storageWrite(PROFILE_STORAGE_KEY,profileState);}
+      const draft=storageRead(DRAFT_STORAGE_KEY);
+      if(draft&&draft.values)draftState=draft;
+      renderProfileOptions(DRAFT_ID);
+    }
+
+    function persistProfiles(){return storageWrite(PROFILE_STORAGE_KEY,profileState);}
+
+    function saveLastRun(r){
+      const values=readFormValues();
+      draftState={id:DRAFT_ID,label:"上次运行（自动保存）",values,result:summarizeResult(r),updatedAt:Date.now()};
+      storageWrite(DRAFT_STORAGE_KEY,draftState);
+      const selected=$("savedConfigSelect").value;
+      if(selected!==DRAFT_ID){
+        const profile=profileState.profiles.find(p=>p.id===selected);
+        if(profile&&valuesEqual(profile.values,values)){
+          profile.result=draftState.result;profile.lastRunAt=Date.now();persistProfiles();
+        }
+      }else showConfigStatus(`${resultText(draftState.result)} · 已自动保存`,storageEnabled?"ok":"error");
+    }
+
+    function snapshotCurrent(){
+      const c=config();validate(c);const r=simulate(c);
+      return {values:readFormValues(),result:summarizeResult(r)};
+    }
+
+    function uniqueLabel(label,excludeId=""){
+      return !profileState.profiles.some(p=>p.id!==excludeId&&p.label.trim().toLocaleLowerCase()===label.trim().toLocaleLowerCase());
+    }
+
+    function newProfileId(){
+      return globalThis.crypto?.randomUUID?`config-${crypto.randomUUID()}`:`config-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function config() {
+      return {
+        hidden:n("hidden"), intermediate:n("intermediate"), bs:n("bs"), topk:n("topk"), ep:n("ep"), expertsPerRank:n("expertsPerRank"),
+        commVariant:v("commVariant"), hardwarePreset:v("hardwarePreset"), cores:n("cores"), peakTflops:n("peakTflops"), tileM:n("tileM"),
+        gmm1TileN:n("gmm1TileN"), gmm2TileN:n("gmm2TileN"), schedulerMode:v("schedulerMode"), waveMGroups:n("waveMGroups"),
+        catlassRank:n("catlassRank"),catlassPrologue1:n("catlassPrologue1"),catlassPrologue2:n("catlassPrologue2"),catlassTileOrder:v("catlassTileOrder"),catlassCursorPolicy:v("catlassCursorPolicy"),
+        tileStrategy:v("tileStrategy"), timingMode:v("timingMode"),
+        gmm1Eff:n("gmm1Eff")/100, gmm2Eff:n("gmm2Eff")/100, gmm1ManualUs:n("gmm1ManualUs"), gmm2ManualUs:n("gmm2ManualUs"),
+        manualRefM:n("manualRefM"), pingpongDepth:n("pingpongDepth"), swigluGap:n("swigluGap"), fixpipeGap:n("fixpipeGap"),
+        combineRelease:v("combineRelease"), topologyPreset:v("topologyPreset"), closGbps:n("closGbps"), commUtil:n("commUtil")/100,
+        fmGroup:n("fmGroup"), fmRawGbps:n("fmRawGbps"), fmPayload:n("fmPayload")/100, networkStartup:n("networkStartup")
+      };
+    }
+
+    function validate(c) {
+      const positives = ["hidden","intermediate","bs","topk","ep","expertsPerRank","cores","peakTflops","tileM","gmm1TileN","gmm2TileN","manualRefM","pingpongDepth","closGbps","fmGroup","fmRawGbps"];
+      const bad = positives.find(k => !Number.isFinite(c[k]) || c[k] <= 0);
+      if (bad) throw new Error(`参数 ${bad} 必须为正数。`);
+      if (c.topk > c.ep * c.expertsPerRank) throw new Error("TopK 不能大于总专家数。 ");
+      if (c.commUtil <= 0 || c.commUtil > 1 || c.fmPayload <= 0 || c.fmPayload > 1) throw new Error("通信利用率和 Payload 必须位于 (0, 100%]。 ");
+      if (c.gmm1Eff <= 0 || c.gmm1Eff > 1 || c.gmm2Eff <= 0 || c.gmm2Eff > 1) throw new Error("Tile 效率必须位于 (0, 100%]。 ");
+      if (c.timingMode === "manual" && (c.gmm1ManualUs <= 0 || c.gmm2ManualUs <= 0)) throw new Error("实测单 Tile 耗时必须为正数。 ");
+      if (c.swigluGap < 0 || c.fixpipeGap < 0 || c.networkStartup < 0) throw new Error("间隔与启动开销不能为负。 ");
+      if (!Number.isInteger(c.waveMGroups) || c.waveMGroups < 0) throw new Error("每个 Wave 的 M Group 必须是非负整数；0 表示自动。 ");
+      if (c.cores > 256 || c.expertsPerRank > 256) throw new Error("当前可视化限制：AIC 核数与每卡专家数均不超过 256。 ");
+      if (c.topologyPreset === "fullmesh" && c.ep > 8) throw new Error("FullMesh 预设最多支持 8 张卡；请将 EP Rank 数设为 8 或更小。 ");
+    }
+
+    function dedupRankHitProbability(c) {
+      const total = c.ep * c.expertsPerRank;
+      const outside = total - c.expertsPerRank;
+      if (c.topk > outside) return 1;
+      let outsideRatio = 1;
+      for (let i = 0; i < c.topk; i++) outsideRatio *= (outside - i) / (total - i);
+      return 1 - outsideRatio;
+    }
+
+    function groupStats(c) {
+      if (c.topologyPreset === "fullmesh") {
+        return {fmPeers:Math.max(0,c.ep-1),closPeers:0,uneven:false};
+      }
+      const fullGroups = Math.floor(c.ep / c.fmGroup);
+      const tail = c.ep % c.fmGroup;
+      const smallest = tail > 0 ? tail : Math.min(c.ep, c.fmGroup);
+      const largest = fullGroups > 0 ? Math.min(c.ep, c.fmGroup) : smallest;
+      return {
+        fmPeers: Math.max(0, largest - 1),
+        closPeers: Math.max(0, c.ep - smallest),
+        uneven: tail > 0 && c.ep > c.fmGroup
+      };
+    }
+
+    function networkTiming(bytesPerPeer, c, startup = 0, factor = 1) {
+      const g = groupStats(c);
+      const fmBw = c.fmRawGbps * c.fmPayload * c.commUtil;
+      const closBw = c.closGbps * c.commUtil;
+      const bytes = bytesPerPeer * factor;
+      const fmUs = g.fmPeers > 0 ? bytes / (fmBw * 1000) : 0;
+      const closUs = g.closPeers > 0 ? bytes * g.closPeers / (closBw * 1000) : 0;
+      const duration = Math.max(fmUs, closUs);
+      return {fmUs, closUs, duration: duration > 0 ? duration + startup : 0, bytes, ...g};
+    }
+
+    function tileShapes(m, outputN, tileM, tileN) {
+      const out = [];
+      if (m <= 0) return out;
+      for (let mi = 0; mi < Math.ceil(m / tileM); mi++) {
+        const actualM = Math.min(tileM, m - mi * tileM);
+        for (let ni = 0; ni < Math.ceil(outputN / tileN); ni++) {
+          out.push({m:actualM, n:Math.min(tileN, outputN - ni * tileN)});
+        }
+      }
+      return out;
+    }
+
+    function assignTiles(counts, stage, c, startOffset) {
+      const programs = Array.from({length:c.cores}, () => []);
+      const byExpert = [];
+      const outputN = stage === "GMM1" ? c.intermediate / 2 : c.hidden;
+      const tileN = stage === "GMM1" ? c.gmm1TileN : c.gmm2TileN;
+      let offset = startOffset;
+      counts.forEach((m, expert) => {
+        const list = tileShapes(m, outputN, c.tileM, tileN).map((shape, tile) => {
+          const core = (offset + tile) % c.cores;
+          const spec = {stage, expert, tile, core, m:shape.m, n:shape.n};
+          programs[core].push(spec);
+          return spec;
+        });
+        byExpert.push(list);
+        offset = c.tileStrategy === "rotating" ? (offset + list.length) % c.cores : 0;
+      });
+      return {programs, byExpert, offset};
+    }
+
+    function calcMGroupsPerWave(c) {
+      // 对齐 arch35 host CalcMGroupsPerWave：GMM1 按 gate/up 合并前的逻辑 N tile 数计数。
+      const gmm1LogicalTilesPerGroup=Math.max(1,Math.ceil(c.intermediate/c.gmm1TileN));
+      const gmm2TilesPerGroup=Math.max(1,Math.ceil(c.hidden/c.gmm2TileN));
+      const gmm1Required=Math.ceil(c.cores*4/gmm1LogicalTilesPerGroup);
+      const gmm2Required=Math.ceil(c.cores/gmm2TilesPerGroup);
+      return Math.max(1,gmm1Required,gmm2Required);
+    }
+
+    function packDynamicWaves(counts,c,mGroupsPerWave) {
+      const waves=[];let expert=0,tokenIndex=0;
+      while(expert<counts.length){
+        const wave=waves.length,slices=[];let groupsUsed=0;
+        while(expert<counts.length&&groupsUsed<mGroupsPerWave){
+          const remaining=counts[expert]-tokenIndex;
+          if(remaining<=1e-9){expert++;tokenIndex=0;continue;}
+          const capacity=(mGroupsPerWave-groupsUsed)*c.tileM;
+          const tokenCount=Math.min(remaining,capacity);
+          const mGroups=Math.ceil(tokenCount/c.tileM-1e-12);
+          slices.push({wave,expert,tokenStart:tokenIndex,tokenCount,mGroups});
+          groupsUsed+=mGroups;tokenIndex+=tokenCount;
+          if(tokenIndex>=counts[expert]-1e-9){expert++;tokenIndex=0;}
+        }
+        // 尾部全部为空专家时已经遍历完毕，不创建空 Wave。
+        if(!slices.length&&expert>=counts.length)break;
+        if(!slices.length)throw new Error("Wave 切分没有取得进展，请检查 token 与 Tile M。");
+        waves.push(slices);
+      }
+      return waves;
+    }
+
+    function assignWaveSliceTiles(stage,slice,c,startOffset) {
+      const outputN=stage==="GMM1"?c.intermediate/2:c.hidden;
+      const tileN=stage==="GMM1"?c.gmm1TileN:c.gmm2TileN;
+      const nTiles=Math.ceil(outputN/tileN),tasks=[];
+      const firstGroup=Math.floor(slice.tokenStart/c.tileM+1e-12);
+      for(let localGroup=0;localGroup<slice.mGroups;localGroup++){
+        const remaining=slice.tokenCount-localGroup*c.tileM;
+        const actualM=Math.min(c.tileM,remaining);
+        const mGroup=firstGroup+localGroup;
+        for(let ni=0;ni<nTiles;ni++){
+          const actualN=Math.min(tileN,outputN-ni*tileN);
+          const tile=mGroup*nTiles+ni;
+          const core=(startOffset+tasks.length)%c.cores;
+          tasks.push({stage,wave:slice.wave,expert:slice.expert,tile,core,m:actualM,n:actualN,
+            mGroup,tokenStart:slice.tokenStart+localGroup*c.tileM});
+        }
+      }
+      return {tasks,offset:(startOffset+tasks.length)%c.cores};
+    }
+
+    function tileDuration(stage, m, outN, c) {
+      const tileN = stage === "GMM1" ? c.gmm1TileN : c.gmm2TileN;
+      if (c.timingMode === "manual") {
+        const base = stage === "GMM1" ? c.gmm1ManualUs : c.gmm2ManualUs;
+        return base * (m / c.manualRefM) * (outN / tileN);
+      }
+      const flops = stage === "GMM1"
+        ? 4 * m * outN * c.hidden
+        : 2 * m * outN * (c.intermediate / 2);
+      const eff = stage === "GMM1" ? c.gmm1Eff : c.gmm2Eff;
+      const peakPerCore = c.peakTflops * 1e12 * eff / c.cores;
+      return flops / peakPerCore * 1e6;
+    }
+
+    class MinHeap {
+      constructor(compare) { this.a=[]; this.compare=compare; }
+      push(x) { const a=this.a; a.push(x); let i=a.length-1; while(i){const p=(i-1)>>1;if(this.compare(a[p],x)<=0)break;a[i]=a[p];i=p;}a[i]=x; }
+      pop() { const a=this.a; if(!a.length)return null; const root=a[0], last=a.pop(); if(a.length){let i=0; while(true){let l=i*2+1,r=l+1;if(l>=a.length)break;let k=r<a.length&&this.compare(a[r],a[l])<0?r:l;if(this.compare(a[k],last)>=0)break;a[i]=a[k];i=k;}a[i]=last;} return root; }
+      get length(){return this.a.length;}
+    }
+
+    function overlapDuration(a, b) {
+      function merged(list) {
+        const xs = list.filter(s=>s.end>s.start).map(s=>[s.start,s.end]).sort((x,y)=>x[0]-y[0]);
+        const out=[];
+        xs.forEach(x=>{const p=out[out.length-1]; if(!p||x[0]>p[1])out.push(x.slice());else p[1]=Math.max(p[1],x[1]);});
+        return out;
+      }
+      const x=merged(a), y=merged(b); let i=0,j=0,sum=0;
+      while(i<x.length&&j<y.length){sum+=Math.max(0,Math.min(x[i][1],y[j][1])-Math.max(x[i][0],y[j][0]));if(x[i][1]<=y[j][1])i++;else j++;}
+      return sum;
+    }
+
+    function deriveWaitSegments(cubeSegments, cores) {
+      const waits=[];
+      for(let core=0;core<cores;core++){
+        const program=cubeSegments.filter(s=>s.core===core).sort((a,b)=>a.start-b.start||a.end-b.end);
+        if(program.length<2)continue;
+        let cursor=program[0].end;
+        for(let i=1;i<program.length;i++){
+          const next=program[i];
+          if(next.start>cursor+1e-6){
+            const blockers=next.blockers||[];
+            const winners=blockers.filter(b=>b.ready>cursor+1e-6&&Math.abs(b.ready-next.start)<1e-5);
+            const shown=winners.length?winners:[{kind:"scheduler",label:"固定分核程序中的下一个 Tile 就绪",ready:next.start}];
+            waits.push({core,start:cursor,end:next.start,next,blockers,winners:shown,
+              kind:shown.map(x=>x.kind).join("+")});
+          }
+          cursor=Math.max(cursor,next.end);
+        }
+      }
+      return waits;
+    }
+
+    function simulateBase(c) {
+      const totalExperts = c.ep * c.expertsPerRank;
+      const tokensPerExpert = c.bs * c.topk / c.expertsPerRank;
+      const counts = Array(c.expertsPerRank).fill(tokensPerExpert);
+      const dispatchRowBytes = c.hidden + Math.ceil(c.hidden / 32);
+      const combineRowBytes = 2 * c.hidden;
+      const perExpertRowsPerPeer = c.commVariant === "base"
+        ? c.bs * c.topk / totalExperts
+        : c.bs * dedupRankHitProbability(c) / c.expertsPerRank;
+      const dispatchBytesPeer = perExpertRowsPerPeer * dispatchRowBytes;
+      const combineBytesPeer = perExpertRowsPerPeer * combineRowBytes;
+      const metadataBytesPeer = c.commVariant === "base"
+        ? Math.ceil(totalExperts / 128) * 128 * 4
+        : c.bs * c.topk * 6 + 4 * (c.expertsPerRank + 1);
+      const metaTiming = networkTiming(metadataBytesPeer, c, c.networkStartup);
+      const dispatchTiming = networkTiming(dispatchBytesPeer, c, c.networkStartup);
+      const combineTiming = networkTiming(combineBytesPeer, c, 0);
+
+      const segments = [{stage:"Metadata",expert:-1,start:0,end:metaTiming.duration,core:-1,tile:-1}];
+      const dispatchSegments=[]; const dispatchRelease=[];
+      let dispatchEnd=metaTiming.duration;
+      for(let e=0;e<c.expertsPerRank;e++){
+        const s={stage:"Dispatch",expert:e,start:dispatchEnd,end:dispatchEnd+dispatchTiming.duration,core:-1,tile:-1,
+          commKind:"dispatch",release:dispatchEnd,rowsPeer:perExpertRowsPerPeer,rowBytes:dispatchRowBytes,
+          bytesPeer:dispatchBytesPeer,factor:1,fmUs:dispatchTiming.fmUs,closUs:dispatchTiming.closUs,
+          startupUs:c.networkStartup,paths:[]};
+        segments.push(s);dispatchSegments.push(s);dispatchEnd=s.end;dispatchRelease.push(s.end);
+      }
+
+      const a1=assignTiles(counts,"GMM1",c,0);
+      const coreAvailable=Array(c.cores).fill(metaTiming.duration);
+      const coreAvailableReason=Array(c.cores).fill("Metadata 完成");
+      const gmm1Ready=Array(c.expertsPerRank).fill(metaTiming.duration);
+      const gmm1ReadyReason=Array(c.expertsPerRank).fill("Metadata 完成");
+      const gmm1Segments=[];
+      a1.byExpert.forEach((tiles,e)=>{
+        let ready=metaTiming.duration;
+        tiles.forEach(spec=>{
+          const coreReady=coreAvailable[spec.core],dispatchReady=dispatchRelease[e];
+          const start=Math.max(coreReady,dispatchReady);
+          const end=start+tileDuration("GMM1",spec.m,spec.n,c);
+          const s={...spec,start,end,blockers:[
+            {kind:"core",label:coreAvailableReason[spec.core],ready:coreReady},
+            {kind:"dispatch",label:`Dispatch E${e} 完成`,ready:dispatchReady}
+          ]};gmm1Segments.push(s);segments.push(s);
+          coreAvailable[spec.core]=end+c.swigluGap;
+          coreAvailableReason[spec.core]=c.swigluGap>0
+            ? `GMM1 E${e} T${spec.tile} 的 SwiGLU 后处理完成`
+            : `本核前序 GMM1 E${e} T${spec.tile} 完成`;
+          if(coreAvailable[spec.core]>=ready){ready=coreAvailable[spec.core];gmm1ReadyReason[e]=coreAvailableReason[spec.core];}
+        });
+        gmm1Ready[e]=ready;
+      });
+
+      const a2=assignTiles(counts,"GMM2",c,c.tileStrategy==="rotating"?a1.offset:0);
+      for(let core=0;core<c.cores;core++){
+        if(dispatchEnd>coreAvailable[core]){
+          coreAvailable[core]=dispatchEnd;
+          coreAvailableReason[core]="全部 Dispatch 完成（GMM2 全局门槛）";
+        }
+      }
+      const gmm2Segments=[], combineSegments=[];
+      const gmm2Ready=Array(c.expertsPerRank).fill(metaTiming.duration);
+      const netState={fm:0,clos:0};
+
+      function scheduleNetwork(bytesPeer,factor,release,expert,core=-1,tile=-1,tileM=null,tileN=null){
+        const t=networkTiming(bytesPeer,c,0,factor); const intervals=[];
+        if(t.fmUs>0){const start=Math.max(release,netState.fm);netState.fm=start+t.fmUs;intervals.push({path:"FullMesh",start,end:netState.fm,serviceUs:t.fmUs});}
+        if(t.closUs>0){const start=Math.max(release,netState.clos);netState.clos=start+t.closUs;intervals.push({path:"Clos",start,end:netState.clos,serviceUs:t.closUs});}
+        if(!intervals.length)return {end:release,segment:null};
+        const bottleneck=intervals.reduce((a,b)=>b.end>a.end?b:a);
+        const combineSegment={stage:"Combine",expert,start:bottleneck.start,end:bottleneck.end,core,tile,
+          commKind:"combine",release,rowsPeer:perExpertRowsPerPeer*factor,rowBytes:combineRowBytes,
+          bytesPeer:t.bytes,factor,fmUs:t.fmUs,closUs:t.closUs,startupUs:0,paths:intervals,
+          bottleneckPath:bottleneck.path,tileM,tileN};
+        combineSegments.push(combineSegment);
+        return {end:bottleneck.end,segment:combineSegment};
+      }
+
+      let releaseMode=c.combineRelease==="auto"?(c.commVariant==="base"?"tile":"expert"):c.combineRelease;
+      if(releaseMode==="tile"){
+        const next=Array(c.cores).fill(0), completions=Array.from({length:c.cores},()=>[]);
+        const heap=new MinHeap((x,y)=>x.end-y.end||x.core-y.core);
+        function pushNext(core){
+          const index=next[core], program=a2.programs[core]; if(index>=program.length)return;
+          const spec=program[index];
+          const pingpongRef=index>=c.pingpongDepth?completions[core][index-c.pingpongDepth]:null;
+          const pingpong=pingpongRef?pingpongRef.end:0;
+          const blockers=[
+            {kind:"core",label:coreAvailableReason[core],ready:coreAvailable[core]},
+            {kind:"gmm1",label:`Expert ${spec.expert} 的全部 GMM1/SwiGLU 就绪（末任务：${gmm1ReadyReason[spec.expert]}）`,ready:gmm1Ready[spec.expert]}
+          ];
+          if(pingpongRef)blockers.push({kind:"pingpong",
+            label:pingpongRef.segment
+              ? `本核较早的 Combine E${pingpongRef.segment.expert} T${pingpongRef.segment.tile} 释放 ping-pong 槽`
+              : "本核较早的 Combine 释放 ping-pong 槽",
+            ready:pingpong});
+          const start=Math.max(...blockers.map(b=>b.ready));
+          heap.push({core,index,spec,start,end:start+tileDuration("GMM2",spec.m,spec.n,c),blockers});
+        }
+        for(let core=0;core<c.cores;core++)pushNext(core);
+        while(heap.length){
+          const ev=heap.pop(), {core,spec,start,end,blockers}=ev;
+          const s={...spec,start,end,blockers};gmm2Segments.push(s);segments.push(s);
+          gmm2Ready[spec.expert]=Math.max(gmm2Ready[spec.expert],end+c.fixpipeGap);
+          const factor=tokensPerExpert>0?(spec.m/tokensPerExpert)*(spec.n/c.hidden):0;
+          const completion=scheduleNetwork(combineBytesPeer,factor,end+c.fixpipeGap,spec.expert,core,spec.tile,spec.m,spec.n);
+          completions[core].push(completion);coreAvailable[core]=end;
+          coreAvailableReason[core]=`本核前序 GMM2 E${spec.expert} T${spec.tile} 完成`;
+          next[core]++;pushNext(core);
+        }
+      } else {
+        a2.programs.forEach((program,core)=>program.forEach(spec=>{
+          const blockers=[
+            {kind:"core",label:coreAvailableReason[core],ready:coreAvailable[core]},
+            {kind:"gmm1",label:`Expert ${spec.expert} 的全部 GMM1/SwiGLU 就绪（末任务：${gmm1ReadyReason[spec.expert]}）`,ready:gmm1Ready[spec.expert]}
+          ];
+          const start=Math.max(...blockers.map(b=>b.ready));
+          const end=start+tileDuration("GMM2",spec.m,spec.n,c);
+          const s={...spec,start,end,blockers};gmm2Segments.push(s);segments.push(s);coreAvailable[core]=end;
+          coreAvailableReason[core]=`本核前序 GMM2 E${spec.expert} T${spec.tile} 完成`;
+          gmm2Ready[spec.expert]=Math.max(gmm2Ready[spec.expert],end+c.fixpipeGap);
+        }));
+        for(let e=0;e<c.expertsPerRank;e++)scheduleNetwork(combineBytesPeer,1,gmm2Ready[e],e);
+      }
+      combineSegments.forEach(s=>segments.push(s));
+
+      const cubeSegments=[...gmm1Segments,...gmm2Segments];
+      const waitSegments=deriveWaitSegments(cubeSegments,c.cores);
+      const minOf=(list,key,fallback)=>list.length?Math.min(...list.map(x=>x[key])):fallback;
+      const maxOf=(list,key,fallback)=>list.length?Math.max(...list.map(x=>x[key])):fallback;
+      const cubeStart=minOf(cubeSegments,"start",dispatchEnd), cubeEnd=maxOf(cubeSegments,"end",dispatchEnd);
+      const combineEnd=maxOf(combineSegments,"end",cubeEnd);
+      const total=Math.max(dispatchEnd,cubeEnd,combineEnd);
+      const activeCoreUs=cubeSegments.reduce((s,x)=>s+x.end-x.start,0);
+      const usefulFlops=3*c.bs*c.topk*c.hidden*c.intermediate;
+      const g1Start=minOf(gmm1Segments,"start",cubeStart),g1End=maxOf(gmm1Segments,"end",g1Start);
+      const g2Start=minOf(gmm2Segments,"start",g1End),g2End=maxOf(gmm2Segments,"end",g2Start);
+      const combineStart=minOf(combineSegments,"start",g2End);
+      const result={
+        c,segments,dispatchSegments,gmm1Segments,gmm2Segments,combineSegments,waitSegments,total,cubeStart,cubeEnd,
+        activeCoreUs,activePct:activeCoreUs/(c.cores*total)*100,
+        windowPct:activeCoreUs/(c.cores*Math.max(1e-12,cubeEnd-cubeStart))*100,
+        mfuPct:usefulFlops/(c.peakTflops*1e12*total*1e-6)*100,
+        metaTiming,dispatchTiming,combineTiming,metadataBytesPeer,dispatchBytesPeer,combineBytesPeer,
+        perExpertRowsPerPeer,tokensPerExpert,totalExperts,releaseMode,
+        stage:{meta:metaTiming.duration,dispatch:dispatchTiming.duration*c.expertsPerRank,
+          gmm1:g1End-g1Start,gmm2:g2End-g2Start,combineService:combineTiming.duration*c.expertsPerRank,
+          combineEnvelope:combineSegments.length?combineEnd-combineStart:0},
+        overlap:{dispatch:overlapDuration(dispatchSegments,gmm1Segments),combine:overlapDuration(cubeSegments,combineSegments)},
+        tileCounts:{gmm1:a1.byExpert[0]?.length||0,gmm2:a2.byExpert[0]?.length||0},
+        group:groupStats(c)
+      };
+      return result;
+    }
+
+    function simulateWave(c) {
+      const totalExperts=c.ep*c.expertsPerRank;
+      const tokensPerExpert=c.bs*c.topk/c.expertsPerRank;
+      const counts=Array(c.expertsPerRank).fill(tokensPerExpert);
+      const dispatchRowBytes=c.hidden+Math.ceil(c.hidden/32),combineRowBytes=2*c.hidden;
+      const perExpertRowsPerPeer=c.commVariant==="base"
+        ? c.bs*c.topk/totalExperts
+        : c.bs*dedupRankHitProbability(c)/c.expertsPerRank;
+      const dispatchBytesPeer=perExpertRowsPerPeer*dispatchRowBytes;
+      const combineBytesPeer=perExpertRowsPerPeer*combineRowBytes;
+      const metadataBytesPeer=c.commVariant==="base"
+        ? Math.ceil(totalExperts/128)*128*4
+        : c.bs*c.topk*6+4*(c.expertsPerRank+1);
+      const metaTiming=networkTiming(metadataBytesPeer,c,c.networkStartup);
+      const dispatchTiming=networkTiming(dispatchBytesPeer,c,c.networkStartup);
+      const combineTiming=networkTiming(combineBytesPeer,c,0);
+      const mGroupsPerWave=c.waveMGroups>0?c.waveMGroups:calcMGroupsPerWave(c);
+      const waves=packDynamicWaves(counts,c,mGroupsPerWave);
+
+      const segments=[{stage:"Metadata",expert:-1,start:0,end:metaTiming.duration,core:-1,tile:-1,wave:-1}];
+      const dispatchSegments=[],dispatchRelease=[],dispatchGroupReady=new Map();
+      let dispatchEnd=metaTiming.duration;
+      for(let e=0;e<c.expertsPerRank;e++){
+        const start=dispatchEnd,end=start+dispatchTiming.duration;
+        const s={stage:"Dispatch",expert:e,start,end,core:-1,tile:-1,wave:-1,
+          commKind:"dispatch",release:start,rowsPeer:perExpertRowsPerPeer,rowBytes:dispatchRowBytes,
+          bytesPeer:dispatchBytesPeer,factor:1,fmUs:dispatchTiming.fmUs,closUs:dispatchTiming.closUs,
+          startupUs:c.networkStartup,paths:[]};
+        segments.push(s);dispatchSegments.push(s);dispatchEnd=end;dispatchRelease.push(end);
+        const groupCount=Math.ceil(counts[e]/c.tileM);
+        for(let group=0;group<groupCount;group++){
+          const fraction=Math.min(1,(group+1)*c.tileM/Math.max(counts[e],1e-12));
+          dispatchGroupReady.set(`${e}:${group}`,start+(end-start)*fraction);
+        }
+      }
+
+      const firstWaveExperts=new Set((waves[0]||[]).map(slice=>slice.expert));
+      const firstWaveDispatchEnd=dispatchSegments.reduce((latest,seg)=>firstWaveExperts.has(seg.expert)?Math.max(latest,seg.end):latest,metaTiming.duration);
+      const coreAvailable=Array(c.cores).fill(metaTiming.duration);
+      const coreAvailableReason=Array(c.cores).fill("Metadata 完成");
+      const gmm1Segments=[],gmm2Segments=[],combineSegments=[],combineReleases=[];
+      let startBlockIdx=0,startBlockAfterFirstGmm1=0;
+
+      waves.forEach((waveSlices,waveIndex)=>{
+        const groupTaskEnds=new Map();
+        waveSlices.forEach(slice=>{
+          const assigned=assignWaveSliceTiles("GMM1",slice,c,startBlockIdx);startBlockIdx=assigned.offset;
+          assigned.tasks.forEach(spec=>{
+            const key=`${spec.expert}:${spec.mGroup}`;
+            const streamedReady=dispatchGroupReady.get(key)??dispatchRelease[spec.expert];
+            const dispatchReady=waveIndex===0?Math.max(streamedReady,firstWaveDispatchEnd):streamedReady;
+            const coreReady=coreAvailable[spec.core];
+            const blockers=[
+              {kind:"core",label:coreAvailableReason[spec.core],ready:coreReady},
+              {kind:"dispatch",label:`Wave ${waveIndex} / Dispatch E${spec.expert} MGroup${spec.mGroup} 就绪`,ready:dispatchReady}
+            ];
+            const start=Math.max(coreReady,dispatchReady),end=start+tileDuration("GMM1",spec.m,spec.n,c);
+            const seg={...spec,start,end,blockers};segments.push(seg);gmm1Segments.push(seg);
+            coreAvailable[spec.core]=end;
+            coreAvailableReason[spec.core]=`Wave ${waveIndex} 前序 GMM1 E${spec.expert} T${spec.tile} 完成`;
+            const ends=groupTaskEnds.get(key)||[];ends.push(end);groupTaskEnds.set(key,ends);
+          });
+        });
+        if(waveIndex===0)startBlockAfterFirstGmm1=startBlockIdx;
+
+        const activationReady=new Map();
+        groupTaskEnds.forEach((ends,key)=>activationReady.set(key,Math.max(...ends)+c.swigluGap));
+        waveSlices.forEach(slice=>{
+          const assigned=assignWaveSliceTiles("GMM2",slice,c,startBlockIdx);startBlockIdx=assigned.offset;
+          assigned.tasks.forEach(spec=>{
+            const key=`${spec.expert}:${spec.mGroup}`;
+            const coreReady=coreAvailable[spec.core],activation=activationReady.get(key)??metaTiming.duration;
+            const blockers=[
+              {kind:"core",label:coreAvailableReason[spec.core],ready:coreReady},
+              {kind:"activation",label:`Wave ${waveIndex} / E${spec.expert} MGroup${spec.mGroup} 的 GMM1+Activation 就绪`,ready:activation}
+            ];
+            const start=Math.max(coreReady,activation),end=start+tileDuration("GMM2",spec.m,spec.n,c);
+            const seg={...spec,start,end,blockers};segments.push(seg);gmm2Segments.push(seg);
+            coreAvailable[spec.core]=end;
+            coreAvailableReason[spec.core]=`Wave ${waveIndex} 前序 GMM2 E${spec.expert} T${spec.tile} 完成`;
+            combineReleases.push({release:end+c.fixpipeGap,spec});
+          });
+        });
+      });
+
+      const netState={fm:0,clos:0};
+      function scheduleNetwork(bytesPeer,factor,release,spec){
+        const t=networkTiming(bytesPeer,c,0,factor),intervals=[];
+        if(t.fmUs>0){const start=Math.max(release,netState.fm);netState.fm=start+t.fmUs;intervals.push({path:"FullMesh",start,end:netState.fm,serviceUs:t.fmUs});}
+        if(t.closUs>0){const start=Math.max(release,netState.clos);netState.clos=start+t.closUs;intervals.push({path:"Clos",start,end:netState.clos,serviceUs:t.closUs});}
+        if(!intervals.length)return;
+        const bottleneck=intervals.reduce((a,b)=>b.end>a.end?b:a);
+        const seg={stage:"Combine",expert:spec.expert,start:bottleneck.start,end:bottleneck.end,core:spec.core,tile:spec.tile,wave:spec.wave,
+          commKind:"combine",release,rowsPeer:perExpertRowsPerPeer*factor,rowBytes:combineRowBytes,
+          bytesPeer:t.bytes,factor,fmUs:t.fmUs,closUs:t.closUs,startupUs:0,paths:intervals,
+          bottleneckPath:bottleneck.path,tileM:spec.m,tileN:spec.n};
+        combineSegments.push(seg);segments.push(seg);
+      }
+      combineReleases.sort((a,b)=>a.release-b.release||a.spec.core-b.spec.core||a.spec.tile-b.spec.tile).forEach(item=>{
+        const factor=tokensPerExpert>0?(item.spec.m/tokensPerExpert)*(item.spec.n/c.hidden):0;
+        scheduleNetwork(combineBytesPeer,factor,item.release,item.spec);
+      });
+
+      const cubeSegments=[...gmm1Segments,...gmm2Segments];
+      const waitSegments=deriveWaitSegments(cubeSegments,c.cores);
+      const minOf=(list,key,fallback)=>list.length?Math.min(...list.map(x=>x[key])):fallback;
+      const maxOf=(list,key,fallback)=>list.length?Math.max(...list.map(x=>x[key])):fallback;
+      const cubeStart=minOf(cubeSegments,"start",dispatchEnd),cubeEnd=maxOf(cubeSegments,"end",dispatchEnd);
+      const combineEnd=maxOf(combineSegments,"end",cubeEnd),total=Math.max(dispatchEnd,cubeEnd,combineEnd);
+      const activeCoreUs=cubeSegments.reduce((sum,seg)=>sum+seg.end-seg.start,0);
+      const usefulFlops=3*c.bs*c.topk*c.hidden*c.intermediate;
+      const g1Start=minOf(gmm1Segments,"start",cubeStart),g1End=maxOf(gmm1Segments,"end",g1Start);
+      const g2Start=minOf(gmm2Segments,"start",g1End),g2End=maxOf(gmm2Segments,"end",g2Start);
+      const combineStart=minOf(combineSegments,"start",g2End);
+      const waveEnvelopes=waves.map((slices,wave)=>{
+        const tasks=cubeSegments.filter(seg=>seg.wave===wave);
+        return {wave,start:minOf(tasks,"start",cubeStart),end:maxOf(tasks,"end",cubeStart),slices};
+      });
+      return {
+        c,segments,dispatchSegments,gmm1Segments,gmm2Segments,combineSegments,waitSegments,total,cubeStart,cubeEnd,
+        activeCoreUs,activePct:activeCoreUs/(c.cores*total)*100,
+        windowPct:activeCoreUs/(c.cores*Math.max(1e-12,cubeEnd-cubeStart))*100,
+        mfuPct:usefulFlops/(c.peakTflops*1e12*total*1e-6)*100,
+        metaTiming,dispatchTiming,combineTiming,metadataBytesPeer,dispatchBytesPeer,combineBytesPeer,
+        perExpertRowsPerPeer,tokensPerExpert,totalExperts,releaseMode:"wave-gm-tile",
+        schedulerMode:"wave",mGroupsPerWave,waveCount:waves.length,waves,waveEnvelopes,startBlockAfterFirstGmm1,finalStartBlock:startBlockIdx,
+        stage:{meta:metaTiming.duration,dispatch:dispatchTiming.duration*c.expertsPerRank,
+          gmm1:g1End-g1Start,gmm2:g2End-g2Start,combineService:combineTiming.duration*c.expertsPerRank,
+          combineEnvelope:combineSegments.length?combineEnd-combineStart:0},
+        overlap:{dispatch:overlapDuration(dispatchSegments,gmm1Segments),combine:overlapDuration(cubeSegments,combineSegments),
+          gmm12:overlapDuration(gmm1Segments,gmm2Segments)},
+        tileCounts:{gmm1:tileShapes(tokensPerExpert,c.intermediate/2,c.tileM,c.gmm1TileN).length,
+          gmm2:tileShapes(tokensPerExpert,c.hidden,c.tileM,c.gmm2TileN).length},
+        group:groupStats(c)
+      };
+    }
+
+    const isWave = mode => mode === "wave" || mode === "catlass";
+    const schedulerName = mode => mode === "catlass" ? "W4A8 CATLASS" : mode === "wave" ? "W4A8 Wave" : "Base";
+    const catlassOrderName = order => order === "mgroup" ? "同 M-Block 优先 / Swizzle<1,0>" : "原版 Swizzle<3,0>";
+    const catlassCursorName = policy => policy==="dual_stagger"?"双游标·自动错开（实验）":policy==="dual_same"?"双游标·同起点（实验）":"公共游标";
+    function simulate(c) {
+      if(c.schedulerMode==="catlass"&&!window.CatlassWave)throw new Error("缺少 catlass-wave.js；请将离线工具目录完整保存后打开 index.html");
+      const result=c.schedulerMode==="catlass"
+        ? CatlassWave.simulate(c,{calcMGroupsPerWave,packDynamicWaves,tileDuration,networkTiming,MinHeap,overlapDuration,deriveWaitSegments})
+        : c.schedulerMode==="wave"?simulateWave(c):simulateBase(c);
+      result.schedulerMode=c.schedulerMode;
+      if(result.overlap.gmm12==null)result.overlap.gmm12=overlapDuration(result.gmm1Segments,result.gmm2Segments);
+      result.overlap.gmm1Combine=overlapDuration(result.gmm1Segments,result.combineActive||result.combineSegments);
+      result.overlap.gmm2Combine=overlapDuration(result.gmm2Segments,result.combineActive||result.combineSegments);
+      return result;
+    }
+
+    const colors={Metadata:"#805ad5",Dispatch:"#3157d5",GMM1:"#ef8a31",GMM2:"#37a66a",Combine:"#178b8b"};
+
+    function tickValues(total,count=6){const step=total/count;return Array.from({length:count+1},(_,i)=>i*step);}
+
+    function mergeTimelineIntervals(segments) {
+      const sorted=segments.filter(seg=>seg.end>seg.start).map(seg=>[seg.start,seg.end]).sort((a,b)=>a[0]-b[0]);
+      const merged=[];
+      sorted.forEach(interval=>{
+        const last=merged[merged.length-1];
+        if(!last||interval[0]>last[1]+1e-9)merged.push(interval.slice());
+        else last[1]=Math.max(last[1],interval[1]);
+      });
+      return merged;
+    }
+
+    function routeRowsExplanation(r) {
+      const c=r.c,totalExperts=c.ep*c.expertsPerRank;
+      if(c.commVariant==="base") {
+        return `Base 每专家每 Peer 行数 = BS×TopK÷总专家数 = ${fmt(c.bs,3)}×${c.topk}÷${totalExperts} = ${fmt(r.perExpertRowsPerPeer,6)} 行`;
+      }
+      const q=dedupRankHitProbability(c);
+      return `去冗余 Rank 命中率 q = 1-C(${totalExperts-c.expertsPerRank},${c.topk})/C(${totalExperts},${c.topk}) = ${fmt(q,8)}\n每专家轮次每 Peer 行数 = BS×q÷每卡专家数 = ${fmt(c.bs,3)}×${fmt(q,8)}÷${c.expertsPerRank} = ${fmt(r.perExpertRowsPerPeer,6)} 行`;
+    }
+
+    function communicationTooltip(seg,r) {
+      if(r.schedulerMode==="catlass")return catlassTaskTooltip(seg,r);
+      const c=r.c,g=r.group;
+      const fmBw=c.fmRawGbps*c.fmPayload*c.commUtil,closBw=c.closGbps*c.commUtil;
+      const stageName=seg.stage==="Dispatch"?"Dispatch":"Combine";
+      const wave=seg.wave>=0?` / Wave${seg.wave}`:"";
+      const identity=`${stageName}${wave} / Expert${seg.expert}${seg.tile>=0?` / Tile${seg.tile}`:""}`;
+      const rowBytesFormula=seg.stage==="Dispatch"
+        ? `每行字节 = H + ceil(H/32) = ${c.hidden}+ceil(${c.hidden}/32) = ${seg.rowBytes} Byte`
+        : `每行字节 = 2×H = 2×${c.hidden} = ${seg.rowBytes} Byte`;
+      let fractionLine="";
+      if(seg.stage==="Combine") {
+        fractionLine=seg.tileM!=null
+          ? `Tile 通信比例 f = (Mtile/M专家)×(Ntile/H) = (${fmt(seg.tileM,3)}/${fmt(r.tokensPerExpert,3)})×(${seg.tileN}/${c.hidden}) = ${fmt(seg.factor,8)}\n本 Tile 每 Peer 行数 = ${fmt(r.perExpertRowsPerPeer,6)}×f = ${fmt(seg.rowsPeer,8)} 行\n`
+          : `Expert-ready 通信比例 f=1；本专家每 Peer 行数=${fmt(seg.rowsPeer,8)} 行\n`;
+      }
+      const bytesLine=`本任务每 Peer 字节数 x = 行数×每行字节 = ${fmt(seg.rowsPeer,8)}×${seg.rowBytes} = ${fmt(seg.bytesPeer,4)} Byte`;
+      const fmLine=g.fmPeers>0
+        ? `FullMesh 有效带宽 = ${fmt(c.fmRawGbps,3)}×${fmt(c.fmPayload*100,3)}%×${fmt(c.commUtil*100,3)}% = ${fmt(fmBw,6)} GB/s\nFullMesh 时间 = x÷(有效带宽×1000) = ${fmt(seg.bytesPeer,4)}÷(${fmt(fmBw,6)}×1000) = ${fmt(seg.fmUs,6)} μs（${g.fmPeers} 个 Peer 链路并行）`
+        : "FullMesh 时间 = 0 μs（无同组远端 Peer）";
+      const closBytes=seg.bytesPeer*g.closPeers;
+      const closLine=g.closPeers>0
+        ? `Clos 有效出口 = ${fmt(c.closGbps,3)}×${fmt(c.commUtil*100,3)}% = ${fmt(closBw,6)} GB/s\nClos 汇聚字节 = ${g.closPeers}×x = ${fmt(closBytes,4)} Byte\nClos 时间 = 汇聚字节÷(有效出口×1000) = ${fmt(closBytes,4)}÷(${fmt(closBw,6)}×1000) = ${fmt(seg.closUs,6)} μs`
+        : "Clos 时间 = 0 μs（无跨组远端 Peer）";
+      if(seg.stage==="Dispatch") {
+        const service=Math.max(seg.fmUs,seg.closUs);
+        return `${identity}\n${routeRowsExplanation(r)}\n${rowBytesFormula}\n${bytesLine}\n${fmLine}\n${closLine}\n本专家 Dispatch 耗时 = max(FullMesh, Clos)+启动开销 = max(${fmt(seg.fmUs,6)},${fmt(seg.closUs,6)})+${fmt(seg.startupUs,6)} = ${fmt(service+seg.startupUs,6)} μs\n调度区间：${fmt(seg.start,3)}–${fmt(seg.end,3)} μs`;
+      }
+      const pathLines=(seg.paths||[]).map(path=>`${path.path} 资源：释放 ${fmt(seg.release,3)} μs，实际开始 ${fmt(path.start,3)} μs，排队 ${fmt(path.start-seg.release,3)} μs，完成 ${fmt(path.end,3)} μs`).join("\n");
+      return `${identity}\n${routeRowsExplanation(r)}\n${fractionLine}${rowBytesFormula}\n${bytesLine}\n${fmLine}\n${closLine}\n${pathLines}\n任务完成 = max(FullMesh完成, Clos完成) = ${fmt(seg.end,3)} μs\n图中区间取最终完成路径 ${seg.bottleneckPath||"网络"}：${fmt(seg.start,3)}–${fmt(seg.end,3)} μs`;
+    }
+
+    function denseCombineTooltip(interval,r,tasks) {
+      if(r.schedulerMode==="catlass") {
+        const fm=tasks.reduce((a,s)=>a+s.fmBytes,0),clos=tasks.reduce((a,s)=>a+s.closBytes,0);
+        return `CATLASS Combine 连续区间 ${fmt(interval[0],3)}–${fmt(interval[1],3)} μs\n${tasks.length} 个配对 AIV1 Tile；FM 累计 ${fmt(fm,0)} B，Clos 累计 ${fmt(clos,0)} B\n同向 FM 各 Peer 独占；Clos 共享排队。单 Tile 详细公式见配对执行单元图。`;
+      }
+      const c=r.c,g=r.group;
+      const totalBytesPeer=tasks.reduce((sum,seg)=>sum+seg.bytesPeer,0);
+      const fmBw=c.fmRawGbps*c.fmPayload*c.commUtil,closBw=c.closGbps*c.commUtil;
+      const fmService=g.fmPeers>0?totalBytesPeer/(fmBw*1000):0;
+      const closService=g.closPeers>0?totalBytesPeer*g.closPeers/(closBw*1000):0;
+      const factors=tasks.map(seg=>seg.factor),minFactor=Math.min(...factors),maxFactor=Math.max(...factors);
+      return `Combine 密集合并区间：${fmt(interval[0],3)}–${fmt(interval[1],3)} μs (${fmt(interval[1]-interval[0],3)} μs)\n包含 ${tasks.length} 个 Tile/Expert 通信任务\n${routeRowsExplanation(r)}\n单任务 Tile 比例范围：${fmt(minFactor,8)}–${fmt(maxFactor,8)}\n区间内累计每 Peer 字节数 Σx = ${fmt(totalBytesPeer,3)} Byte\n累计 FullMesh 服务量 = Σx÷(${fmt(fmBw,6)}×1000) = ${fmt(fmService,3)} μs\n累计 Clos 服务量 = ${g.closPeers}×Σx÷(${fmt(closBw,6)}×1000) = ${fmt(closService,3)} μs\n显示长度还包含任务释放间隔和通信资源排队；小 Tile 场景可悬停单个 Combine 块查看逐任务公式。`;
+    }
+
+    function renderOverall(r){
+      const W=1280,H=405,left=145,right=24,top=45,rowH=57,plotW=W-left-right;
+      const rows=["Metadata","Dispatch","GMM1","GMM2","Combine"];
+      const x=t=>left+(r.total?clamp(t/r.total,0,1):0)*plotW;
+      const denseMode=r.gmm1Segments.length+r.gmm2Segments.length>600;
+      let s=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="MegaMoe 整体五阶段流水"><defs><pattern id="combineHatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#d9f3f0"/><rect width="2" height="6" fill="#178b8b"/></pattern></defs>`;
+      tickValues(r.total).forEach(t=>{const xx=x(t);s+=`<line x1="${xx}" y1="30" x2="${xx}" y2="${top+rows.length*rowH}" stroke="#e8ebf1"/><text x="${xx}" y="20" text-anchor="middle" font-size="11" fill="#667085">${fmt(t,1)} μs</text>`;});
+      rows.forEach((row,i)=>{const y=top+i*rowH;s+=`<text x="${left-12}" y="${y+24}" text-anchor="end" font-size="13" font-weight="650" fill="#344054">${i+1} ${row}</text><rect x="${left}" y="${y+6}" width="${plotW}" height="30" rx="5" fill="#f8fafc"/>`;});
+
+      function drawSegment(seg) {
+        const i=rows.indexOf(seg.stage);if(i<0||seg.end<=seg.start)return;
+        const y=top+i*rowH+8,xx=x(seg.start),ww=Math.max(1,x(seg.end)-xx);
+        const fill=seg.stage==="Combine"?"url(#combineHatch)":colors[seg.stage];
+        const label=seg.expert>=0&&ww>22?`E${seg.expert}`:"";
+        const tooltip=(seg.stage==="Dispatch"||seg.stage==="Combine")
+          ? communicationTooltip(seg,r)
+          : `${seg.stage} ${seg.expert>=0?`E${seg.expert}`:""}${seg.tile>=0?` Tile${seg.tile}`:""}: ${fmt(seg.start,3)}–${fmt(seg.end,3)} μs (${fmt(seg.end-seg.start,3)} μs)`;
+        s+=`<g><title>${esc(tooltip)}</title><rect x="${xx}" y="${y}" width="${ww}" height="26" rx="3" fill="${fill}" stroke="#fff" stroke-width=".7"/>${label?`<text x="${xx+ww/2}" y="${y+17}" text-anchor="middle" font-size="9" fill="#fff">${label}</text>`:""}</g>`;
+      }
+
+      function drawComputeDensity(stage,segments) {
+        if(!segments.length)return;
+        const row=rows.indexOf(stage),y=top+row*rowH+8;
+        const begin=Math.min(...segments.map(seg=>seg.start)),end=Math.max(...segments.map(seg=>seg.end));
+        const bins=Math.min(320,Math.max(80,Math.ceil((x(end)-x(begin))/3)));
+        for(let bin=0;bin<bins;bin++){
+          const t0=begin+(end-begin)*bin/bins,t1=begin+(end-begin)*(bin+1)/bins,span=t1-t0;
+          const coreTime=segments.reduce((sum,seg)=>sum+Math.max(0,Math.min(seg.end,t1)-Math.max(seg.start,t0)),0);
+          const avgCores=clamp(coreTime/Math.max(span,1e-12),0,r.c.cores);
+          if(avgCores<1e-6)continue;
+          const opacity=.24+.76*avgCores/r.c.cores;
+          const xx=x(t0),ww=Math.max(1,x(t1)-xx+.35);
+          s+=`<g><title>${stage} 密度区间 ${fmt(t0,2)}–${fmt(t1,2)} μs；平均活跃 ${fmt(avgCores,2)}/${r.c.cores} AIC</title><rect x="${xx}" y="${y}" width="${ww}" height="26" fill="${colors[stage]}" fill-opacity="${opacity}"/></g>`;
+        }
+      }
+
+      if(denseMode) {
+        r.segments.filter(seg=>seg.stage==="Metadata"||seg.stage==="Dispatch").sort((a,b)=>a.start-b.start||a.end-b.end).forEach(drawSegment);
+        drawComputeDensity("GMM1",r.gmm1Segments);
+        drawComputeDensity("GMM2",r.gmm2Segments);
+        const combineRow=rows.indexOf("Combine"),combineY=top+combineRow*rowH+8;
+        mergeTimelineIntervals(r.combineSegments).forEach(interval=>{
+          const xx=x(interval[0]),ww=Math.max(1,x(interval[1])-xx);
+          const tasks=r.combineSegments.filter(seg=>seg.start<interval[1]+1e-9&&seg.end>interval[0]-1e-9);
+          s+=`<g><title>${esc(denseCombineTooltip(interval,r,tasks))}</title><rect x="${xx}" y="${combineY}" width="${ww}" height="26" rx="3" fill="${colors.Combine}" fill-opacity=".88"/></g>`;
+        });
+      } else {
+        r.segments.slice().sort((a,b)=>a.start-b.start||a.end-b.end).forEach(drawSegment);
+      }
+
+      const legend=denseMode
+        ? `密集显示：GMM 颜色越深表示平均活跃 AIC 越多，Combine 为合并后的连续通信区间`
+        : `斜纹为通信`;
+      const waveOverlap=isWave(r.schedulerMode)?`；GMM1/GMM2 跨核重叠 ${fmt(r.overlap.gmm12,2)} μs`:"";
+      s+=`<text x="${left}" y="${top+rows.length*rowH+25}" font-size="11" fill="#667085">${legend}</text><text x="${left}" y="${top+rows.length*rowH+47}" font-size="11" fill="#667085">Dispatch/GMM1 重叠 ${fmt(r.overlap.dispatch,2)} μs；GMM/Combine 重叠 ${fmt(r.overlap.combine,2)} μs${waveOverlap}</text><text x="${W-right}" y="${top+rows.length*rowH+25}" text-anchor="end" font-size="12" font-weight="700" fill="#172033">总时延 ${fmt(r.total,2)} μs</text></svg>`;
+      $("overallSvg").innerHTML=s;
+      $("overallChartHint").textContent=denseMode
+        ? `Tile 数较多，整体图已自动切换为 AIC 活跃密度显示；逐 Tile 细节仍保留在逐核流水中。${isWave(r.schedulerMode)?" Wave 模式下 GMM1/GMM2 的长包络会互相覆盖，不能相加。":""}`
+        : "阶段耗时是包络或通信服务量，存在重叠，不能直接相加得到端到端。";
+      if(r.schedulerMode==="catlass")$("overallChartHint").textContent+=" 通信条展示任务包络（可含排队）；重叠数值只统计实际链路活动的墙钟并集，不是服务量百分比。";
+    }
+
+    function computeTileTooltip(seg,r) {
+      const c=r.c;
+      const wave=seg.wave>=0?` / Wave${seg.wave}`:"";
+      const identity=`${seg.stage} / AIC${seg.core}${wave} / Expert${seg.expert} / Tile${seg.tile}`;
+      const shape=`实际 Tile：M×Ntile=${fmt(seg.m,3)}×${seg.n}`+(r.schedulerMode==="catlass"?`\n排序：${catlassOrderName(r.catlassTileOrder)}\n游标：${catlassCursorName(r.cursorPolicy)}；本 slice 起点=${seg.cursorStart}，owner=(${seg.cursorStart}+${seg.tile})%${c.cores}=${seg.core}\nT 是本 Wave 专家切片内的调度序号；M组=${seg.mGroup}，N块=${seg.nIndex}，Token起点=${seg.tokenStart}\nGMM1 调度 Tile 包含 gate/up 两次投影；FP8 E4M3 计算，W4 权重展开。`:"");
+      const interval=`时间：${fmt(seg.start,3)}–${fmt(seg.end,3)} μs；耗时 ${fmt(seg.end-seg.start,3)} μs`;
+      if(c.timingMode==="manual") {
+        const base=seg.stage==="GMM1"?c.gmm1ManualUs:c.gmm2ManualUs;
+        const tileN=seg.stage==="GMM1"?c.gmm1TileN:c.gmm2TileN;
+        const formula="耗时 = 实测单Tile耗时 × (实际M/参考M) × (实际Ntile/配置TileN)";
+        const substitution=`= ${fmt(base,4)} × (${fmt(seg.m,3)}/${fmt(c.manualRefM,3)}) × (${seg.n}/${tileN}) = ${fmt(seg.end-seg.start,4)} μs`;
+        return `${identity}\nT = Tile（该专家内的分块编号），W = Wave\n${shape}\n${formula}\n${substitution}\n${interval}`;
+      }
+      const eff=seg.stage==="GMM1"?c.gmm1Eff:c.gmm2Eff;
+      const flops=seg.stage==="GMM1"
+        ? 4*seg.m*seg.n*c.hidden
+        : 2*seg.m*seg.n*(c.intermediate/2);
+      const flopFormula=seg.stage==="GMM1"
+        ? "Tile FLOPs = 4 × M × Ntile × H（gate/up 两个投影）"
+        : "Tile FLOPs = 2 × M × Ntile × (N/2)";
+      const flopSub=seg.stage==="GMM1"
+        ? `= 4 × ${fmt(seg.m,3)} × ${seg.n} × ${c.hidden} = ${fmt(flops,0)} FLOPs`
+        : `= 2 × ${fmt(seg.m,3)} × ${seg.n} × (${c.intermediate}/2) = ${fmt(flops,0)} FLOPs`;
+      const corePeak=c.peakTflops/c.cores*eff;
+      const peakFormula="单核有效算力 = P_Cube ÷ AIC数 × 活跃Tile算力效率";
+      const peakSub=`= ${fmt(c.peakTflops,3)} ÷ ${c.cores} × ${fmt(eff*100,3)}% = ${fmt(corePeak,6)} TFLOPS`;
+      const timeFormula="耗时 = Tile FLOPs ÷ (单核有效算力 × 10¹²) × 10⁶";
+      const timeSub=`= ${fmt(flops,0)} ÷ (${fmt(corePeak,6)} × 10¹²) × 10⁶ = ${fmt(seg.end-seg.start,4)} μs`;
+      return `${identity}\nT = Tile（该专家内的分块编号），W = Wave\n${shape}\n${flopFormula}\n${flopSub}\n${peakFormula}\n${peakSub}\n${timeFormula}\n${timeSub}\n${interval}`;
+    }
+
+    function waitTooltip(wait) {
+      const next=wait.next;
+      const waitFor=wait.winners.map(x=>`${x.label} @ ${fmt(x.ready,3)} μs`).join("；");
+      const condition=(wait.blockers||[]).map(x=>`${x.label}=${fmt(x.ready,3)} μs`).join("；");
+      const wave=next.wave>=0?`W${next.wave} `:"";
+      return `等待气泡 / AIC ${wait.core}\n区间：${fmt(wait.start,3)}–${fmt(wait.end,3)} μs（${fmt(wait.end-wait.start,3)} μs）\n下一任务：${wave}${next.stage} E${next.expert} T${next.tile}\n等待谁：${waitFor}\n开始条件：max(${condition||"固定分核程序就绪"}) = ${fmt(next.start,3)} μs\n说明：这是该 AIC 的空闲区间；当前模型不在核间动态迁移已经分配的 Tile。`;
+    }
+
+    function renderCores(r){
+      const paired=r.schedulerMode==="catlass";
+      const W=1280,left=100,right=24,top=48,rowH=paired?46:23,H=top+r.c.cores*rowH+(paired?67:45),plotW=W-left-right;
+      const x=t=>left+(r.total?clamp(t/r.total,0,1):0)*plotW;
+      let s=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="MegaMoe 逐 AIC 流水"><defs><pattern id="waitHatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#fff8df"/><rect width="1.5" height="6" fill="#d5a72a"/></pattern></defs>`;
+      tickValues(r.total).forEach(t=>{const xx=x(t);s+=`<line x1="${xx}" y1="30" x2="${xx}" y2="${top+r.c.cores*rowH}" stroke="#e8ebf1"/><text x="${xx}" y="19" text-anchor="middle" font-size="10" fill="#667085">${fmt(t,1)}</text>`;});
+      if(isWave(r.schedulerMode))r.waveEnvelopes.forEach(item=>{
+        const xx=x(item.start),ww=Math.max(1,x(item.end)-xx),fill=item.wave%2?colors.GMM2:colors.GMM1;
+        s+=`<g><title>Wave ${item.wave} 计算包络：${fmt(item.start,3)}–${fmt(item.end,3)} μs；${item.slices.map(slice=>`E${slice.expert}[${fmt(slice.tokenStart,0)}:${fmt(slice.tokenStart+slice.tokenCount,0)}]`).join(" + ")}</title><rect x="${xx}" y="29" width="${ww}" height="12" rx="2" fill="${fill}" fill-opacity=".18" stroke="${fill}" stroke-opacity=".45"/>${ww>24?`<text x="${xx+ww/2}" y="38" text-anchor="middle" font-size="7.5" fill="#475467">W${item.wave}</text>`:""}</g>`;
+      });
+      for(let core=0;core<r.c.cores;core++){
+        const y=top+core*rowH;
+        s+=`<text x="${left-10}" y="${y+15}" text-anchor="end" font-size="10" fill="#475467">AIC ${core}</text><rect x="${left}" y="${y+3}" width="${plotW}" height="16" rx="2" fill="${core%2?"#fbfcfe":"#f6f8fb"}"/>`;
+        if(paired)s+=`<text x="${left-10}" y="${y+38}" text-anchor="end" font-size="10" fill="#475467">AIV1 ${core}</text><rect x="${left}" y="${y+26}" width="${plotW}" height="16" rx="2" fill="#eff7f8"/>`;
+      }
+      if(paired){
+        // 直接复用任务图中的配对 AIV1 事件，不把 AIV 时间计入 AIC 活跃核时。
+        r.segments.filter(seg=>seg.lane===`AIV1 ${seg.core}`&&seg.end>seg.start).forEach(seg=>{
+          const y=top+seg.core*rowH+27,xx=x(seg.start),ww=Math.max(.35,x(seg.end)-xx);
+          const fill=seg.stage==="SwiGLU+Quant"?"#9163cd":colors[seg.stage];
+          const short=seg.stage==="Dispatch"?"D":seg.stage==="Combine"?"C":"SQ";
+          const label=[`${short} E${seg.expert}${seg.tile>=0?` T${seg.tile}`:""}`,`${short} E${seg.expert}`,short].find(t=>ww>t.length*4.4+6)||"";
+          s+=`<g class="aiv1-segment" data-core="${seg.core}" data-stage="${esc(seg.stage)}"><title>${esc(catlassTaskTooltip(seg,r))}</title><rect x="${xx}" y="${y}" width="${ww}" height="14" rx="1" fill="${fill}"/>${label?`<text x="${xx+ww/2}" y="${y+10.5}" text-anchor="middle" font-size="7.5" fill="#fff">${label}</text>`:""}</g>`;
+        });
+        s+=`<text x="${left}" y="${H-42}" font-size="10" fill="#667085">AIV1：蓝 D = Dispatch · 紫 SQ = SwiGLU/Quant · 青 C = Combine；0 μs 任务不画色块。通信条含任务内排队。</text>`;
+      }
+      r.waitSegments.forEach(wait=>{
+        const y=top+wait.core*rowH+4,xx=x(wait.start),ww=Math.max(1,x(wait.end)-xx),label=ww>36?"等待":"";
+        s+=`<g class="wait-segment" data-wait-kind="${esc(wait.kind)}" data-wait-us="${wait.end-wait.start}"><title>${esc(waitTooltip(wait))}</title><rect x="${xx}" y="${y}" width="${ww}" height="14" rx="2" fill="url(#waitHatch)" stroke="#d5a72a" stroke-width=".55"/>${label?`<text x="${xx+ww/2}" y="${y+10.5}" text-anchor="middle" font-size="7.5" fill="#7a5a00">${label}</text>`:""}</g>`;
+      });
+      [...r.gmm1Segments,...r.gmm2Segments].sort((a,b)=>a.core-b.core||a.start-b.start).forEach(seg=>{
+        const y=top+seg.core*rowH+4,xx=x(seg.start),ww=Math.max(1,x(seg.end)-xx);
+        const wave=seg.wave>=0?`W${seg.wave} `:"";
+        const label=[`${wave}E${seg.expert} T${seg.tile}`,`E${seg.expert} T${seg.tile}`,`E${seg.expert}`].find(t=>ww>t.length*4.4+6)||"";
+        s+=`<g><title>${esc(computeTileTooltip(seg,r))}</title><rect x="${xx}" y="${y}" width="${ww}" height="14" rx="2" fill="${colors[seg.stage]}" stroke="#fff" stroke-width=".5"/>${label?`<text x="${xx+ww/2}" y="${y+10.5}" text-anchor="middle" font-size="7.5" fill="#fff">${label}</text>`:""}</g>`;
+      });
+      s+=`<rect x="${left}" y="${H-27}" width="12" height="12" rx="2" fill="${colors.GMM1}"/><text x="${left+18}" y="${H-17}" font-size="10" fill="#667085">GMM1</text><rect x="${left+78}" y="${H-27}" width="12" height="12" rx="2" fill="${colors.GMM2}"/><text x="${left+96}" y="${H-17}" font-size="10" fill="#667085">GMM2</text><rect x="${left+154}" y="${H-27}" width="12" height="12" rx="2" fill="url(#waitHatch)" stroke="#d5a72a"/><text x="${left+172}" y="${H-17}" font-size="10" fill="#667085">等待气泡（悬停看依赖）</text><text x="${W-right}" y="${H-17}" text-anchor="end" font-size="11" font-weight="700" fill="#172033">AIC 活跃比例 ${pct(r.activePct)}</text></svg>`;
+      $("coreSvg").innerHTML=s;
+    }
+
+    function catlassTaskTooltip(seg,r) {
+      const interval=`${seg.label}\n${fmt(seg.start,3)}–${fmt(seg.end,3)} μs`;
+      const deps=(seg.blockers||[]).map(b=>`${b.label} @ ${fmt(b.ready,3)} μs`).join("\n");
+      if(seg.stage==="GMM1"||seg.stage==="GMM2")return computeTileTooltip(seg,r)+`\n直接依赖：\n${deps}`;
+      if(seg.commKind) {
+        const formulas=seg.paths.map(p=>`${p.path}: ${fmt(p.bytes,0)} B / (${fmt(p.bandwidth,3)} GB/s × 1000) + ${fmt(p.startup,3)} μs = ${fmt(p.serviceUs,3)} μs；排队后 ${fmt(p.start,3)}–${fmt(p.end,3)}`).join("\n");
+        const width=seg.commKind==="dispatch"?`H+ceil(H/32) = ${seg.rowBytes} B/行（未单列路由记录）`:`Ntile×2 = ${seg.n*2} B/行`;
+        return `${interval}\n实际整数路由，观察 Rank ${r.c.catlassRank}\nE${seg.expert} Token[${seg.tokenStart},${seg.tokenStart+seg.m})\n${width}\n按各源 Peer 实际行数汇总字节；本地 ${fmt(seg.localBytes,0)} B 不计网络时间\n${formulas||"仅本地数据，无网络服务时间"}\n完成 = max(各链路排队后完成时刻)\n直接依赖：\n${deps}`;
+      }
+      return `${interval}\n每 Tile 额外服务时间 = 用户输入 ${fmt(seg.duration,3)} μs\n权重供数仅模拟未被 GMM 耗时吸收的暴露延迟；不代表完整权重搬运时间。\n直接依赖：\n${deps}`;
+    }
+
+    function compareCatlassOrders(r) {
+      const selected=r.catlassTileOrder||"swizzle3",other=selected==="mgroup"?"swizzle3":"mgroup";
+      return {[selected]:r,[other]:simulate({...r.c,catlassTileOrder:other})};
+    }
+
+    function compareCatlassCursors(r) {
+      return Object.fromEntries(["shared","dual_same","dual_stagger"].map(policy=>[policy,
+        policy===r.cursorPolicy?r:simulate({...r.c,catlassCursorPolicy:policy})]));
+    }
+
+    function renderCatlassCursorComparison(r) {
+      $("catlassCursorComparison").classList.toggle("hidden",r.schedulerMode!=="catlass");
+      if(r.schedulerMode!=="catlass")return;
+      const results=compareCatlassCursors(r);
+      const range=(result,key)=>{const values=result.coreLoad.map(s=>s[key]);return `${Math.min(...values)}–${Math.max(...values)}`;};
+      const spread=result=>{const values=result.coreLoad.map(s=>s.computeUs);return Math.max(...values)-Math.min(...values);};
+      $("catlassCursorComparisonResult").innerHTML=`<table class="order-comparison"><thead><tr><th>游标策略</th><th>初始游标</th><th>Rank 窗口</th><th>AIC 活跃</th><th>GMM1/核</th><th>GMM2/核</th><th>核上计算服务极差</th></tr></thead><tbody>`+
+        Object.values(results).map(result=>`<tr${result.cursorPolicy===r.cursorPolicy?' class="selected-order"':""}><td>${catlassCursorName(result.cursorPolicy)}${result.cursorPolicy===r.cursorPolicy?"（当前）":""}</td><td>${result.cursorPolicy==="shared"?"0（公共）":`G1=0 / G2=${result.cursorStarts.GMM2}`}</td><td>${us(result.total)}</td><td>${pct(result.activePct)}</td><td>${range(result,"gmm1Count")}</td><td>${range(result,"gmm2Count")}</td><td>${us(spread(result))}</td></tr>`).join("")+"</tbody></table>";
+      $("catlassCoreLoad").innerHTML=`<table class="order-comparison"><thead><tr><th>AIC</th><th>GMM1 Tile</th><th>GMM2 Tile</th><th>总 Tile</th><th>GMM1 服务</th><th>GMM2 服务</th><th>计算服务合计</th><th>内部气泡</th></tr></thead><tbody>`+
+        r.coreLoad.map(s=>`<tr><td>${s.core}</td><td>${s.gmm1Count}</td><td>${s.gmm2Count}</td><td>${s.gmm1Count+s.gmm2Count}</td><td>${us(s.gmm1Us)}</td><td>${us(s.gmm2Us)}</td><td>${us(s.computeUs)}</td><td>${us(s.waitUs)}</td></tr>`).join("")+"</tbody></table>";
+      $("catlassCursorTrace").textContent=`${catlassCursorName(r.cursorPolicy)}；${catlassOrderName(r.catlassTileOrder)}\n首 Wave GMM1 共 ${r.firstWaveGmm1Tiles} Tile；自动错开起点 = ${r.firstWaveGmm1Tiles} % ${r.c.cores} = ${r.firstWaveGmm1Tiles%r.c.cores}（只初始化一次，不保证后续每 Wave 余数不重叠）\n`+
+        r.cursorAssignments.map(a=>`W${a.wave} E${a.expert} Token起点${a.tokenStart} ${a.stage}: cursor ${a.start} + ${a.tileCount} Tile → ${a.end}`).join("\n");
+    }
+
+    function renderCatlassComparison(r) {
+      $("catlassComparison").classList.toggle("hidden",r.schedulerMode!=="catlass");
+      if(r.schedulerMode!=="catlass")return;
+      const results=compareCatlassOrders(r),base=results.swizzle3,opt=results.mgroup;
+      $("catlassComparisonResult").innerHTML=`<table class="order-comparison"><thead><tr><th>排序 / 参考提交</th><th>Rank 窗口</th><th>AIC 活跃比例</th><th>首个 GMM2 开始</th><th>GMM1/GMM2 重叠</th></tr></thead><tbody>`+
+        [base,opt].map(result=>`<tr${result.catlassTileOrder===r.catlassTileOrder?' class="selected-order"':""}><td>${esc(catlassOrderName(result.catlassTileOrder))}${result.catlassTileOrder===r.catlassTileOrder?"（当前）":""}<br><small>${result.sourceCommit.slice(0,9)}</small></td><td>${us(result.total)}</td><td>${pct(result.activePct)}</td><td>${us(Math.min(...result.gmm2Segments.map(s=>s.start)))}</td><td>${us(result.overlap.gmm12)}</td></tr>`).join("")+"</tbody></table>";
+      const change=base.total-opt.total;
+      const delta=Math.abs(change)<1e-8?"两种排序的 Rank 窗口相同":`同 M-Block 优先较原版${change>=0?"缩短":"增加"} ${us(Math.abs(change))}（${pct(100*Math.abs(change)/base.total)}）`;
+      $("catlassComparisonNote").textContent=`固定游标策略：${catlassCursorName(r.cursorPolicy)}。${delta}。AIC 活跃比例 = GMM 核时之和 / (核数 × Rank 窗口)；首 GMM2 时间相对 Metadata 开始。相同 Tile 效率不包含排序可能引起的缓存/HBM效率变化；不保证新排序在所有 Shape 下更快。`;
+    }
+
+    function renderCatlass(r) {
+      $("catlassDetail").classList.toggle("hidden",r.schedulerMode!=="catlass");
+      if(r.schedulerMode!=="catlass")return;
+      const select=$("catlassCoreSelect"),old=Number(select.value)||0;
+      if(select.options.length!==r.c.cores)select.innerHTML=Array.from({length:r.c.cores},(_,i)=>`<option value="${i}">配对核心 ${i}</option>`).join("");
+      select.value=String(Math.min(old,r.c.cores-1));
+      const core=Number(select.value),lanes=[`AIC ${core}`,`AIV0 ${core}`,`AIV1 ${core}`];
+      const W=1280,H=230,left=110,right=24,plot=W-left-right,x=t=>left+t/r.total*plot;
+      let svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="CATLASS 配对核心流水">`;
+      tickValues(r.total).forEach(t=>{svg+=`<line x1="${x(t)}" x2="${x(t)}" y1="28" y2="192" stroke="#e8ebf1"/><text x="${x(t)}" y="18" text-anchor="middle" font-size="10" fill="#667085">${fmt(t,1)} μs</text>`;});
+      lanes.forEach((lane,i)=>{svg+=`<text x="98" y="${59+i*55}" text-anchor="end" font-size="12">${lane}</text><rect x="${left}" y="${38+i*55}" width="${plot}" height="30" fill="#f6f8fb"/>`;});
+      r.segments.filter(s=>s.core===core&&s.end>s.start).forEach(s=>{
+        const i=lanes.indexOf(s.lane);if(i<0)return;
+        const fill=colors[s.stage]||(s.stage==="SwiGLU+Quant"?"#9163cd":s.stage==="Fixpipe"?"#8894a5":"#c78336");
+        const xx=x(s.start),ww=Math.max(.35,x(s.end)-xx),y=40+i*55;
+        svg+=`<g><title>${esc(catlassTaskTooltip(s,r))}</title><rect x="${xx}" y="${y}" width="${ww}" height="26" fill="${fill}"/>${ww>55?`<text x="${xx+ww/2}" y="${y+17}" text-anchor="middle" font-size="9" fill="white">W${s.wave} E${s.expert} T${s.tile}</text>`:""}</g>`;
+      });
+      svg+=`<text x="${left}" y="218" font-size="11" fill="#667085">橙 GMM1 · 绿 GMM2 · 蓝 Dispatch · 青 Combine · 紫 SwiGLU/Quant · 棕 权重供数 · 灰 Fixpipe</text></svg>`;
+      $("catlassSvg").innerHTML=svg;
+      $("catlassComposition").textContent=`${catlassOrderName(r.catlassTileOrder)}；${catlassCursorName(r.cursorPolicy)}\n参考基线提交 ${r.sourceCommit}${r.experimentalScheduler?"（双游标为仿真扩展）":""}\n观察 Rank ${r.c.catlassRank}，整数均衡路由；空专家不生成 Tile。\n专家 Token 数：[${r.expertCounts.join(", ")}]\n`+
+        r.waves.map((ss,w)=>`W${w}: `+ss.map(s=>`E${s.expert}[${s.tokenStart},${s.tokenStart+s.tokenCount}) / ${s.mGroups}组`).join(" + ")).join("\n");
+    }
+
+    function renderCards(r){
+      if(r.schedulerMode==="catlass")$("catlassCursorHint").textContent=`当前：${catlassCursorName(r.cursorPolicy)}，${r.cursorPolicy==="shared"?"公共游标跨阶段延续":"两阶段各自逐 slice、跨 Wave 延续游标"}。双游标自动错开方案的初始偏移 = 首 Wave GMM1 ${r.firstWaveGmm1Tiles} Tile % ${r.c.cores} 核 = ${r.firstWaveGmm1Tiles%r.c.cores}，仅初始化一次。不改 Tile 坐标序、不按运行时就绪时间改派任务。`;
+      $("totalMetricLabel").textContent=r.schedulerMode==="catlass"?"已建模 Rank 流水时延":"端到端时延";
+      $("totalMetric").textContent=us(r.total);$("totalSub").textContent=`${r.c.topologyPreset.toUpperCase()} · ${schedulerName(r.schedulerMode)} · ${r.schedulerMode==="catlass"?catlassOrderName(r.catlassTileOrder):r.releaseMode+" ready"}`;
+      $("activeMetric").textContent=pct(r.activePct);$("windowMetric").textContent=pct(r.windowPct);$("mfuMetric").textContent=pct(r.mfuPct);
+      const stages=[
+        ["Metadata",r.stage.meta,"AllGather 包络",colors.Metadata],
+        ["Dispatch",r.stage.dispatch,r.schedulerMode==="catlass"?"瓶颈链路服务量；不是阶段包络":`服务量，掩盖 ${fmt(r.overlap.dispatch,2)} μs`,colors.Dispatch],
+        ["GMM1",r.stage.gmm1,isWave(r.schedulerMode)?`跨 ${r.waveCount} Wave 包络，与 GMM2 交错`:"Cube 包络",colors.GMM1],
+        ["GMM2",r.stage.gmm2,isWave(r.schedulerMode)?`跨核重叠 GMM1 ${fmt(r.overlap.gmm12,2)} μs`:"Cube 包络",colors.GMM2],
+        ["Combine",r.stage.combineService,`服务量；包络 ${fmt(r.stage.combineEnvelope,2)} μs`,colors.Combine]
+      ];
+      $("stageCards").innerHTML=stages.map((x,i)=>`<div class="panel stage" style="--stage-color:${x[3]}"><div class="idx">步骤 ${i+1}</div><div class="title">${x[0]}</div><div class="time">${us(x[1])}</div><div class="sub">${x[2]}</div></div>`).join("");
+      const fmEff=r.c.fmRawGbps*r.c.fmPayload*r.c.commUtil,closEff=r.c.closGbps*r.c.commUtil;
+      $("facts").innerHTML=`
+        <div class="fact"><b>${fmt(r.totalExperts,0)} 个总专家</b><span>${r.c.expertsPerRank} 专家/Rank，${fmt(r.tokensPerExpert,2)} token/专家</span></div>
+        ${isWave(r.schedulerMode)?`<div class="fact"><b>${r.waveCount} Waves · ${r.mGroupsPerWave} M Group/Wave</b><span>滚动 startBlockIdx；每个核在 Wave 内先 GMM1，随后 GMM2</span></div>`:""}
+        ${isWave(r.schedulerMode)?`<div class="fact"><b>Combine 被 GMM1 覆盖 ${fmt(r.overlap.gmm1Combine,2)} μs</b><span>被 GMM2 覆盖 ${fmt(r.overlap.gmm2Combine,2)} μs；两项墙钟区间可能互相重叠</span></div>`:""}
+        <div class="fact"><b>GMM1 ${r.tileCounts.gmm1} / GMM2 ${r.tileCounts.gmm2} Tile</b><span>每专家；轮转覆盖 ${r.c.cores} 个 AIC</span></div>
+        <div class="fact"><b>${isWave(r.schedulerMode)?schedulerName(r.schedulerMode):"MXFP8 E5M2"}</b><span>${isWave(r.schedulerMode)?"W4 权重展开为 W8，E4M3 计算；耗时参数需 W4A8 实测校准":"E5M2×E5M2，E8M0 scale，FP32 累加，BF16 输出"}</span></div>
+        <div class="fact"><b>FM ${fmt(fmEff,2)} GB/s</b><span>${r.group.fmPeers} 个同组 Peer，点到点独占</span></div>
+        <div class="fact"><b>${r.group.closPeers?`Clos ${fmt(closEff,2)} GB/s`:"Clos 未使用"}</b><span>${r.group.closPeers} 个跨组 Peer，共享单卡出口</span></div>`;
+      const timingText=r.c.timingMode==="flops"
+        ? `Tile 耗时按实际尾块 FLOPs ÷ 单核有效峰值计算：GMM1=4·M·Ntile·H，GMM2=2·M·Ntile·(N/2)。`
+        : `Tile 耗时按实测参考值随实际 M×N 面积线性缩放；这是校准模型，不等价于理论峰值。`;
+      const efficiencyText=r.c.gmm1Eff>=.999&&r.c.gmm2Eff>=.999&&r.c.commUtil>=.999
+        ? `当前计算效率与通信利用率均按 100% 理想上界建模，结果是乐观时延下界，不代表实机一定达到 100%。`
+        : `当前计算与通信效率使用配置中的校准系数。`;
+      const scheduleText=r.schedulerMode==="catlass"
+        ? `CATLASS 参考基线提交 ${r.sourceCommit.slice(0,9)}：整数 rank-major 均衡路由、空专家跳过、${esc(catlassOrderName(r.catlassTileOrder))}；当前分核策略：${esc(catlassCursorName(r.cursorPolicy))}。首 Wave 按连续行分给 AIV1，后续按下一 Wave 专家切片 Dispatch。GMM2 等待对应 M-group 全部 SwiGLU/Quant；配对 AIV1 执行 Combine，慢通信可间接延迟后续激活。SwiGLU 参数按每 Tile 固定服务时间；供数参数是 Tile 级额外暴露延迟，未模拟 K-block 双缓冲。网络按观察 Rank 的实际 Peer 字节数排队，收发双工独立；未模拟远端生产进度、包级仲裁、本地搬运、完整 HBM 竞争、末尾跨 Rank 同步和 Unpermute。Metadata 暂沿用旧估计，非分支 compact-route 精确模型。总时延为所选 Rank 的已建模流水窗口。`
+        : r.schedulerMode==="wave"
+        ? `W4A8 Wave 按源码动态切 M Group：同一 AIC 仍串行执行，但不同 AIC 可在 Wave 边界跨核重叠 GMM1/GMM2；GMM2 写独立 GM tile，Combine 不再反压 AIC。当前多 Wave Dispatch 采用按专家串行、允许与计算重叠的下界模型；W4→W8 前处理未单列，实测 Tile 模式可将其吸收。`
+        : `Base 逐核斜线气泡由下一 Tile 的开始条件 max(本核可用、专家 GMM1 就绪、ping-pong 槽释放) 反推。`;
+      const trafficText=r.schedulerMode==="catlass"
+        ? "Dispatch/Combine 使用观察 Rank 实际整数路由逐 Peer 计字节；每条 FullMesh 专线独立，Clos 同向出口共享排队。"
+        : `Dispatch/Combine 每专家每 Peer 为 ${fmt(r.perExpertRowsPerPeer,4)} 行；FullMesh 与 Clos 可并行，阶段完成时间取两条路径较慢者。`;
+      $("methodNote").innerHTML=`<b>计算口径：</b>${timingText} ${efficiencyText} 当前 FP8 峰值按 ${r.c.cores} Cube / ${fmt(r.c.peakTflops,0)} TFLOPS（2 FLOPs/MAC）计算。${trafficText}${scheduleText}AIC 活跃比例只表示调度上的 GMM 核活跃时间，不等于 profiler 的 Cube 利用率。 <a href="https://gitcode.com/cann/ops-transformer/tree/master/mc2/mega_moe" target="_blank" rel="noreferrer">上游源码</a>；CATLASS 模式以已标注的个人分支提交为准。`;
+      $("coreChartTitle").textContent=`${r.c.cores} AIC 逐核流水 · ${schedulerName(r.schedulerMode)}${isWave(r.schedulerMode)?` (${r.waveCount} Waves)`:""}${r.schedulerMode==="catlass"?" · "+catlassOrderName(r.catlassTileOrder):""}`;
+      $("coreChartHint").textContent="E0=Expert 0，T0=Tile 0；悬停 Tile 看耗时公式，悬停斜线气泡看等待对象。"+(r.schedulerMode==="catlass"?" 每个 AIC 下方是同编号 AIV1，共用时间轴；蓝 Dispatch、紫 SwiGLU/Quant、青 Combine。0 μs 任务不画色块。":"");
+      if(r.schedulerMode==="catlass") {
+        $("coreChartTitle").textContent+=" · "+catlassCursorName(r.cursorPolicy);
+        $("totalSub").textContent+=" · "+catlassCursorName(r.cursorPolicy);
+        $("facts").querySelectorAll(".fact")[1].querySelector("span").textContent=`${catlassCursorName(r.cursorPolicy)}；逐 slice 延续，每核完成自己的 GMM1 后进入 GMM2`;
+        if(r.experimentalScheduler)$("methodNote").innerHTML+=" <b>双游标为用户方案的仿真扩展，并非上述源码提交已实现的行为。</b>两阶段各自延续游标，所有配对引擎使用一致分核，不增加全核 barrier。";
+        $("facts").firstElementChild.querySelector("span").textContent=`观察 Rank ${r.c.catlassRank}，每专家 ${Math.min(...r.expertCounts)}–${Math.max(...r.expertCounts)} Token，${r.expertCounts.filter(n=>n===0).length} 个空专家`;
+        $("facts").querySelectorAll(".fact")[3].querySelector("span").textContent="专家 E0 的调度 Tile 总数；其余专家见下方组成";
+      }
+    }
+
+    function showMessage(text,type="warn") {const el=$("message");el.textContent=text;el.className=`message ${type}`;}
+    function clearMessage(){const el=$("message");el.textContent="";el.className="message";}
+
+    function run(){
+      try{
+        clearMessage();const c=config();validate(c);const r=simulate(c);renderCards(r);renderOverall(r);renderCores(r);renderCatlass(r);renderCatlassComparison(r);renderCatlassCursorComparison(r);
+        const warnings=[];
+        if(c.intermediate%2)warnings.push("N 不是偶数，GMM2 K=N/2 将为非整数");
+        if(r.group.uneven)warnings.push("EP 不能整除 FullMesh 分组，模型按最坏 Clos 出口估算");
+        if(c.schedulerMode==="wave"&&c.commVariant!=="base")warnings.push("上游 W4A8 Wave 源码基于 Base 通信；当前去冗余组合属于探索性外推");
+        if(c.schedulerMode==="catlass")warnings.push("CATLASS 为分支调度的近似耗时模型，W8A8 实测效率不可直接视为 W4A8 校准；供数延迟默认0，末尾同步/Unpermute未计入");
+        if(c.gmm1Eff>=.999&&c.gmm2Eff>=.999&&c.commUtil>=.999)warnings.push("Prefill 的 100% 计算/通信效率是理想上界，当前时延属于乐观下界");
+        if(r.activePct>100.001||r.windowPct>100.001||r.mfuPct>100.001)warnings.push("利用率超过 100%，实测 Tile/P_Cube/口径之间可能不一致");
+        if(warnings.length)showMessage(warnings.join("；")+"。","warn");
+        window.lastSimulation=r;
+        saveLastRun(r);
+      }catch(err){showMessage(err.message||String(err),"error");}
+    }
+
+    function setDefaults(){
+      Object.entries(defaults).forEach(([id,value])=>{$(id).value=String(value);});
+      $("savedConfigSelect").value=DRAFT_ID;
+      syncPreset();syncTiming();syncScheduler();run();
+    }
+    function syncTiming(){const manual=v("timingMode")==="manual";document.querySelectorAll(".manual-time").forEach(x=>x.classList.toggle("hidden",!manual));document.querySelectorAll(".auto-time").forEach(x=>x.classList.toggle("hidden",manual));}
+    function syncScheduler(){
+      const wave=isWave(v("schedulerMode")),catlass=v("schedulerMode")==="catlass";
+      document.querySelectorAll(".catlass-scheduler").forEach(x=>x.classList.toggle("hidden",!catlass));
+      document.querySelectorAll(".wave-scheduler").forEach(x=>x.classList.toggle("hidden",!wave));
+      document.querySelectorAll(".base-scheduler").forEach(x=>x.classList.toggle("hidden",wave));
+      $("tileStrategy").disabled=wave;
+      if(wave)$("tileStrategy").value="rotating";
+      if(wave){
+        const c=config(),automatic=calcMGroupsPerWave(c),selected=c.waveMGroups>0?c.waveMGroups:automatic;
+        const g1Tiles=Math.ceil(c.intermediate/c.gmm1TileN),g2Tiles=Math.ceil(c.hidden/c.gmm2TileN);
+        $("waveSchedulerHint").textContent=`源码公式：max(ceil(${c.cores}×4/${g1Tiles}), ceil(${c.cores}/${g2Tiles})) = ${automatic}；当前采用 ${selected} M Group/Wave。0 表示自动。`;
+      }
+    }
+    function syncPreset(){
+      const p=v("topologyPreset");
+      if(p==="pod")$("closGbps").value="140";
+      if(p==="pc16")$("closGbps").value="230";
+      if(p==="fullmesh")$("fmGroup").value="8";
+      $("closGbps").disabled=p==="fullmesh";
+      $("fmGroup").disabled=p==="fullmesh";
+    }
+    function syncHardwarePreset(){
+      const presets={"28":[28,756],"32":[32,865],"35":[35,973]};
+      const preset=presets[v("hardwarePreset")];
+      if(preset){$("cores").value=String(preset[0]);$("peakTflops").value=String(preset[1]);}
+    }
+
+    function persistenceSuffix(){return storageEnabled?"":"；浏览器未开放持久化，本次仅在当前页面有效";}
+
+    function loadSelectedConfiguration(){
+      const profile=selectedProfile();
+      if(!profile?.values){showConfigStatus("所选配置没有可加载的参数。","error");return;}
+      applyFormValues(profile.values);run();
+      showConfigStatus(`已加载“${profile.label}” · ${resultText(profile.result)}`,"ok");
+    }
+
+    function saveNewProfile(){
+      try{
+        const label=$("configLabel").value.trim();
+        if(!label)throw new Error("请先输入配置标签。");
+        if(!uniqueLabel(label))throw new Error("配置标签已存在，请换一个名称。");
+        const snap=snapshotCurrent(),now=Date.now(),profile={id:newProfileId(),label,...snap,createdAt:now,updatedAt:now};
+        profileState.profiles.push(profile);persistProfiles();renderProfileOptions(profile.id);
+        showConfigStatus(`已保存“${label}”及当前仿真结果${persistenceSuffix()}。`,storageEnabled?"ok":"error");
+      }catch(err){showConfigStatus(err.message||String(err),"error");}
+    }
+
+    function updateSelectedProfile(){
+      try{
+        const id=$("savedConfigSelect").value;
+        if(id===DRAFT_ID)throw new Error("“上次运行”由系统自动维护；请另存为命名配置后再覆盖。");
+        const profile=selectedProfile();if(!profile)throw new Error("没有找到所选配置。");
+        const snap=snapshotCurrent();profile.values=snap.values;profile.result=snap.result;profile.updatedAt=Date.now();
+        persistProfiles();renderProfileOptions(profile.id);
+        showConfigStatus(`已用当前参数和结果覆盖“${profile.label}”${persistenceSuffix()}。`,storageEnabled?"ok":"error");
+      }catch(err){showConfigStatus(err.message||String(err),"error");}
+    }
+
+    function renameSelectedProfile(){
+      try{
+        const id=$("savedConfigSelect").value;
+        if(id===DRAFT_ID)throw new Error("“上次运行”是固定名称，不能重命名。");
+        const profile=selectedProfile();if(!profile)throw new Error("没有找到所选配置。");
+        const label=$("configLabel").value.trim();if(!label)throw new Error("请输入新的配置标签。");
+        if(!uniqueLabel(label,profile.id))throw new Error("配置标签已存在，请换一个名称。");
+        const old=profile.label;profile.label=label;profile.updatedAt=Date.now();persistProfiles();renderProfileOptions(profile.id);
+        showConfigStatus(`已将“${old}”重命名为“${label}”${persistenceSuffix()}。`,storageEnabled?"ok":"error");
+      }catch(err){showConfigStatus(err.message||String(err),"error");}
+    }
+
+    let pendingDeleteId="",deleteConfirmTimer=0;
+    function clearDeleteConfirmation(){
+      pendingDeleteId="";clearTimeout(deleteConfirmTimer);$("deleteConfigBtn").textContent="删除";
+    }
+
+    function deleteSelectedProfile(){
+      const id=$("savedConfigSelect").value;
+      if(id===DRAFT_ID){showConfigStatus("“上次运行”会持续自动保存，不能手动删除。","error");return;}
+      const profile=selectedProfile();if(!profile){showConfigStatus("没有找到所选配置。","error");return;}
+      if(pendingDeleteId!==id){
+        clearDeleteConfirmation();pendingDeleteId=id;$("deleteConfigBtn").textContent="再次点击确认删除";
+        showConfigStatus(`再次点击“确认删除”将移除“${profile.label}”；5 秒后自动取消。`,`error`);
+        deleteConfirmTimer=setTimeout(clearDeleteConfirmation,5000);return;
+      }
+      clearDeleteConfirmation();
+      profileState.profiles=profileState.profiles.filter(p=>p.id!==id);persistProfiles();renderProfileOptions(DRAFT_ID);
+      showConfigStatus(`已删除“${profile.label}”${persistenceSuffix()}。`,storageEnabled?"ok":"error");
+    }
+
+    let timer=0;
+    function queueRun(){clearTimeout(timer);timer=setTimeout(run,80);}
+    ids.forEach(id=>$(id).addEventListener("input",()=>{
+      if(id==="timingMode")syncTiming();
+      if(id==="topologyPreset")syncPreset();
+      if(id==="hardwarePreset")syncHardwarePreset();
+      if((id==="cores"||id==="peakTflops")&&document.activeElement===$(id))$("hardwarePreset").value="custom";
+      if((id==="closGbps"||id==="fmGroup")&&document.activeElement===$(id))$("topologyPreset").value="custom";
+      syncScheduler();
+      queueRun();
+    }));
+    $("runBtn").addEventListener("click",run);$("resetBtn").addEventListener("click",setDefaults);
+    $("catlassCoreSelect").addEventListener("change",()=>{if(window.lastSimulation)renderCatlass(window.lastSimulation);});
+    $("savedConfigSelect").addEventListener("change",()=>{clearDeleteConfirmation();refreshConfigMeta();});
+    $("loadConfigBtn").addEventListener("click",loadSelectedConfiguration);
+    $("saveConfigBtn").addEventListener("click",saveNewProfile);
+    $("updateConfigBtn").addEventListener("click",updateSelectedProfile);
+    $("renameConfigBtn").addEventListener("click",renameSelectedProfile);
+    $("deleteConfigBtn").addEventListener("click",deleteSelectedProfile);
+    document.querySelectorAll("[data-download]").forEach(btn=>btn.addEventListener("click",()=>{
+      const svg=$(btn.dataset.download).querySelector("svg");if(!svg)return;
+      const blob=new Blob([new XMLSerializer().serializeToString(svg)],{type:"image/svg+xml;charset=utf-8"});
+      const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=btn.dataset.name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+    }));
+    initializeProfileStorage();
+    if(draftState?.values)applyFormValues(draftState.values);else{syncPreset();syncTiming();syncScheduler();}
+    run();
+  })();
+  </script>
+</body>
+</html>
