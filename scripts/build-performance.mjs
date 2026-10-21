@@ -13,6 +13,7 @@ const out = path.join(root, 'megamoe-performance');
 const sha = text => crypto.createHash('sha256').update(text).digest('hex');
 const originalHtml = fs.readFileSync(path.join(source, 'index.html'), 'utf8');
 const original = JSON.parse(fs.readFileSync(path.join(source, 'results.json'), 'utf8'));
+const snapshot = original.stage1?.ep32_r31 ? 'ep32-r31-layout-ds-1021-' + original.stage1.ep32_r31.status : 'ds-converge-final-1021';
 const privateAnchor = '#private-artifacts';
 let hiddenLinks = 0, hiddenPaths = 0;
 function scrub(value) {
@@ -36,7 +37,7 @@ const data = scrub(original);
 // 二进制/JIT文件清单不用于页面计算；公开保留软件版本及实验内已有的身份哈希。
 if (data.environment) delete data.environment.files;
 data.publication = {
-  audience: 'public', snapshot: 'ds-converge-final-1021',
+  audience: 'public', snapshot,
   original_artifacts: 'local_archive_not_published',
   note: '数值与离线快照一致；原始timer/CSV及服务器文件未公开。',
 };
@@ -59,7 +60,7 @@ html = html.replace(/(<script[^>]*id="project-documents"[^>]*>)[\s\S]*?(<\/scrip
   (_, start, end) => start + json(docs) + end);
 html = replaceOnce(html, '<title>MegaMoE · 离线性能实验室</title>', '<title>MegaMoE 性能实验室 · YuHsin</title>');
 html = html.replace('无需网络或服务器。', '公开性能快照、项目状态与调优方法。');
-html = replaceOnce(html, '<body>', '<body>\n<aside id="private-artifacts" style="padding:12px 20px;background:#fff5dc;border-bottom:1px solid #e7cfa0;color:#5e491c;overflow-wrap:anywhere"><a href="../">← 返回个人网站</a> · 公开快照 ds-converge-final-1021：性能、实验记录、项目状态及调优 SKILL 均保留。原始 timer/CSV 仅在本地归档，未公开；对应入口会标注“本地归档”，不是在线下载。</aside>');
+html = replaceOnce(html, '<body>', '<body>\n<aside id="private-artifacts" style="padding:12px 20px;background:#fff5dc;border-bottom:1px solid #e7cfa0;color:#5e491c;overflow-wrap:anywhere"><a href="../">← 返回个人网站</a> · 公开快照 ' + snapshot + '：性能、实验记录、项目状态及调优 SKILL 均保留。原始 timer/CSV 仅在本地归档，未公开；对应入口会标注“本地归档”，不是在线下载。</aside>');
 // 静态占位保留跨页面锚点；运行时仍由原有renderDsConverge管理同一容器。
 html = replaceOnce(html, '<div id="stage1-experiments"></div></section>', '<div id="stage1-experiments"></div></section><div id="ds-converge"></div>');
 html = replaceOnce(html, '需要打开原始证据时，请连同同级evidence目录一起复制。', '公开页不发布原始附件；如需原始timer/CSV，请使用本地离线归档。');

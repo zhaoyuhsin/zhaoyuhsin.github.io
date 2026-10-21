@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "dataset_id": "ep8-balanced-fullcomm-1020",
-  "updated_at": "2026-10-21T07:39:54+08:00",
+  "updated_at": "2026-10-21T19:13:24+08:00",
   "title": "MegaMoE · 离线性能实验室",
   "rows": [
     {
@@ -65469,6 +65469,4160 @@
       },
       "summary_url": "#private-artifacts",
       "note": "双方同一组原始FP8/FP4、SF和路由权重字节，逐rank SHA核对；每方法两次独立启动、正式timer-off，另采完整32组96轨被动流水及off/on CSV。不拼各分支最小值，数学迁移与原规则优化分栏，尚未宣称EP8全shape追平。 同一SO的其余五BS另列单次筛选，不冒充全套重复验收。"
+    },
+    "ep32_r31": {
+      "schema_version": 1,
+      "status": "partial",
+      "execution_state": "stopped",
+      "created_utc": "2026-10-21T11:12:35.709884+00:00",
+      "ep": 32,
+      "branches": {
+        "r31": "codex/megamoe-packed-prefetch-original-math-1021",
+        "ds": "codex/megamoe-ep8-performance-dashboard-1020"
+      },
+      "hardware": "同柜4节点×8卡 · Ascend950DT · CANN B080 9.2.0 · Torch2.12.0/torch_npu2.12.0.post2",
+      "note": "每shape按R31→DS→DS→R31采集，B组先覆盖A批再反向补B批。表中明确区分两轮完成、单轮筛选、待测；不把20轮采样当20次独立实验。warm10、采20取后10，完整通信、timer-off，无共享专家。主值为逐轮rank-min均值，另保留rank-max，不是集群最慢rank完成时延。BS32–512为节点组A；后续补测换同柜B组，固定管理网口及HCCL Host动态端口，同BS内两方案同组同设置。不是一个连续独占窗口，不跨节点组解释绝对时延变化。R31在EP32未启用EP8-only CV。原始字节逐rank核对，数学合同仍不同；未跑独立Golden。 本轮已停止，失败批次bs2048-ds-b-retry3；原因见INCIDENT_HCCL.md与原始日志。其后未再启动新批次，BS1024、BS2048未完成双轮验收；单轮配对不当作重复结果。",
+      "completed_shapes": 5,
+      "screening_shapes": 2,
+      "accuracy": "not_run_user_requested",
+      "timer": false,
+      "cases": [
+        {
+          "ep": 32,
+          "bs": 32,
+          "status": "complete",
+          "methods": {
+            "r31": {
+              "runs": [
+                {
+                  "label": "bs32-r31-a",
+                  "mean_us": 204.5941,
+                  "rank_max_mean_us": 208.4741,
+                  "placement": {
+                    "nodes": [
+                      "CPU7",
+                      "CPU6",
+                      "CPU5",
+                      "CPU4"
+                    ],
+                    "rack": "05",
+                    "host_interface": "auto"
+                  },
+                  "url": "#private-artifacts",
+                  "csv_links": [
+                    {
+                      "rank": 0,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 1,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 2,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 3,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 4,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 5,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 6,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 7,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 8,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 9,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 10,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 11,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 12,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 13,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 14,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 15,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 16,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 17,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 18,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 19,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 20,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 21,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 22,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 23,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 24,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 25,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 26,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 27,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 28,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 29,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 30,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 31,
+                      "url": "#private-artifacts"
+                    }
+                  ]
+                },
+                {
+                  "label": "bs32-r31-b",
+                  "mean_us": 203.99790000000002,
+                  "rank_max_mean_us": 207.7129,
+                  "placement": {
+                    "nodes": [
+                      "CPU7",
+                      "CPU6",
+                      "CPU5",
+                      "CPU4"
+                    ],
+                    "rack": "05",
+                    "host_interface": "auto"
+                  },
+                  "url": "#private-artifacts",
+                  "csv_links": [
+                    {
+                      "rank": 0,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 1,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 2,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 3,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 4,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 5,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 6,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 7,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 8,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 9,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 10,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 11,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 12,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 13,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 14,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 15,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 16,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 17,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 18,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 19,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 20,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 21,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 22,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 23,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 24,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 25,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 26,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 27,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 28,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 29,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 30,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 31,
+                      "url": "#private-artifacts"
+                    }
+                  ]
+                }
+              ],
+              "mean_us": 204.296,
+              "rank_max_mean_us": 208.0935,
+              "repeat_bitwise_equal": true
+            },
+            "ds": {
+              "runs": [
+                {
+                  "label": "bs32-ds-a",
+                  "mean_us": 211.9551,
+                  "rank_max_mean_us": 219.5575,
+                  "placement": {
+                    "nodes": [
+                      "CPU7",
+                      "CPU6",
+                      "CPU5",
+                      "CPU4"
+                    ],
+                    "rack": "05",
+                    "host_interface": "auto"
+                  },
+                  "url": "#private-artifacts",
+                  "csv_links": [
+                    {
+                      "rank": 0,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 1,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 2,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 3,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 4,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 5,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 6,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 7,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 8,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 9,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 10,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 11,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 12,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 13,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 14,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 15,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 16,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 17,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 18,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 19,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 20,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 21,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 22,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 23,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 24,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 25,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 26,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 27,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 28,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 29,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 30,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 31,
+                      "url": "#private-artifacts"
+                    }
+                  ]
+                },
+                {
+                  "label": "bs32-ds-b",
+                  "mean_us": 212.3538,
+                  "rank_max_mean_us": 220.0085,
+                  "placement": {
+                    "nodes": [
+                      "CPU7",
+                      "CPU6",
+                      "CPU5",
+                      "CPU4"
+                    ],
+                    "rack": "05",
+                    "host_interface": "auto"
+                  },
+                  "url": "#private-artifacts",
+                  "csv_links": [
+                    {
+                      "rank": 0,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 1,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 2,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 3,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 4,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 5,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 6,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 7,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 8,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 9,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 10,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 11,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 12,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 13,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 14,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 15,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 16,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 17,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 18,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 19,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 20,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 21,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 22,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 23,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 24,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 25,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 26,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 27,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 28,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 29,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 30,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 31,
+                      "url": "#private-artifacts"
+                    }
+                  ]
+                }
+              ],
+              "mean_us": 212.15445,
+              "rank_max_mean_us": 219.78300000000002,
+              "repeat_bitwise_equal": true
+            }
+          },
+          "placement": {
+            "nodes": [
+              "CPU7",
+              "CPU6",
+              "CPU5",
+              "CPU4"
+            ],
+            "rack": "05",
+            "host_interface": "auto"
+          },
+          "raw_inputs_equal_all_32_ranks": true,
+          "r31_latency_reduction_pct": 3.704117448396682,
+          "missing_runs": [],
+          "unpaired_runs": [],
+          "hardware_group": "A"
+        },
+        {
+          "ep": 32,
+          "bs": 96,
+          "status": "complete",
+          "methods": {
+            "r31": {
+              "runs": [
+                {
+                  "label": "bs96-r31-a",
+                  "mean_us": 240.1547,
+                  "rank_max_mean_us": 243.1634,
+                  "placement": {
+                    "nodes": [
+                      "CPU7",
+                      "CPU6",
+                      "CPU5",
+                      "CPU4"
+                    ],
+                    "rack": "05",
+                    "host_interface": "auto"
+                  },
+                  "url": "#private-artifacts",
+                  "csv_links": [
+                    {
+                      "rank": 0,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 1,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 2,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 3,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 4,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 5,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 6,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 7,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 8,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 9,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 10,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 11,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 12,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 13,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 14,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 15,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 16,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 17,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 18,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 19,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 20,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 21,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 22,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 23,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 24,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 25,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 26,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 27,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 28,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 29,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 30,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 31,
+                      "url": "#private-artifacts"
+                    }
+                  ]
+                },
+                {
+                  "label": "bs96-r31-b",
+                  "mean_us": 239.1906,
+                  "rank_max_mean_us": 242.4581,
+                  "placement": {
+                    "nodes": [
+                      "CPU7",
+                      "CPU6",
+                      "CPU5",
+                      "CPU4"
+                    ],
+                    "rack": "05",
+                    "host_interface": "auto"
+                  },
+                  "url": "#private-artifacts",
+                  "csv_links": [
+                    {
+                      "rank": 0,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 1,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 2,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 3,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 4,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 5,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 6,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 7,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 8,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 9,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 10,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 11,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 12,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 13,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 14,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 15,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 16,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 17,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 18,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 19,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 20,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 21,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 22,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 23,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 24,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 25,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 26,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 27,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 28,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 29,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 30,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 31,
+                      "url": "#private-artifacts"
+                    }
+                  ]
+                }
+              ],
+              "mean_us": 239.67264999999998,
+              "rank_max_mean_us": 242.81074999999998,
+              "repeat_bitwise_equal": true
+            },
+            "ds": {
+              "runs": [
+                {
+                  "label": "bs96-ds-a",
+                  "mean_us": 238.6745,
+                  "rank_max_mean_us": 247.7561,
+                  "placement": {
+                    "nodes": [
+                      "CPU7",
+                      "CPU6",
+                      "CPU5",
+                      "CPU4"
+                    ],
+                    "rack": "05",
+                    "host_interface": "auto"
+                  },
+                  "url": "#private-artifacts",
+                  "csv_links": [
+                    {
+                      "rank": 0,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 1,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 2,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 3,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 4,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 5,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 6,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 7,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 8,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 9,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 10,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 11,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 12,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 13,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 14,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 15,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 16,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 17,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 18,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 19,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 20,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 21,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 22,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 23,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 24,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 25,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 26,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 27,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 28,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 29,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 30,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 31,
+                      "url": "#private-artifacts"
+                    }
+                  ]
+                },
+                {
+                  "label": "bs96-ds-b",
+                  "mean_us": 238.2348,
+                  "rank_max_mean_us": 247.9145,
+                  "placement": {
+                    "nodes": [
+                      "CPU7",
+                      "CPU6",
+                      "CPU5",
+                      "CPU4"
+                    ],
+                    "rack": "05",
+                    "host_interface": "auto"
+                  },
+                  "url": "#private-artifacts",
+                  "csv_links": [
+                    {
+                      "rank": 0,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 1,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 2,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 3,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 4,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 5,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 6,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 7,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 8,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 9,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 10,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 11,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 12,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 13,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 14,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 15,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 16,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 17,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 18,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 19,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 20,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 21,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 22,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 23,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 24,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 25,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 26,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 27,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 28,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 29,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 30,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 31,
+                      "url": "#private-artifacts"
+                    }
+                  ]
+                }
+              ],
+              "mean_us": 238.45465000000002,
+              "rank_max_mean_us": 247.83530000000002,
+              "repeat_bitwise_equal": true
+            }
+          },
+          "placement": {
+            "nodes": [
+              "CPU7",
+              "CPU6",
+              "CPU5",
+              "CPU4"
+            ],
+            "rack": "05",
+            "host_interface": "auto"
+          },
+          "raw_inputs_equal_all_32_ranks": true,
+          "r31_latency_reduction_pct": -0.5107889487581563,
+          "missing_runs": [],
+          "unpaired_runs": [],
+          "hardware_group": "A"
+        },
+        {
+          "ep": 32,
+          "bs": 256,
+          "status": "complete",
+          "methods": {
+            "r31": {
+              "runs": [
+                {
+                  "label": "bs256-r31-a",
+                  "mean_us": 393.1127,
+                  "rank_max_mean_us": 396.3652,
+                  "placement": {
+                    "nodes": [
+                      "CPU7",
+                      "CPU6",
+                      "CPU5",
+                      "CPU4"
+                    ],
+                    "rack": "05",
+                    "host_interface": "auto"
+                  },
+                  "url": "#private-artifacts",
+                  "csv_links": [
+                    {
+                      "rank": 0,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 1,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 2,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 3,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 4,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 5,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 6,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 7,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 8,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 9,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 10,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 11,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 12,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 13,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 14,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 15,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 16,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 17,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 18,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 19,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 20,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 21,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 22,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 23,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 24,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 25,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 26,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 27,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 28,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 29,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 30,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 31,
+                      "url": "#private-artifacts"
+                    }
+                  ]
+                },
+                {
+                  "label": "bs256-r31-b",
+                  "mean_us": 390.7876,
+                  "rank_max_mean_us": 394.1216,
+                  "placement": {
+                    "nodes": [
+                      "CPU7",
+                      "CPU6",
+                      "CPU5",
+                      "CPU4"
+                    ],
+                    "rack": "05",
+                    "host_interface": "auto"
+                  },
+                  "url": "#private-artifacts",
+                  "csv_links": [
+                    {
+                      "rank": 0,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 1,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 2,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 3,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 4,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 5,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 6,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 7,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 8,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 9,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 10,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 11,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 12,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 13,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 14,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 15,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 16,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 17,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 18,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 19,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 20,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 21,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 22,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 23,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 24,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 25,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 26,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 27,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 28,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 29,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 30,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 31,
+                      "url": "#private-artifacts"
+                    }
+                  ]
+                }
+              ],
+              "mean_us": 391.95015,
+              "rank_max_mean_us": 395.2434,
+              "repeat_bitwise_equal": true
+            },
+            "ds": {
+              "runs": [
+                {
+                  "label": "bs256-ds-a",
+                  "mean_us": 379.94599999999997,
+                  "rank_max_mean_us": 387.2086,
+                  "placement": {
+                    "nodes": [
+                      "CPU7",
+                      "CPU6",
+                      "CPU5",
+                      "CPU4"
+                    ],
+                    "rack": "05",
+                    "host_interface": "auto"
+                  },
+                  "url": "#private-artifacts",
+                  "csv_links": [
+                    {
+                      "rank": 0,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 1,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 2,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 3,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 4,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 5,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 6,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 7,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 8,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 9,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 10,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 11,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 12,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 13,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 14,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 15,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 16,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 17,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 18,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 19,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 20,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 21,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 22,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 23,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 24,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 25,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 26,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 27,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 28,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 29,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 30,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 31,
+                      "url": "#private-artifacts"
+                    }
+                  ]
+                },
+                {
+                  "label": "bs256-ds-b",
+                  "mean_us": 378.0357,
+                  "rank_max_mean_us": 384.1639,
+                  "placement": {
+                    "nodes": [
+                      "CPU7",
+                      "CPU6",
+                      "CPU5",
+                      "CPU4"
+                    ],
+                    "rack": "05",
+                    "host_interface": "auto"
+                  },
+                  "url": "#private-artifacts",
+                  "csv_links": [
+                    {
+                      "rank": 0,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 1,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 2,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 3,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 4,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 5,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 6,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 7,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 8,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 9,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 10,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 11,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 12,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 13,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 14,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 15,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 16,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 17,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 18,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 19,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 20,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 21,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 22,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 23,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 24,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 25,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 26,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 27,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 28,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 29,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 30,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 31,
+                      "url": "#private-artifacts"
+                    }
+                  ]
+                }
+              ],
+              "mean_us": 378.99085,
+              "rank_max_mean_us": 385.68625,
+              "repeat_bitwise_equal": true
+            }
+          },
+          "placement": {
+            "nodes": [
+              "CPU7",
+              "CPU6",
+              "CPU5",
+              "CPU4"
+            ],
+            "rack": "05",
+            "host_interface": "auto"
+          },
+          "raw_inputs_equal_all_32_ranks": true,
+          "r31_latency_reduction_pct": -3.419422922743376,
+          "missing_runs": [],
+          "unpaired_runs": [],
+          "hardware_group": "A"
+        },
+        {
+          "ep": 32,
+          "bs": 512,
+          "status": "complete",
+          "methods": {
+            "r31": {
+              "runs": [
+                {
+                  "label": "bs512-r31-a",
+                  "mean_us": 727.6785,
+                  "rank_max_mean_us": 731.891,
+                  "placement": {
+                    "nodes": [
+                      "CPU7",
+                      "CPU6",
+                      "CPU5",
+                      "CPU4"
+                    ],
+                    "rack": "05",
+                    "host_interface": "auto"
+                  },
+                  "url": "#private-artifacts",
+                  "csv_links": [
+                    {
+                      "rank": 0,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 1,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 2,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 3,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 4,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 5,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 6,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 7,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 8,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 9,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 10,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 11,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 12,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 13,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 14,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 15,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 16,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 17,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 18,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 19,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 20,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 21,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 22,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 23,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 24,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 25,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 26,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 27,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 28,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 29,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 30,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 31,
+                      "url": "#private-artifacts"
+                    }
+                  ]
+                },
+                {
+                  "label": "bs512-r31-b",
+                  "mean_us": 729.245,
+                  "rank_max_mean_us": 733.2028,
+                  "placement": {
+                    "nodes": [
+                      "CPU7",
+                      "CPU6",
+                      "CPU5",
+                      "CPU4"
+                    ],
+                    "rack": "05",
+                    "host_interface": "auto"
+                  },
+                  "url": "#private-artifacts",
+                  "csv_links": [
+                    {
+                      "rank": 0,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 1,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 2,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 3,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 4,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 5,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 6,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 7,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 8,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 9,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 10,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 11,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 12,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 13,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 14,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 15,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 16,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 17,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 18,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 19,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 20,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 21,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 22,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 23,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 24,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 25,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 26,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 27,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 28,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 29,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 30,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 31,
+                      "url": "#private-artifacts"
+                    }
+                  ]
+                }
+              ],
+              "mean_us": 728.4617499999999,
+              "rank_max_mean_us": 732.5469,
+              "repeat_bitwise_equal": true
+            },
+            "ds": {
+              "runs": [
+                {
+                  "label": "bs512-ds-a",
+                  "mean_us": 672.4177,
+                  "rank_max_mean_us": 674.7607,
+                  "placement": {
+                    "nodes": [
+                      "CPU7",
+                      "CPU6",
+                      "CPU5",
+                      "CPU4"
+                    ],
+                    "rack": "05",
+                    "host_interface": "auto"
+                  },
+                  "url": "#private-artifacts",
+                  "csv_links": [
+                    {
+                      "rank": 0,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 1,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 2,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 3,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 4,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 5,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 6,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 7,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 8,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 9,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 10,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 11,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 12,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 13,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 14,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 15,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 16,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 17,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 18,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 19,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 20,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 21,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 22,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 23,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 24,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 25,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 26,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 27,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 28,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 29,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 30,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 31,
+                      "url": "#private-artifacts"
+                    }
+                  ]
+                },
+                {
+                  "label": "bs512-ds-b",
+                  "mean_us": 676.6637000000001,
+                  "rank_max_mean_us": 678.5552,
+                  "placement": {
+                    "nodes": [
+                      "CPU7",
+                      "CPU6",
+                      "CPU5",
+                      "CPU4"
+                    ],
+                    "rack": "05",
+                    "host_interface": "auto"
+                  },
+                  "url": "#private-artifacts",
+                  "csv_links": [
+                    {
+                      "rank": 0,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 1,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 2,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 3,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 4,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 5,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 6,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 7,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 8,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 9,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 10,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 11,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 12,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 13,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 14,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 15,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 16,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 17,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 18,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 19,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 20,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 21,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 22,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 23,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 24,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 25,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 26,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 27,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 28,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 29,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 30,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 31,
+                      "url": "#private-artifacts"
+                    }
+                  ]
+                }
+              ],
+              "mean_us": 674.5407,
+              "rank_max_mean_us": 676.65795,
+              "repeat_bitwise_equal": true
+            }
+          },
+          "placement": {
+            "nodes": [
+              "CPU7",
+              "CPU6",
+              "CPU5",
+              "CPU4"
+            ],
+            "rack": "05",
+            "host_interface": "auto"
+          },
+          "raw_inputs_equal_all_32_ranks": true,
+          "r31_latency_reduction_pct": -7.993743001719533,
+          "missing_runs": [],
+          "unpaired_runs": [],
+          "hardware_group": "A"
+        },
+        {
+          "ep": 32,
+          "bs": 1024,
+          "status": "screening",
+          "methods": {
+            "r31": {
+              "runs": [
+                {
+                  "label": "bs1024-r31-a-retry3",
+                  "mean_us": 1317.104,
+                  "rank_max_mean_us": 1322.2315,
+                  "placement": {
+                    "nodes": [
+                      "CPU7",
+                      "CPU8",
+                      "CPU3",
+                      "CPU1"
+                    ],
+                    "rack": "05",
+                    "master_port": 29962,
+                    "shmem_port": 26962,
+                    "host_interface": "enp35s0f2",
+                    "hccl_host_ports": "auto"
+                  },
+                  "url": "#private-artifacts",
+                  "csv_links": [
+                    {
+                      "rank": 0,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 1,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 2,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 3,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 4,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 5,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 6,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 7,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 8,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 9,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 10,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 11,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 12,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 13,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 14,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 15,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 16,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 17,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 18,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 19,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 20,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 21,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 22,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 23,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 24,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 25,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 26,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 27,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 28,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 29,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 30,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 31,
+                      "url": "#private-artifacts"
+                    }
+                  ]
+                }
+              ],
+              "mean_us": 1317.104,
+              "rank_max_mean_us": 1322.2315,
+              "repeat_bitwise_equal": null
+            },
+            "ds": {
+              "runs": [
+                {
+                  "label": "bs1024-ds-a-retry3",
+                  "mean_us": 1220.7051,
+                  "rank_max_mean_us": 1229.6383,
+                  "placement": {
+                    "nodes": [
+                      "CPU7",
+                      "CPU8",
+                      "CPU3",
+                      "CPU1"
+                    ],
+                    "rack": "05",
+                    "master_port": 29962,
+                    "shmem_port": 26962,
+                    "host_interface": "enp35s0f2",
+                    "hccl_host_ports": "auto"
+                  },
+                  "url": "#private-artifacts",
+                  "csv_links": [
+                    {
+                      "rank": 0,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 1,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 2,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 3,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 4,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 5,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 6,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 7,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 8,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 9,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 10,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 11,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 12,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 13,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 14,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 15,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 16,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 17,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 18,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 19,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 20,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 21,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 22,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 23,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 24,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 25,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 26,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 27,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 28,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 29,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 30,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 31,
+                      "url": "#private-artifacts"
+                    }
+                  ]
+                }
+              ],
+              "mean_us": 1220.7051,
+              "rank_max_mean_us": 1229.6383,
+              "repeat_bitwise_equal": null
+            }
+          },
+          "placement": {
+            "nodes": [
+              "CPU7",
+              "CPU8",
+              "CPU3",
+              "CPU1"
+            ],
+            "rack": "05",
+            "master_port": 29962,
+            "shmem_port": 26962,
+            "host_interface": "enp35s0f2",
+            "hccl_host_ports": "auto"
+          },
+          "raw_inputs_equal_all_32_ranks": true,
+          "r31_latency_reduction_pct": -7.896985111309851,
+          "missing_runs": [
+            "bs1024-r31-b-retry3: 正式批次未完成或32rank本地证据未归档",
+            "bs1024-ds-b-retry3: 正式批次未完成或32rank本地证据未归档"
+          ],
+          "unpaired_runs": [],
+          "hardware_group": "B"
+        },
+        {
+          "ep": 32,
+          "bs": 2048,
+          "status": "screening",
+          "methods": {
+            "r31": {
+              "runs": [
+                {
+                  "label": "bs2048-r31-a-retry3",
+                  "mean_us": 2746.5137,
+                  "rank_max_mean_us": 2752.5794,
+                  "placement": {
+                    "nodes": [
+                      "CPU7",
+                      "CPU8",
+                      "CPU3",
+                      "CPU1"
+                    ],
+                    "rack": "05",
+                    "master_port": 29962,
+                    "shmem_port": 26962,
+                    "host_interface": "enp35s0f2",
+                    "hccl_host_ports": "auto"
+                  },
+                  "url": "#private-artifacts",
+                  "csv_links": [
+                    {
+                      "rank": 0,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 1,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 2,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 3,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 4,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 5,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 6,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 7,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 8,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 9,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 10,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 11,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 12,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 13,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 14,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 15,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 16,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 17,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 18,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 19,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 20,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 21,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 22,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 23,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 24,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 25,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 26,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 27,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 28,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 29,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 30,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 31,
+                      "url": "#private-artifacts"
+                    }
+                  ]
+                }
+              ],
+              "mean_us": 2746.5137,
+              "rank_max_mean_us": 2752.5794,
+              "repeat_bitwise_equal": null
+            },
+            "ds": {
+              "runs": [
+                {
+                  "label": "bs2048-ds-a-retry3",
+                  "mean_us": 2329.5574,
+                  "rank_max_mean_us": 2346.0391,
+                  "placement": {
+                    "nodes": [
+                      "CPU7",
+                      "CPU8",
+                      "CPU3",
+                      "CPU1"
+                    ],
+                    "rack": "05",
+                    "master_port": 29962,
+                    "shmem_port": 26962,
+                    "host_interface": "enp35s0f2",
+                    "hccl_host_ports": "auto"
+                  },
+                  "url": "#private-artifacts",
+                  "csv_links": [
+                    {
+                      "rank": 0,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 1,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 2,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 3,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 4,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 5,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 6,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 7,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 8,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 9,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 10,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 11,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 12,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 13,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 14,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 15,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 16,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 17,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 18,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 19,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 20,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 21,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 22,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 23,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 24,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 25,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 26,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 27,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 28,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 29,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 30,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 31,
+                      "url": "#private-artifacts"
+                    }
+                  ]
+                }
+              ],
+              "mean_us": 2329.5574,
+              "rank_max_mean_us": 2346.0391,
+              "repeat_bitwise_equal": null
+            }
+          },
+          "placement": {
+            "nodes": [
+              "CPU7",
+              "CPU8",
+              "CPU3",
+              "CPU1"
+            ],
+            "rack": "05",
+            "master_port": 29962,
+            "shmem_port": 26962,
+            "host_interface": "enp35s0f2",
+            "hccl_host_ports": "auto"
+          },
+          "raw_inputs_equal_all_32_ranks": true,
+          "r31_latency_reduction_pct": -17.898520122320228,
+          "missing_runs": [
+            "bs2048-r31-b-retry3: 正式批次未完成或32rank本地证据未归档",
+            "bs2048-ds-b-retry3: 正式批次未完成或32rank本地证据未归档"
+          ],
+          "unpaired_runs": [],
+          "hardware_group": "B"
+        },
+        {
+          "ep": 32,
+          "bs": 4096,
+          "status": "complete",
+          "methods": {
+            "r31": {
+              "runs": [
+                {
+                  "label": "bs4096-r31-a-retry3",
+                  "mean_us": 5245.5277,
+                  "rank_max_mean_us": 5252.8764,
+                  "placement": {
+                    "nodes": [
+                      "CPU7",
+                      "CPU8",
+                      "CPU3",
+                      "CPU1"
+                    ],
+                    "rack": "05",
+                    "master_port": 29962,
+                    "shmem_port": 26962,
+                    "host_interface": "enp35s0f2",
+                    "hccl_host_ports": "auto"
+                  },
+                  "url": "#private-artifacts",
+                  "csv_links": [
+                    {
+                      "rank": 0,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 1,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 2,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 3,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 4,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 5,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 6,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 7,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 8,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 9,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 10,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 11,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 12,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 13,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 14,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 15,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 16,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 17,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 18,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 19,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 20,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 21,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 22,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 23,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 24,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 25,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 26,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 27,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 28,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 29,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 30,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 31,
+                      "url": "#private-artifacts"
+                    }
+                  ]
+                },
+                {
+                  "label": "bs4096-r31-b-retry3",
+                  "mean_us": 5221.6248,
+                  "rank_max_mean_us": 5228.5026,
+                  "placement": {
+                    "nodes": [
+                      "CPU7",
+                      "CPU8",
+                      "CPU3",
+                      "CPU1"
+                    ],
+                    "rack": "05",
+                    "master_port": 29962,
+                    "shmem_port": 26962,
+                    "host_interface": "enp35s0f2",
+                    "hccl_host_ports": "auto"
+                  },
+                  "url": "#private-artifacts",
+                  "csv_links": [
+                    {
+                      "rank": 0,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 1,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 2,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 3,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 4,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 5,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 6,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 7,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 8,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 9,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 10,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 11,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 12,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 13,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 14,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 15,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 16,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 17,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 18,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 19,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 20,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 21,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 22,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 23,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 24,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 25,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 26,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 27,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 28,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 29,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 30,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 31,
+                      "url": "#private-artifacts"
+                    }
+                  ]
+                }
+              ],
+              "mean_us": 5233.57625,
+              "rank_max_mean_us": 5240.6895,
+              "repeat_bitwise_equal": true
+            },
+            "ds": {
+              "runs": [
+                {
+                  "label": "bs4096-ds-a-retry3",
+                  "mean_us": 4554.6991,
+                  "rank_max_mean_us": 4592.1582,
+                  "placement": {
+                    "nodes": [
+                      "CPU7",
+                      "CPU8",
+                      "CPU3",
+                      "CPU1"
+                    ],
+                    "rack": "05",
+                    "master_port": 29962,
+                    "shmem_port": 26962,
+                    "host_interface": "enp35s0f2",
+                    "hccl_host_ports": "auto"
+                  },
+                  "url": "#private-artifacts",
+                  "csv_links": [
+                    {
+                      "rank": 0,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 1,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 2,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 3,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 4,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 5,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 6,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 7,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 8,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 9,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 10,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 11,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 12,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 13,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 14,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 15,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 16,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 17,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 18,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 19,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 20,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 21,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 22,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 23,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 24,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 25,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 26,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 27,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 28,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 29,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 30,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 31,
+                      "url": "#private-artifacts"
+                    }
+                  ]
+                },
+                {
+                  "label": "bs4096-ds-b-retry3",
+                  "mean_us": 4561.4731,
+                  "rank_max_mean_us": 4608.7477,
+                  "placement": {
+                    "nodes": [
+                      "CPU7",
+                      "CPU8",
+                      "CPU3",
+                      "CPU1"
+                    ],
+                    "rack": "05",
+                    "master_port": 29962,
+                    "shmem_port": 26962,
+                    "host_interface": "enp35s0f2",
+                    "hccl_host_ports": "auto"
+                  },
+                  "url": "#private-artifacts",
+                  "csv_links": [
+                    {
+                      "rank": 0,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 1,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 2,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 3,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 4,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 5,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 6,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 7,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 8,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 9,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 10,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 11,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 12,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 13,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 14,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 15,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 16,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 17,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 18,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 19,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 20,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 21,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 22,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 23,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 24,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 25,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 26,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 27,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 28,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 29,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 30,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 31,
+                      "url": "#private-artifacts"
+                    }
+                  ]
+                }
+              ],
+              "mean_us": 4558.0861,
+              "rank_max_mean_us": 4600.45295,
+              "repeat_bitwise_equal": true
+            }
+          },
+          "placement": {
+            "nodes": [
+              "CPU7",
+              "CPU8",
+              "CPU3",
+              "CPU1"
+            ],
+            "rack": "05",
+            "master_port": 29962,
+            "shmem_port": 26962,
+            "host_interface": "enp35s0f2",
+            "hccl_host_ports": "auto"
+          },
+          "raw_inputs_equal_all_32_ranks": true,
+          "r31_latency_reduction_pct": -14.81960048977573,
+          "missing_runs": [],
+          "unpaired_runs": [],
+          "hardware_group": "B"
+        }
+      ],
+      "diagnostic_screenings": [
+        {
+          "ep": 32,
+          "bs": 1024,
+          "status": "screening",
+          "methods": {
+            "r31": {
+              "runs": [
+                {
+                  "label": "bs1024-r31-a-retry2",
+                  "mean_us": 1310.3312,
+                  "rank_max_mean_us": 1315.4962,
+                  "placement": {
+                    "nodes": [
+                      "CPU7",
+                      "CPU8",
+                      "CPU3",
+                      "CPU1"
+                    ],
+                    "rack": "05",
+                    "master_port": 29952,
+                    "shmem_port": 26952,
+                    "host_interface": "enp35s0f2"
+                  },
+                  "url": "#private-artifacts",
+                  "csv_links": [
+                    {
+                      "rank": 0,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 1,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 2,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 3,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 4,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 5,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 6,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 7,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 8,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 9,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 10,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 11,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 12,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 13,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 14,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 15,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 16,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 17,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 18,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 19,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 20,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 21,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 22,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 23,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 24,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 25,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 26,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 27,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 28,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 29,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 30,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 31,
+                      "url": "#private-artifacts"
+                    }
+                  ]
+                }
+              ],
+              "mean_us": 1310.3312,
+              "rank_max_mean_us": 1315.4962,
+              "repeat_bitwise_equal": null
+            },
+            "ds": {
+              "runs": [
+                {
+                  "label": "bs1024-ds-a-retry2",
+                  "mean_us": 1212.0033,
+                  "rank_max_mean_us": 1219.2811,
+                  "placement": {
+                    "nodes": [
+                      "CPU7",
+                      "CPU8",
+                      "CPU3",
+                      "CPU1"
+                    ],
+                    "rack": "05",
+                    "master_port": 29952,
+                    "shmem_port": 26952,
+                    "host_interface": "enp35s0f2"
+                  },
+                  "url": "#private-artifacts",
+                  "csv_links": [
+                    {
+                      "rank": 0,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 1,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 2,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 3,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 4,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 5,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 6,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 7,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 8,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 9,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 10,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 11,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 12,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 13,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 14,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 15,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 16,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 17,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 18,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 19,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 20,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 21,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 22,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 23,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 24,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 25,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 26,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 27,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 28,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 29,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 30,
+                      "url": "#private-artifacts"
+                    },
+                    {
+                      "rank": 31,
+                      "url": "#private-artifacts"
+                    }
+                  ]
+                }
+              ],
+              "mean_us": 1212.0033,
+              "rank_max_mean_us": 1219.2811,
+              "repeat_bitwise_equal": null
+            }
+          },
+          "placement": {
+            "nodes": [
+              "CPU7",
+              "CPU8",
+              "CPU3",
+              "CPU1"
+            ],
+            "rack": "05",
+            "master_port": 29952,
+            "shmem_port": 26952,
+            "host_interface": "enp35s0f2"
+          },
+          "raw_inputs_equal_all_32_ranks": true,
+          "r31_latency_reduction_pct": -8.112840946885203,
+          "missing_runs": [],
+          "unpaired_runs": [],
+          "hardware_group": "B（旧Host端口设置）",
+          "note": "retry2单轮诊断；默认Host端口，未纳入正式retry3均值。随后DS-b建链失败。"
+        }
+      ],
+      "failed_launch": "bs2048-ds-b-retry3",
+      "summary_url": "#private-artifacts",
+      "report_url": "#private-artifacts"
     }
   },
   "environment": {
@@ -65478,7 +69632,7 @@
   },
   "publication": {
     "audience": "public",
-    "snapshot": "ds-converge-final-1021",
+    "snapshot": "ep32-r31-layout-ds-1021-partial",
     "original_artifacts": "local_archive_not_published",
     "note": "数值与离线快照一致；原始timer/CSV及服务器文件未公开。"
   }

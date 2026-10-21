@@ -1,9 +1,9 @@
 {
-  "snapshot": "ds-converge-final-1021",
-  "source_html_sha256": "69fb39eccd75fad8846d9d62a4e7abdfcc6849c5f4b7fa7a2cfa22306b035094",
-  "source_results_sha256": "96bc19515d852c17818b00eb4db7627ba93a29b00a495420447d2141a9883290",
-  "public_html_sha256": "246b7e1379223d5f3ce7d5bab963f8d0419a5e3e06c75021e73581cb5e96437b",
-  "hidden_links": 8418,
+  "snapshot": "ep32-r31-layout-ds-1021-partial",
+  "source_html_sha256": "278173b2084443a71a672c35a0db5aa8d1e2c54c835efa90e0e14e48673429bd",
+  "source_results_sha256": "ccdf7f96a3374e64671a225b3af7fc3bb4fbdb0b8afd27d0e32f5aeb7b36bda4",
+  "public_html_sha256": "6bd2c36480e8bee3de6c8cee6373bd3d797c2f8c12de683c516a2a634c654e1f",
+  "hidden_links": 9278,
   "hidden_paths": 49,
   "artifacts_published": false,
   "measurements_modified": false
