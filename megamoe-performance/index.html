@@ -42,7 +42,7 @@ function route(){
  document.querySelectorAll('[data-page]').forEach(a=>{if(a.dataset.page===page)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
  const performance=page==='performance';$('performance-tools').classList.toggle('hidden',!performance);$('measurement-status').classList.toggle('hidden',!performance);
  $('view-title').textContent=performance?'每一份性能，都有迹可循。':page==='project-status'?'项目状态':'调优 SKILL';
- $('view-description').textContent=performance?(data.stage1?.ep32_r31?'EP8冻结曲线 · 最新R31 EP8/EP32对照 · 单位 μs，越低越好':'EP8 · 原始DS、布局优化DS与我们的候选 · 单位 μs，越低越好'):page==='project-status'?'目标 → 当前进展 → 下一步 · 数值以性能界面为准':'完整被动打点、分核profiling与因果实验 · 仓库Markdown是唯一内容源';
+ $('view-description').textContent=performance?(data.stage1?.version_matrix?'EP8/32/128版本全景 · 历史窗口分列，缺测留空 · 下方保留旧曲线':data.stage1?.ep32_r31?'EP8冻结曲线 · 最新R31 EP8/EP32对照 · 单位 μs，越低越好':'EP8 · 原始DS、布局优化DS与我们的候选 · 单位 μs，越低越好'):page==='project-status'?'目标 → 当前进展 → 下一步 · 数值以性能界面为准':'完整被动打点、分核profiling与因果实验 · 仓库Markdown是唯一内容源';
  if(!performance)window.scrollTo(0,0);
 }
 function validate(d){
@@ -77,6 +77,7 @@ function render(){
  validate(data);const rows=completed(),count=rows.length;const all=count===data.rows.length;
  const ep32Pending=data.stage1?.ep32_r31&&data.stage1.ep32_r31.status!=='complete';$('status').textContent=ep32Pending?(data.stage1.ep32_r31.execution_state==='stopped'?'EP8历史完整 · EP32部分完成':'EP8历史完整 · EP32补测中'):all?'本次测量已完成':'采集中 · 未完成项保持空白';$('status').className=`badge${all&&!ep32Pending?'':' pending'}`;
  $('updated').textContent=`更新 ${data.updated_at} · ${timerLabel()}${isImported?' · 导入数据：未重新核验原始SHA':''}`;
+ if(data.stage1?.version_matrix){$('status').textContent='版本全景已更新 · 尚无全域验收版';$('status').className='badge pending';}
  $('card-complete').textContent=`${count} / ${data.rows.length}`;
  const gains=rows.map(r=>({bs:r.bs,gain:100*(1-r.records.optimized.mean_us/r.records.baseline.mean_us)})).sort((a,b)=>b.gain-a.gain);
  $('card-reduction').textContent=gains.length?pct(gains[0].gain):'—';$('card-reduction-foot').textContent=gains.length?`BS${gains[0].bs} · 相对原始DS`:'相对同窗口原始DS';
@@ -93,6 +94,7 @@ function render(){
  $('evidence-list').innerHTML=data.rows.map(r=>`<div class="evidence-item"><div><strong>EP${r.ep} · BS${r.bs}</strong><span class="muted"> · ${r.status==='complete'?`${r.csv_count}份CSV / 差分通过`:'尚未完成'}</span></div>${r.status==='complete'?`<div class="links"><a href="${safeLink(r.summary_url)}">性能摘要</a><a href="${safeLink(r.manifest_url)}">SHA清单</a></div><details style="flex-basis:100%;min-width:0"><summary style="cursor:pointer;color:#657782">展开6批次与分rank CSV</summary>${data.methods.flatMap(m=>r.records[m.id].runs.map(run=>`<div style="margin-top:11px;border-top:1px solid #e6eded;padding-top:8px"><a href="${safeLink(run.evidence_url)}">${esc(m.label)} · ${fmt(run.mean_us)}μs</a><div class="muted" style="font-size:10px;overflow-wrap:anywhere">${esc(run.label)}</div><div style="display:flex;gap:9px;flex-wrap:wrap">${(run.csv_links||[]).map(link=>`<a href="${safeLink(link.url)}">rank${Number(link.rank)} CSV</a>`).join('')}</div></div>`)).join('')}</details>`:''}</div>`).join('');
 }
 function renderStage1(){
+ renderVersionMatrix(metric());
  let nav=$('stage1-nav');if(!nav){nav=document.createElement('a');nav.id='stage1-nav';nav.href='#stage1';nav.textContent='优化实验';$('performance-sections').appendChild(nav);}nav.classList.toggle('hidden',!data.stage1);
  const section=$('stage1');section.classList.toggle('hidden',!data.stage1);if(!data.stage1)return;
  $('stage1-note').textContent=data.stage1.note;const key=metric();
@@ -101,7 +103,7 @@ function renderStage1(){
  if(data.stage1.cv_screening)screen.innerHTML=`<h3 style="margin-top:32px">DS特性迁移 · shape与路由回归</h3><p class="note">父版为跨任务异步分支；CVⅠ为双槽+32行yield，CVⅡ为整stage写出。除BS512外各方案仅一次启动，不等于稳定收益；不把不同分支最低值拼成统一版本。单位μs。</p><div class="table-wrap"><table><thead><tr><th>路由 / BS</th><th>异步父版</th><th>CVⅠ</th><th>CVⅡ</th><th>测量口径</th></tr></thead><tbody>${data.stage1.cv_screening.map(r=>{const values=['control','row','stage'].map(m=>r.methods[m][key]),best=Math.min(...values);return `<tr><td>${esc(r.routing)} / ${r.bs}</td>${values.map(v=>`<td class="${v===best?'best':''}">${fmt(v)}</td>`).join('')}<td>${esc(r.scope)}</td></tr>`;}).join('')}</tbody></table></div>`;
  let budget=$('cv-budget-screening');if(!budget){budget=document.createElement('div');budget.id='cv-budget-screening';section.appendChild(budget);}budget.classList.toggle('hidden',!data.stage1.cv_budget);
  if(data.stage1.cv_budget)budget.innerHTML=`<h3 style="margin-top:28px">大M反压复查 · CV stage服务量子</h3><p class="note">codex/megamoe-cv-stage-budget-1020：在CVⅠ上，大M先推进完128行stage再服务通信。下表是另一窗口、各一次启动，只与同表父版比较；不能把修复CV新增回退当成相对原父版的净收益。</p><div class="table-wrap"><table><thead><tr><th>BS</th><th>异步父版 μs</th><th>stage预算候选 μs</th><th>较父版降耗</th></tr></thead><tbody>${data.stage1.cv_budget.map(r=>{const c=r.methods.control[key],v=r.methods.budget[key];return `<tr><td>${r.bs}</td><td>${fmt(c)}</td><td>${fmt(v)}</td><td class="${v<c?'positive':'negative'}">${pct(100*(1-v/c))}</td></tr>`;}).join('')}</tbody></table></div>`;
- renderVersionMatrix(key);renderUnifiedCv(key);renderDsLadder(key);renderDsBisect(key);renderDsConverge(key);renderEp32(key);
+ renderUnifiedCv(key);renderDsLadder(key);renderDsBisect(key);renderDsConverge(key);renderEp32(key);
 }
 // VERSION_MATRIX_BEGIN：独立边界用于数据合同与双统计口径回归测试。
 function validateVersionMatrix(b){
@@ -118,7 +120,7 @@ function validateVersionMatrix(b){
 }
 function renderVersionMatrix(key){
  const b=data.stage1?.version_matrix;
- let box=$('version-matrix');if(!box){box=document.createElement('section');box.id='version-matrix';box.className='panel';$('stage1').insertBefore(box,$('stage1').firstChild);}box.classList.toggle('hidden',!b);
+ let box=$('version-matrix');if(!box){box=document.createElement('section');box.id='version-matrix';box.className='panel';$('performance-view').insertBefore(box,$('performance-sections').nextSibling);}box.classList.toggle('hidden',!b);
  for(const[id,title]of [['version-matrix','版本全景'],['technology-map','技术差异']]){let nav=$(id+'-nav');if(!nav){nav=document.createElement('a');nav.id=id+'-nav';nav.href='#'+id;nav.textContent=title;$('performance-sections').insertBefore(nav,$('performance-sections').firstChild);}nav.classList.toggle('hidden',!b);}if(!b)return;
  const cell=v=>v?`<td title="${esc(v.campaign+' · '+v.note+' · '+v.source)}"><strong>${fmt(v[key])}</strong><br><small class="muted">×${v.starts} · ${v.starts===1?'单轮筛选':'重复测量'}</small></td>`:'<td class="muted">—<br><small>未核实 / 缺测</small></td>';
  const tables=[8,32,128].map(ep=>`<h3 style="margin-top:24px">EP${ep} · 历史全景</h3><div class="table-wrap"><table style="min-width:1120px"><thead><tr><th>BS/卡</th><th>期望专家M</th>${b.methods.map(m=>`<th>${esc(m.label)}<br><small>${esc(m.revision.slice(0,8))}</small></th>`).join('')}<th>R31较布局DS降耗<br><small>仅同窗对照</small></th></tr></thead><tbody>${b.rows.filter(r=>r.ep===ep).map(r=>{const a=r.methods.r31,c=r.methods.ds_layout;const gain=a&&c?100*(1-a[key]/c[key]):NaN;return `<tr><td>${r.bs}</td><td>${r.expected_expert_m}</td>${b.methods.map(m=>cell(r.methods[m.id])).join('')}<td class="${Number.isFinite(gain)?gain>=0?'positive':'negative':''}">${pct(gain)}</td></tr>`;}).join('')}</tbody></table></div>`).join('');
