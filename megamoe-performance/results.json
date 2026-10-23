@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "dataset_id": "ep8-balanced-fullcomm-1020",
-  "updated_at": "2026-10-23 · 历史版本全景与PDF核对（未新增NPU测量）",
+  "updated_at": "2026-10-23 · R31两轮wave真实EP32 ABBA已审计",
   "title": "MegaMoE · 离线性能实验室",
   "rows": [
     {
@@ -77423,7 +77423,7 @@
         "conclusions": [
           "目前没有一个版本完成EP8/32/64/128全BS、同环境重复验收。R31是EP8现有记录中更强的我方候选，不是已证实的全域最好版本；EP128尚无该精确版本的成绩。",
           "EP32 BS4096的回退并非从R31的packed FP4才开始：同窗master 4838.94μs，C5单次5208.30μs，R31单次5287.36μs。C5之前的配对/调度迁移应优先排查；不同窗口的R31 5233.58不能与5287.36拼均值。",
-          "大M配对有直接消融证据，但配对本身不是固定坏：新窗口保留配对、wave按两轮AIC切分，4703.41→4275.18μs（9.10%）；原wave加Combine配额8为4338.05μs。这些只在历史paired父版EP32 BS4096验证，尚未迁入最新master/R31，不是最终统一版本。",
+          "大M配对有直接消融证据，但配对本身不是固定坏：历史paired父版两轮wave4703.41→4275.18μs（9.10%）。随后已单独迁入R31，在另一同窗ABBA中4791.54→4257.09μs（11.15%），仅验证EP32/BS4096；未叠加Combine配额，正式master/原冻结R31未改，不是最终统一版本。",
           "不能把“EP8小BS改善”归因于一个开关：master→R31之间还有AIV1常驻/异步、CV、Dispatch分工、SF布局/缓存等迁移。R31相对原数学C5只移植FP4本体预排与等待前预取，其BS512/1024收益约1.69%/0.46%，不是整条历史收益。"
         ],
         "m_explanation": "均匀路由时，每专家期望M≈EP×BS×6/384=EP×BS/64；每rank接收总量期望≈6×BS。EP增大并不只增加通信：本地专家减少、单专家M增大、权重复用和tile/wave数变化。此M仅是balanced期望，不是容量上界，不能用于覆盖偏斜路由。",
@@ -77475,11 +77475,11 @@
           },
           {
             "name": "gate/up配对与wave任务预算",
-            "versions": "main24历史大M非配对；后续paired/master/C5/R31沿配对链。10月23日两轮wave候选基于历史paired 49e8174，尚不在master/R31。",
+            "versions": "main24历史大M非配对；后续paired/master/C5/R31沿配对链。两轮wave先在49e8174父版验证，现已单独迁入R31新分支7512c6c；正式master及原冻结R31未改。",
             "mechanism": "配对改变逻辑N及消费者完成粒度，任务预算必须按真实逻辑任务计算；本case按两轮AIC切wave，M256组数6→3、wave16→32，计算总量不变。",
             "suitability": "小wave更早激活/发布/收尾，但增加wave边界、阶段切换；大wave摊薄启动却放大末两波Combine尾巴。由任务数、M和credit占用决定，不是“小EP配对好、大EP配对坏”。",
-            "evidence": "EP32 BS4096同父版：取消配对4911.32→4561.14μs（7.13%）；另窗保留配对+两轮wave4703.41→4275.18μs（9.10%）。两次窗口不可混算，均不是最新R31单项消融。",
-            "decision": "最高优先级：把两轮预算单独移到最新可读性基线，验证七BS；再与Combine配额组合，收益不相加。",
+            "evidence": "EP32 BS4096：取消配对4911.32→4561.14μs（7.13%）；另窗历史paired两轮wave4703.41→4275.18μs（9.10%）。新R31独立ABBA4791.54→4257.09μs（11.15%），两版与原R31设备库同SHA。不同窗口不混均值。",
+            "decision": "R31单项已验证，下一步做七BS和跨EP回归，再与Combine配额组合；收益不相加，不把单shape称为统一最优。",
             "code": "experiments/megamoe/csrc/forward.cpp"
           },
           {
@@ -77503,12 +77503,784 @@
         ],
         "plan": [
           "基线：保留可读性master的结构；逐项迁入有证据的布局/预取，不直接用研究链全量替换。记录精确commit、host/device打包协议，建立单一策略来源。",
-          "先做四格因果实验：原wave/两轮wave × 原Combine/有界Combine；同时保留非配对阳性对照。先EP32 BS4096复现，再EP8七BS，不能用四条曲线各取最优。",
+          "R31的原wave/两轮wave已完成EP32 BS4096 ABBA，降低11.15%；先做EP8/32七BS回归，再补四格组合中的Combine有界服务，必要时保留非配对阳性对照。不能用四条曲线各取最优。",
           "策略按实际专家M、逻辑tile数、可用buffer/credit和尾部预算选择；用统一资源条件解释选择。EP8-only CV保持现状，放宽门禁需独立验证。",
           "单一候选覆盖EP8/32七BS，再补turbo1 EP64和EP128；与固定布局DS同节点交替重复，保留rank-min和rank-max、范围、开销及输出验证。",
           "最终合入前补独立Golden、随机/偏斜、尾块及ABI边界。现在的指纹一致只作回归证据，不等于完整精度验收。"
         ]
       }
+    },
+    "r31_two_round_wave": {
+      "ep": 32,
+      "bs": 4096,
+      "summary": {
+        "paired": {
+          "mean_us": 4791.54475,
+          "rank_max_mean_us": 4799.213949999999,
+          "starts": 2,
+          "runs": [
+            {
+              "label": "bs4096-paired-a",
+              "off_us": 4796.2135,
+              "on_us": 4788.349,
+              "overhead_pct": -0.16397310086383454,
+              "rank_max_mean_us": 4803.7328
+            },
+            {
+              "label": "bs4096-paired-b",
+              "off_us": 4786.876,
+              "on_us": 4785.0631,
+              "overhead_pct": -0.03787229917799895,
+              "rank_max_mean_us": 4794.6951
+            }
+          ]
+        },
+        "paired2": {
+          "mean_us": 4257.0945,
+          "rank_max_mean_us": 4263.473,
+          "starts": 2,
+          "runs": [
+            {
+              "label": "bs4096-paired2-a",
+              "off_us": 4255.7187,
+              "on_us": 4256.8655,
+              "overhead_pct": 0.02694726979957096,
+              "rank_max_mean_us": 4261.8031
+            },
+            {
+              "label": "bs4096-paired2-b",
+              "off_us": 4258.4703,
+              "on_us": 4257.8435,
+              "overhead_pct": -0.014718900352550524,
+              "rank_max_mean_us": 4265.1429
+            }
+          ]
+        }
+      },
+      "reduction_pct": 11.154028145098716,
+      "records": [
+        {
+          "label": "bs4096-paired-a",
+          "ep": 32,
+          "num_experts": 384,
+          "measurement": "full_EP32",
+          "method": "paired",
+          "timer_ranks": [
+            0
+          ],
+          "off_us": 4796.2135,
+          "on_us": 4788.349,
+          "overhead_pct": -0.16397310086383454,
+          "rank_summaries": [
+            {
+              "rank": 0,
+              "last_profile_duration_us": 4777.997,
+              "first_gmm_at_us": 142.973,
+              "last_gmm_issue_at_us": 4459.506,
+              "gmm_window_us": 4316.533,
+              "export_end_at_us": 4643.003,
+              "final_wait_start_median_at_us": 4643.991,
+              "final_wait_median_us": 19.716500000000003,
+              "final_wait_max_us": 20.657,
+              "unpermute_first_at_us": 4663.991,
+              "unpermute_end_at_us": 4763.946,
+              "native_kernel_envelope_us": 4763.984,
+              "aic_group_mean": {
+                "gmm1_sum_us": 2581.5389999999998,
+                "gmm2_sum_us": 1246.3644375000001,
+                "outside_issue_us": 363.45384375
+              },
+              "families": {
+                "KERNEL_TIMING": {
+                  "count": 96,
+                  "lane_count": 96,
+                  "lane_mean_sum_us": 4616.927145833333
+                },
+                "AIC_WAIT_INPUT_PREP": {
+                  "count": 32,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 45.14809375
+                },
+                "AIC_GMM1_WAIT": {
+                  "count": 2176,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 80.47640625
+                },
+                "AIC_GMM2_WAIT": {
+                  "count": 2496,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 234.3149375
+                },
+                "AIC_GMM2_ISSUE": {
+                  "count": 2688,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 1246.3644375
+                },
+                "AIC_GMM1_BEGIN": {
+                  "count": 32,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 0.77078125
+                },
+                "AIC_GMM1_END": {
+                  "count": 32,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 0.3931875
+                },
+                "AIC_GMM2_FIX_DRAIN": {
+                  "count": 512,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 66.95934375
+                },
+                "AIC_GMM1_ISSUE": {
+                  "count": 2304,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 2581.539
+                },
+                "AIV_INPUT_BUFFER_INIT": {
+                  "count": 64,
+                  "lane_count": 64,
+                  "lane_mean_sum_us": 0.189578125
+                },
+                "AIV_QUANT": {
+                  "count": 64,
+                  "lane_count": 64,
+                  "lane_mean_sum_us": 13.480453125
+                },
+                "AIV_ROUTE_MASK": {
+                  "count": 64,
+                  "lane_count": 64,
+                  "lane_mean_sum_us": 24.538890625
+                },
+                "AIV_RESET": {
+                  "count": 64,
+                  "lane_count": 64,
+                  "lane_mean_sum_us": 0.466359375
+                },
+                "AIV_INPUT_CROSS_RANK_SYNC": {
+                  "count": 64,
+                  "lane_count": 64,
+                  "lane_mean_sum_us": 20.145171875
+                },
+                "AIV_EXPORT_SYNC": {
+                  "count": 64,
+                  "lane_count": 64,
+                  "lane_mean_sum_us": 200.96578125
+                },
+                "AIV_FINAL_CROSS_RANK_WAIT": {
+                  "count": 64,
+                  "lane_count": 64,
+                  "lane_mean_sum_us": 19.750171875
+                },
+                "AIV_UNPERMUTE": {
+                  "count": 64,
+                  "lane_count": 64,
+                  "lane_mean_sum_us": 93.345625
+                },
+                "AIV_GMM1_PROLOGUE": {
+                  "count": 768,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 2733.8301875
+                },
+                "AIV_GMM2_PROLOGUE": {
+                  "count": 768,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 1506.79315625
+                },
+                "AIV_DISPATCH_ISSUE": {
+                  "count": 768,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 647.15478125
+                },
+                "AIV_DISPATCH_SYNC": {
+                  "count": 768,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 40.24246875
+                },
+                "AIV_SWIGLU_ISSUE": {
+                  "count": 2304,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 620.6668125
+                },
+                "AIV_SWIGLU_SYNC": {
+                  "count": 2304,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 407.726875
+                },
+                "AIV_COMBINE_ISSUE": {
+                  "count": 768,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 1098.9145625
+                }
+              }
+            }
+          ],
+          "native": {
+            "deep_ep_experimental/megamoe/libmegamoe_kernel.so": "b3102af2bc82a227a98e264ea60bdc8cf8ddc52187569be97ce88fe1dab6cdd7",
+            "deep_ep_experimental/megamoe/_C.cpython-312-aarch64-linux-gnu.so": "bf6abcd40718774653f81faf94605011d1d64b1b39c5cb7a68cd9243baaa15ce"
+          },
+          "wave_count": 16,
+          "gmm1_task_count": 2304,
+          "gmm2_task_count": 2688,
+          "after_last_gmm1_to_export_us": 352.652,
+          "after_last_gmm_to_export_us": 183.497,
+          "longest_combine_issue_us": 127.061,
+          "rank_max_mean_us": 4803.7328,
+          "raw_inputs_equal": true,
+          "output_hashes_equal": true
+        },
+        {
+          "label": "bs4096-paired2-a",
+          "ep": 32,
+          "num_experts": 384,
+          "measurement": "full_EP32",
+          "method": "paired2",
+          "timer_ranks": [
+            0
+          ],
+          "off_us": 4255.7187,
+          "on_us": 4256.8655,
+          "overhead_pct": 0.02694726979957096,
+          "rank_summaries": [
+            {
+              "rank": 0,
+              "last_profile_duration_us": 4271.595,
+              "first_gmm_at_us": 111.015,
+              "last_gmm_issue_at_us": 4016.255,
+              "gmm_window_us": 3905.24,
+              "export_end_at_us": 4105.441,
+              "final_wait_start_median_at_us": 4105.997,
+              "final_wait_median_us": 45.641,
+              "final_wait_max_us": 45.814,
+              "unpermute_first_at_us": 4151.938,
+              "unpermute_end_at_us": 4257.085,
+              "native_kernel_envelope_us": 4257.123,
+              "aic_group_mean": {
+                "gmm1_sum_us": 2439.81003125,
+                "gmm2_sum_us": 1217.6028125,
+                "outside_issue_us": 232.50309375
+              },
+              "families": {
+                "KERNEL_TIMING": {
+                  "count": 96,
+                  "lane_count": 96,
+                  "lane_mean_sum_us": 4166.998729166667
+                },
+                "AIC_WAIT_INPUT_PREP": {
+                  "count": 32,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 44.90678125
+                },
+                "AIC_GMM1_WAIT": {
+                  "count": 2176,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 49.69096875
+                },
+                "AIC_GMM2_WAIT": {
+                  "count": 2496,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 22.94115625
+                },
+                "AIC_GMM2_ISSUE": {
+                  "count": 2688,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 1217.6028125
+                },
+                "AIC_GMM1_BEGIN": {
+                  "count": 32,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 0.6533125
+                },
+                "AIC_GMM1_END": {
+                  "count": 32,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 0.38909375
+                },
+                "AIC_GMM2_FIX_DRAIN": {
+                  "count": 1024,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 133.3920625
+                },
+                "AIC_GMM1_ISSUE": {
+                  "count": 2304,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 2439.81003125
+                },
+                "AIV_INPUT_BUFFER_INIT": {
+                  "count": 64,
+                  "lane_count": 64,
+                  "lane_mean_sum_us": 0.192546875
+                },
+                "AIV_QUANT": {
+                  "count": 64,
+                  "lane_count": 64,
+                  "lane_mean_sum_us": 13.782625
+                },
+                "AIV_ROUTE_MASK": {
+                  "count": 64,
+                  "lane_count": 64,
+                  "lane_mean_sum_us": 25.017703125
+                },
+                "AIV_RESET": {
+                  "count": 64,
+                  "lane_count": 64,
+                  "lane_mean_sum_us": 0.47428125
+                },
+                "AIV_INPUT_CROSS_RANK_SYNC": {
+                  "count": 64,
+                  "lane_count": 64,
+                  "lane_mean_sum_us": 19.00459375
+                },
+                "AIV_EXPORT_SYNC": {
+                  "count": 64,
+                  "lane_count": 64,
+                  "lane_mean_sum_us": 75.995609375
+                },
+                "AIV_FINAL_CROSS_RANK_WAIT": {
+                  "count": 64,
+                  "lane_count": 64,
+                  "lane_mean_sum_us": 45.454625
+                },
+                "AIV_UNPERMUTE": {
+                  "count": 64,
+                  "lane_count": 64,
+                  "lane_mean_sum_us": 98.31703125
+                },
+                "AIV_GMM1_PROLOGUE": {
+                  "count": 1280,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 2633.771875
+                },
+                "AIV_GMM2_PROLOGUE": {
+                  "count": 1280,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 1268.788625
+                },
+                "AIV_DISPATCH_ISSUE": {
+                  "count": 1280,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 631.06240625
+                },
+                "AIV_DISPATCH_SYNC": {
+                  "count": 1280,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 62.31665625
+                },
+                "AIV_SWIGLU_ISSUE": {
+                  "count": 2304,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 714.49971875
+                },
+                "AIV_SWIGLU_SYNC": {
+                  "count": 2304,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 376.75178125
+                },
+                "AIV_COMBINE_ISSUE": {
+                  "count": 1280,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 885.9595625
+                }
+              }
+            }
+          ],
+          "native": {
+            "deep_ep_experimental/megamoe/libmegamoe_kernel.so": "b3102af2bc82a227a98e264ea60bdc8cf8ddc52187569be97ce88fe1dab6cdd7",
+            "deep_ep_experimental/megamoe/_C.cpython-312-aarch64-linux-gnu.so": "4c3667d6e1ab3e7ba1e100af5ed28a81a399d27e7ecedbac404d466a637a17a2"
+          },
+          "wave_count": 32,
+          "gmm1_task_count": 2304,
+          "gmm2_task_count": 2688,
+          "after_last_gmm1_to_export_us": 168.757,
+          "after_last_gmm_to_export_us": 89.186,
+          "longest_combine_issue_us": 62.586,
+          "rank_max_mean_us": 4261.8031,
+          "raw_inputs_equal": true,
+          "output_hashes_equal": true
+        },
+        {
+          "label": "bs4096-paired2-b",
+          "ep": 32,
+          "num_experts": 384,
+          "measurement": "full_EP32",
+          "method": "paired2",
+          "timer_ranks": [
+            0
+          ],
+          "off_us": 4258.4703,
+          "on_us": 4257.8435,
+          "overhead_pct": -0.014718900352550524,
+          "rank_summaries": [
+            {
+              "rank": 0,
+              "last_profile_duration_us": 4259.456,
+              "first_gmm_at_us": 117.229,
+              "last_gmm_issue_at_us": 4034.353,
+              "gmm_window_us": 3917.124,
+              "export_end_at_us": 4124.026,
+              "final_wait_start_median_at_us": 4124.5895,
+              "final_wait_median_us": 16.662,
+              "final_wait_max_us": 16.983,
+              "unpermute_first_at_us": 4141.545,
+              "unpermute_end_at_us": 4244.589,
+              "native_kernel_envelope_us": 4244.627,
+              "aic_group_mean": {
+                "gmm1_sum_us": 2440.87375,
+                "gmm2_sum_us": 1217.359,
+                "outside_issue_us": 236.12615625
+              },
+              "families": {
+                "KERNEL_TIMING": {
+                  "count": 96,
+                  "lane_count": 96,
+                  "lane_mean_sum_us": 4163.91840625
+                },
+                "AIC_WAIT_INPUT_PREP": {
+                  "count": 32,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 45.28175
+                },
+                "AIC_GMM1_WAIT": {
+                  "count": 2176,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 51.58884375
+                },
+                "AIC_GMM2_WAIT": {
+                  "count": 2496,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 27.3909375
+                },
+                "AIC_GMM2_ISSUE": {
+                  "count": 2688,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 1217.359
+                },
+                "AIC_GMM1_BEGIN": {
+                  "count": 32,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 0.8128125
+                },
+                "AIC_GMM1_END": {
+                  "count": 32,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 0.45353125
+                },
+                "AIC_GMM2_FIX_DRAIN": {
+                  "count": 1024,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 133.313625
+                },
+                "AIC_GMM1_ISSUE": {
+                  "count": 2304,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 2440.87375
+                },
+                "AIV_INPUT_BUFFER_INIT": {
+                  "count": 64,
+                  "lane_count": 64,
+                  "lane_mean_sum_us": 0.19009375
+                },
+                "AIV_QUANT": {
+                  "count": 64,
+                  "lane_count": 64,
+                  "lane_mean_sum_us": 13.769859375
+                },
+                "AIV_ROUTE_MASK": {
+                  "count": 64,
+                  "lane_count": 64,
+                  "lane_mean_sum_us": 24.999359375
+                },
+                "AIV_RESET": {
+                  "count": 64,
+                  "lane_count": 64,
+                  "lane_mean_sum_us": 0.5751875
+                },
+                "AIV_INPUT_CROSS_RANK_SYNC": {
+                  "count": 64,
+                  "lane_count": 64,
+                  "lane_mean_sum_us": 23.507375
+                },
+                "AIV_EXPORT_SYNC": {
+                  "count": 64,
+                  "lane_count": 64,
+                  "lane_mean_sum_us": 80.76234375
+                },
+                "AIV_FINAL_CROSS_RANK_WAIT": {
+                  "count": 64,
+                  "lane_count": 64,
+                  "lane_mean_sum_us": 16.58803125
+                },
+                "AIV_UNPERMUTE": {
+                  "count": 64,
+                  "lane_count": 64,
+                  "lane_mean_sum_us": 97.975796875
+                },
+                "AIV_GMM1_PROLOGUE": {
+                  "count": 1280,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 2635.11653125
+                },
+                "AIV_GMM2_PROLOGUE": {
+                  "count": 1280,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 1273.02425
+                },
+                "AIV_DISPATCH_ISSUE": {
+                  "count": 1280,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 629.4385
+                },
+                "AIV_DISPATCH_SYNC": {
+                  "count": 1280,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 60.31
+                },
+                "AIV_SWIGLU_ISSUE": {
+                  "count": 2304,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 724.806125
+                },
+                "AIV_SWIGLU_SYNC": {
+                  "count": 2304,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 374.73384375
+                },
+                "AIV_COMBINE_ISSUE": {
+                  "count": 1280,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 865.1585625
+                }
+              }
+            }
+          ],
+          "native": {
+            "deep_ep_experimental/megamoe/libmegamoe_kernel.so": "b3102af2bc82a227a98e264ea60bdc8cf8ddc52187569be97ce88fe1dab6cdd7",
+            "deep_ep_experimental/megamoe/_C.cpython-312-aarch64-linux-gnu.so": "4c3667d6e1ab3e7ba1e100af5ed28a81a399d27e7ecedbac404d466a637a17a2"
+          },
+          "wave_count": 32,
+          "gmm1_task_count": 2304,
+          "gmm2_task_count": 2688,
+          "after_last_gmm1_to_export_us": 168.497,
+          "after_last_gmm_to_export_us": 89.673,
+          "longest_combine_issue_us": 62.701,
+          "rank_max_mean_us": 4265.1429,
+          "raw_inputs_equal": true,
+          "output_hashes_equal": true
+        },
+        {
+          "label": "bs4096-paired-b",
+          "ep": 32,
+          "num_experts": 384,
+          "measurement": "full_EP32",
+          "method": "paired",
+          "timer_ranks": [
+            0
+          ],
+          "off_us": 4786.876,
+          "on_us": 4785.0631,
+          "overhead_pct": -0.03787229917799895,
+          "rank_summaries": [
+            {
+              "rank": 0,
+              "last_profile_duration_us": 4778.934,
+              "first_gmm_at_us": 143.24,
+              "last_gmm_issue_at_us": 4475.491,
+              "gmm_window_us": 4332.251,
+              "export_end_at_us": 4651.818,
+              "final_wait_start_median_at_us": 4652.8235,
+              "final_wait_median_us": 12.3615,
+              "final_wait_max_us": 13.32,
+              "unpermute_first_at_us": 4665.471,
+              "unpermute_end_at_us": 4765.199,
+              "native_kernel_envelope_us": 4765.237,
+              "aic_group_mean": {
+                "gmm1_sum_us": 2561.79278125,
+                "gmm2_sum_us": 1266.3484375,
+                "outside_issue_us": 380.56675
+              },
+              "families": {
+                "KERNEL_TIMING": {
+                  "count": 96,
+                  "lane_count": 96,
+                  "lane_mean_sum_us": 4623.264864583333
+                },
+                "AIC_WAIT_INPUT_PREP": {
+                  "count": 32,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 44.51771875
+                },
+                "AIC_GMM1_WAIT": {
+                  "count": 2176,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 79.70534375
+                },
+                "AIC_GMM2_WAIT": {
+                  "count": 2496,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 251.6865
+                },
+                "AIC_GMM2_ISSUE": {
+                  "count": 2688,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 1266.3484375
+                },
+                "AIC_GMM1_BEGIN": {
+                  "count": 32,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 0.73853125
+                },
+                "AIC_GMM1_END": {
+                  "count": 32,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 0.41771875
+                },
+                "AIC_GMM2_FIX_DRAIN": {
+                  "count": 512,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 66.6124375
+                },
+                "AIC_GMM1_ISSUE": {
+                  "count": 2304,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 2561.79278125
+                },
+                "AIV_INPUT_BUFFER_INIT": {
+                  "count": 64,
+                  "lane_count": 64,
+                  "lane_mean_sum_us": 0.18934375
+                },
+                "AIV_QUANT": {
+                  "count": 64,
+                  "lane_count": 64,
+                  "lane_mean_sum_us": 13.383359375
+                },
+                "AIV_ROUTE_MASK": {
+                  "count": 64,
+                  "lane_count": 64,
+                  "lane_mean_sum_us": 24.34265625
+                },
+                "AIV_RESET": {
+                  "count": 64,
+                  "lane_count": 64,
+                  "lane_mean_sum_us": 0.445953125
+                },
+                "AIV_INPUT_CROSS_RANK_SYNC": {
+                  "count": 64,
+                  "lane_count": 64,
+                  "lane_mean_sum_us": 22.15534375
+                },
+                "AIV_EXPORT_SYNC": {
+                  "count": 64,
+                  "lane_count": 64,
+                  "lane_mean_sum_us": 192.590578125
+                },
+                "AIV_FINAL_CROSS_RANK_WAIT": {
+                  "count": 64,
+                  "lane_count": 64,
+                  "lane_mean_sum_us": 12.4075
+                },
+                "AIV_UNPERMUTE": {
+                  "count": 64,
+                  "lane_count": 64,
+                  "lane_mean_sum_us": 92.82340625
+                },
+                "AIV_GMM1_PROLOGUE": {
+                  "count": 768,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 2712.91440625
+                },
+                "AIV_GMM2_PROLOGUE": {
+                  "count": 768,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 1544.25628125
+                },
+                "AIV_DISPATCH_ISSUE": {
+                  "count": 768,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 639.1649375
+                },
+                "AIV_DISPATCH_SYNC": {
+                  "count": 768,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 42.53746875
+                },
+                "AIV_SWIGLU_ISSUE": {
+                  "count": 2304,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 620.8575
+                },
+                "AIV_SWIGLU_SYNC": {
+                  "count": 2304,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 392.924625
+                },
+                "AIV_COMBINE_ISSUE": {
+                  "count": 768,
+                  "lane_count": 32,
+                  "lane_mean_sum_us": 1092.4918125
+                }
+              }
+            }
+          ],
+          "native": {
+            "deep_ep_experimental/megamoe/libmegamoe_kernel.so": "b3102af2bc82a227a98e264ea60bdc8cf8ddc52187569be97ce88fe1dab6cdd7",
+            "deep_ep_experimental/megamoe/_C.cpython-312-aarch64-linux-gnu.so": "bf6abcd40718774653f81faf94605011d1d64b1b39c5cb7a68cd9243baaa15ce"
+          },
+          "wave_count": 16,
+          "gmm1_task_count": 2304,
+          "gmm2_task_count": 2688,
+          "after_last_gmm1_to_export_us": 345.445,
+          "after_last_gmm_to_export_us": 176.327,
+          "longest_combine_issue_us": 123.516,
+          "rank_max_mean_us": 4794.6951,
+          "raw_inputs_equal": true,
+          "output_hashes_equal": true
+        }
+      ],
+      "accuracy": "not_run_user_requested",
+      "placement": {
+        "rack": "05",
+        "nodes": [
+          "CPU7",
+          "CPU3",
+          "CPU4",
+          "CPU1"
+        ]
+      },
+      "branches": {
+        "paired2": "7512c6ca131dacd4bd8072b5ff1e5f270fb4d1ec",
+        "paired": "d986ac9dbe576af5e3d966617099cc9a0f302baf"
+      },
+      "scope": "full communication kernel Duration; timer-off; last10/20; mean per-round rank-min",
+      "caveat": "rank0 last-call ISSUE intervals are not hardware completion or additive critical-path times",
+      "status": "audited_complete",
+      "report_url": "#private-artifacts",
+      "summary_url": "#private-artifacts",
+      "traces": [
+        {
+          "label": "bs4096-paired-a",
+          "json": "#private-artifacts",
+          "off_csv": "#private-artifacts",
+          "on_csv": "#private-artifacts"
+        },
+        {
+          "label": "bs4096-paired2-a",
+          "json": "#private-artifacts",
+          "off_csv": "#private-artifacts",
+          "on_csv": "#private-artifacts"
+        },
+        {
+          "label": "bs4096-paired2-b",
+          "json": "#private-artifacts",
+          "off_csv": "#private-artifacts",
+          "on_csv": "#private-artifacts"
+        },
+        {
+          "label": "bs4096-paired-b",
+          "json": "#private-artifacts",
+          "off_csv": "#private-artifacts",
+          "on_csv": "#private-artifacts"
+        }
+      ]
     }
   },
   "environment": {
@@ -77518,7 +78290,7 @@
   },
   "publication": {
     "audience": "public",
-    "snapshot": "version-matrix-1023",
+    "snapshot": "r31-two-round-wave-1023",
     "original_artifacts": "local_archive_not_published",
     "note": "数值与离线快照一致；原始timer/CSV及服务器文件未公开。"
   }
