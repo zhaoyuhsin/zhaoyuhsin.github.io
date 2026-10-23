@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="YuHsin 的文件下载：技术笔记、配图与离线阅读资料。">
+  <title>文件下载 · YuHsin</title>
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/home.css">
+  <style>
+    .downloads-main{max-width:960px;margin:64px auto;padding:0 24px}
+    .downloads-main h1{font-size:clamp(32px,6vw,56px);line-height:1.2;margin:16px 0}
+    .downloads-intro{color:#586253;line-height:1.8;margin-bottom:36px}
+    .file-card{border:1px solid #dce0d3;border-radius:20px;background:#fff;padding:28px;margin:24px 0}
+    .file-card h2{font-size:24px;line-height:1.5;margin:12px 0}
+    .file-card p{line-height:1.8}.file-meta{color:#586253;font-size:14px}
+    .file-notes{margin-top:24px;color:#586253;font-size:14px;line-height:1.8}
+    .site-header nav{flex-wrap:wrap}
+    @media(max-width:600px){.downloads-main{margin:36px auto}.file-card{padding:20px}}
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">跳到正文</a>
+  <header class="site-header">
+    <a class="brand" href="../"><span class="mark" aria-hidden="true">YH</span><span>YuHsin<span class="brand-note"> / 个人工作台</span></span></a>
+    <nav aria-label="主导航"><a href="../">首页</a><a href="../megamoe-performance/index.html#ds-converge">性能实验室</a><a href="./" aria-current="page">文件下载</a></nav>
+  </header>
+  <main id="main" class="downloads-main">
+    <p class="eyebrow">FILE LIBRARY / 文件资料</p>
+    <h1>随时取用的笔记。</h1>
+    <p class="downloads-intro">技术笔记与配套文件集中保存在这里。在其他电脑打开本页，即可下载并离线阅读。</p>
+    <article class="file-card">
+      <span class="small-tag">MegaMoE · Markdown + 配图</span>
+      <h2>MegaMoE 反量化与布局优化笔记</h2>
+      <p>围绕 A8W4 反量化、矩阵分块、GM / UB / L1 / L0 布局、完成事件与数据依赖，解释优化的出发点与约束。</p>
+      <p class="file-meta">更新：2026-10-23 · ZIP：1.13 MiB · 内含 1 篇 Markdown 与 9 张 PNG 配图</p>
+      <a class="button primary" href="files/megamoe-dequant-layout-notes-20261023.zip" download="MegaMoE_反量化与布局优化笔记_含配图.zip">下载笔记与配图 ZIP <span aria-hidden="true">↓</span></a>
+      <div class="file-notes">
+        <p>使用方式：解压后保留目录结构，用 Markdown 阅读器打开笔记；也可将完整 ZIP 上传到支持此格式的网站。</p>
+        <p>Mermaid 流程图需要阅读器支持渲染。文末源代码链接保留原本的本机路径，在其他电脑不可直接打开；链接的另一篇 UB bank 笔记不在此包中。</p>
+      </div>
+    </article>
+    <p class="file-meta">本页文件公开可下载，无需登录。</p>
+  </main>
+  <footer class="site-footer"><a href="../">返回 YuHsin 首页</a><span>笔记 · 配图 · 离线资料</span></footer>
+</body>
+</html>

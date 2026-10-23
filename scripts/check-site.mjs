@@ -6,7 +6,7 @@ import {fileURLToPath} from 'node:url';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'),docs=root;
 const walk=dir=>fs.readdirSync(dir,{withFileTypes:true}).flatMap(entry=>entry.isDirectory()?walk(path.join(dir,entry.name)):[path.join(dir,entry.name)]);
-const siteFiles=[path.join(docs,'index.html'),path.join(docs,'404.html'),...walk(path.join(docs,'assets')),...walk(path.join(docs,'megamoe'))];
+const siteFiles=[path.join(docs,'index.html'),path.join(docs,'404.html'),path.join(docs,'downloads/index.html'),...walk(path.join(docs,'assets')),...walk(path.join(docs,'megamoe'))];
 let localLinks=0,scripts=0;
 for(const file of siteFiles){
   const content=fs.readFileSync(file,'utf8');
