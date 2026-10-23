@@ -1,5 +1,6 @@
 .DS_Store
 Thumbs.db
 *.zip
+!downloads/files/*.zip
 node_modules/
 qa/
