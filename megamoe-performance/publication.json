@@ -1,10 +1,10 @@
 {
-  "snapshot": "ep32-r31-layout-ds-1021-partial",
-  "source_html_sha256": "278173b2084443a71a672c35a0db5aa8d1e2c54c835efa90e0e14e48673429bd",
-  "source_results_sha256": "ccdf7f96a3374e64671a225b3af7fc3bb4fbdb0b8afd27d0e32f5aeb7b36bda4",
-  "public_html_sha256": "6bd2c36480e8bee3de6c8cee6373bd3d797c2f8c12de683c516a2a634c654e1f",
-  "hidden_links": 9278,
-  "hidden_paths": 49,
+  "snapshot": "version-matrix-1023",
+  "source_html_sha256": "1ddb12cacdbeb74ad89072406169b91037783adb23fe5108865f12371edfe220",
+  "source_results_sha256": "e69714e42c9b107bcf7aa39efb51ae371803d288cded55ac02f74ce8382ee241",
+  "public_html_sha256": "1a922a8bc443e5e9695f0e68d1f33b68d6ea905c5aa20615b62c82295575a509",
+  "hidden_links": 10188,
+  "hidden_paths": 51,
   "artifacts_published": false,
   "measurements_modified": false
 }
