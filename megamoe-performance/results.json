@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "dataset_id": "ep8-balanced-fullcomm-1020",
-  "updated_at": "2026-10-24 · 五轮消融与跨EP回归",
+  "updated_at": "2026-10-24 · R31两轮wave EP32七BS",
   "title": "MegaMoE · 离线性能实验室",
   "rows": [
     {
@@ -80799,6 +80799,84 @@
       "trace_report_url": "#private-artifacts",
       "report_url": "#private-artifacts",
       "summary_url": "#private-artifacts"
+    },
+    "r31_ep32_performance_1024": {
+      "revision": "904131cfa5c22e27eb8e278ec9019ab4dbb0392a",
+      "branch": "codex/megamoe-r31-two-round-wave-1023",
+      "progress": "本轮BS4096两次启动审计通过；其余六BS因外部任务占卡待补测，未与历史窗口拼接",
+      "cases": [
+        {
+          "ep": 32,
+          "bs": 32,
+          "status": "pending"
+        },
+        {
+          "ep": 32,
+          "bs": 96,
+          "status": "pending"
+        },
+        {
+          "ep": 32,
+          "bs": 256,
+          "status": "pending"
+        },
+        {
+          "ep": 32,
+          "bs": 512,
+          "status": "pending"
+        },
+        {
+          "ep": 32,
+          "bs": 1024,
+          "status": "pending"
+        },
+        {
+          "ep": 32,
+          "bs": 2048,
+          "status": "pending"
+        },
+        {
+          "ep": 32,
+          "bs": 4096,
+          "status": "audited_complete",
+          "methods": {
+            "control": {
+              "mean_us": 4182.29895,
+              "rank_max_mean_us": 4189.83095,
+              "starts": 2,
+              "runs": [
+                {
+                  "label": "bs4096-control-a",
+                  "method": "control",
+                  "mean_us": 4181.9907,
+                  "rank_max_mean_us": 4189.7473,
+                  "on_us": null,
+                  "overhead_pct": null,
+                  "csv_count": 32,
+                  "trace": null
+                },
+                {
+                  "label": "bs4096-control-b",
+                  "method": "control",
+                  "mean_us": 4182.6072,
+                  "rank_max_mean_us": 4189.9146,
+                  "on_us": null,
+                  "overhead_pct": null,
+                  "csv_count": 32,
+                  "trace": null
+                }
+              ]
+            }
+          },
+          "reduction_pct": null,
+          "output_hashes_equal": true
+        }
+      ],
+      "status": "partial",
+      "scope": "full communication kernel Duration; timer-off; last10/20; mean per-round rank-min",
+      "accuracy": "not_run_user_requested",
+      "summary_url": "#private-artifacts",
+      "report_url": "#private-artifacts"
     }
   },
   "environment": {
@@ -80808,7 +80886,7 @@
   },
   "publication": {
     "audience": "public",
-    "snapshot": "five-rounds-1024",
+    "snapshot": "r31-ep32-performance-1024",
     "original_artifacts": "local_archive_not_published",
     "note": "数值与离线快照一致；原始timer/CSV及服务器文件未公开。"
   }
