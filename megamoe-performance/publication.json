@@ -1,10 +1,10 @@
 {
   "snapshot": "r31-ep32-continuous-1024",
-  "source_html_sha256": "342c7941c9c57a2181ce5682cc34355c454be3b270e22e42de3cdfe62b0da19d",
-  "source_results_sha256": "0e87f03f1fc5f019ecfa8bb2b707624ee8a09f1bf250628c5dae08297efc8d6f",
-  "public_html_sha256": "102596ee6a594cc8f4f6ece5ca21ac4cb5ffd509aa4c9ce205634f17ac3b7467",
+  "source_html_sha256": "8cb9bc633cce92a23a95f6b9df43680ab7da0b2d3704f772ae6e96ca85690d50",
+  "source_results_sha256": "57631b6ea94649e9b0d3773629b37dd3fad31dbe0afd7d66b690836f9fe7a59b",
+  "public_html_sha256": "646e4ec35fc4b40f444904ce278b0e3f0c2d5ad953788ceb78e31c53ce0088a0",
   "hidden_links": 10253,
-  "hidden_paths": 51,
+  "hidden_paths": 53,
   "artifacts_published": false,
   "measurements_modified": false
 }

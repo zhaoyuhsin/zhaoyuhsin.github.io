@@ -80990,7 +80990,7 @@
     "r31_ep32_continuous_1024": {
       "revision": "904131cfa5c22e27eb8e278ec9019ab4dbb0392a",
       "branch": "codex/megamoe-r31-two-round-wave-1023",
-      "progress": "同一四节点连续七BS、整套两次独立启动全部完成；448份CSV审计通过，历史逐BS窗口保留",
+      "progress": "当前推荐统一性能基线904131c，尚非全EP全BS最优；连续七BS整套双轮完成，448份CSV审计通过；R5局部候选与EP64/128待扩验证",
       "cases": [
         {
           "ep": 32,
