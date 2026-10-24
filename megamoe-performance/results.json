@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "dataset_id": "ep8-balanced-fullcomm-1020",
-  "updated_at": "2026-10-23 · R31两轮wave真实EP32 ABBA已审计",
+  "updated_at": "2026-10-24 · R31两轮wave＋AIV1完成等待统测",
   "title": "MegaMoE · 离线性能实验室",
   "rows": [
     {
@@ -78281,6 +78281,544 @@
           "on_csv": "#private-artifacts"
         }
       ]
+    },
+    "r31_aiv1_wave_matrix": {
+      "revision": "904131c",
+      "progress": "EP8七BS已完成ABBA审计；EP32初始化通过，但性能用例前被外部任务占用，全组取消，七BS待空闲窗口补测",
+      "cases": [
+        {
+          "ep": 8,
+          "bs": 32,
+          "status": "audited_complete",
+          "methods": {
+            "control": {
+              "mean_us": 602.39585,
+              "rank_max_mean_us": 603.6809499999999,
+              "starts": 2,
+              "runs": [
+                {
+                  "label": "bs32-control-a",
+                  "method": "control",
+                  "mean_us": 602.5534,
+                  "rank_max_mean_us": 603.7454,
+                  "on_us": 602.0892,
+                  "overhead_pct": -0.0770388151489998,
+                  "csv_count": 16,
+                  "trace": {
+                    "json": "#private-artifacts",
+                    "events": 12352
+                  }
+                },
+                {
+                  "label": "bs32-control-b",
+                  "method": "control",
+                  "mean_us": 602.2383,
+                  "rank_max_mean_us": 603.6165,
+                  "on_us": null,
+                  "overhead_pct": null,
+                  "csv_count": 8,
+                  "trace": null
+                }
+              ]
+            },
+            "combined": {
+              "mean_us": 602.29465,
+              "rank_max_mean_us": 603.5869,
+              "starts": 2,
+              "runs": [
+                {
+                  "label": "bs32-combined-a",
+                  "method": "combined",
+                  "mean_us": 602.3193,
+                  "rank_max_mean_us": 603.4951,
+                  "on_us": 603.2223,
+                  "overhead_pct": 0.14992048237538746,
+                  "csv_count": 16,
+                  "trace": {
+                    "json": "#private-artifacts",
+                    "events": 12352
+                  }
+                },
+                {
+                  "label": "bs32-combined-b",
+                  "method": "combined",
+                  "mean_us": 602.27,
+                  "rank_max_mean_us": 603.6786999999999,
+                  "on_us": null,
+                  "overhead_pct": null,
+                  "csv_count": 8,
+                  "trace": null
+                }
+              ]
+            }
+          },
+          "reduction_pct": 0.016799584525684086,
+          "output_hashes_equal": true
+        },
+        {
+          "ep": 8,
+          "bs": 96,
+          "status": "audited_complete",
+          "methods": {
+            "control": {
+              "mean_us": 621.3806999999999,
+              "rank_max_mean_us": 622.7620999999999,
+              "starts": 2,
+              "runs": [
+                {
+                  "label": "bs96-control-a",
+                  "method": "control",
+                  "mean_us": 621.197,
+                  "rank_max_mean_us": 622.578,
+                  "on_us": 620.8629,
+                  "overhead_pct": -0.05378326038277814,
+                  "csv_count": 16,
+                  "trace": {
+                    "json": "#private-artifacts",
+                    "events": 13120
+                  }
+                },
+                {
+                  "label": "bs96-control-b",
+                  "method": "control",
+                  "mean_us": 621.5644,
+                  "rank_max_mean_us": 622.9462,
+                  "on_us": null,
+                  "overhead_pct": null,
+                  "csv_count": 8,
+                  "trace": null
+                }
+              ]
+            },
+            "combined": {
+              "mean_us": 620.9766,
+              "rank_max_mean_us": 622.26585,
+              "starts": 2,
+              "runs": [
+                {
+                  "label": "bs96-combined-a",
+                  "method": "combined",
+                  "mean_us": 620.6604,
+                  "rank_max_mean_us": 621.8924,
+                  "on_us": 619.9603999999999,
+                  "overhead_pct": -0.11278309362092731,
+                  "csv_count": 16,
+                  "trace": {
+                    "json": "#private-artifacts",
+                    "events": 13120
+                  }
+                },
+                {
+                  "label": "bs96-combined-b",
+                  "method": "combined",
+                  "mean_us": 621.2927999999999,
+                  "rank_max_mean_us": 622.6393,
+                  "on_us": null,
+                  "overhead_pct": null,
+                  "csv_count": 8,
+                  "trace": null
+                }
+              ]
+            }
+          },
+          "reduction_pct": 0.06503259595928013,
+          "output_hashes_equal": true
+        },
+        {
+          "ep": 8,
+          "bs": 256,
+          "status": "audited_complete",
+          "methods": {
+            "control": {
+              "mean_us": 655.807,
+              "rank_max_mean_us": 657.4976999999999,
+              "starts": 2,
+              "runs": [
+                {
+                  "label": "bs256-control-a",
+                  "method": "control",
+                  "mean_us": 655.6303,
+                  "rank_max_mean_us": 657.3611,
+                  "on_us": 658.3036999999999,
+                  "overhead_pct": 0.40776028807696374,
+                  "csv_count": 16,
+                  "trace": {
+                    "json": "#private-artifacts",
+                    "events": 15040
+                  }
+                },
+                {
+                  "label": "bs256-control-b",
+                  "method": "control",
+                  "mean_us": 655.9837,
+                  "rank_max_mean_us": 657.6342999999999,
+                  "on_us": null,
+                  "overhead_pct": null,
+                  "csv_count": 8,
+                  "trace": null
+                }
+              ]
+            },
+            "combined": {
+              "mean_us": 655.6867,
+              "rank_max_mean_us": 656.9488,
+              "starts": 2,
+              "runs": [
+                {
+                  "label": "bs256-combined-a",
+                  "method": "combined",
+                  "mean_us": 655.4546,
+                  "rank_max_mean_us": 656.6811,
+                  "on_us": 655.6061,
+                  "overhead_pct": 0.0231137290057859,
+                  "csv_count": 16,
+                  "trace": {
+                    "json": "#private-artifacts",
+                    "events": 15040
+                  }
+                },
+                {
+                  "label": "bs256-combined-b",
+                  "method": "combined",
+                  "mean_us": 655.9187999999999,
+                  "rank_max_mean_us": 657.2165,
+                  "on_us": null,
+                  "overhead_pct": null,
+                  "csv_count": 8,
+                  "trace": null
+                }
+              ]
+            }
+          },
+          "reduction_pct": 0.018343811517729236,
+          "output_hashes_equal": true
+        },
+        {
+          "ep": 8,
+          "bs": 512,
+          "status": "audited_complete",
+          "methods": {
+            "control": {
+              "mean_us": 724.9601,
+              "rank_max_mean_us": 726.60685,
+              "starts": 2,
+              "runs": [
+                {
+                  "label": "bs512-control-a",
+                  "method": "control",
+                  "mean_us": 723.7322,
+                  "rank_max_mean_us": 725.3678,
+                  "on_us": 724.8983000000001,
+                  "overhead_pct": 0.16112313366740683,
+                  "csv_count": 16,
+                  "trace": {
+                    "json": "#private-artifacts",
+                    "events": 16256
+                  }
+                },
+                {
+                  "label": "bs512-control-b",
+                  "method": "control",
+                  "mean_us": 726.188,
+                  "rank_max_mean_us": 727.8459,
+                  "on_us": null,
+                  "overhead_pct": null,
+                  "csv_count": 8,
+                  "trace": null
+                }
+              ]
+            },
+            "combined": {
+              "mean_us": 725.92665,
+              "rank_max_mean_us": 727.48875,
+              "starts": 2,
+              "runs": [
+                {
+                  "label": "bs512-combined-a",
+                  "method": "combined",
+                  "mean_us": 727.0407,
+                  "rank_max_mean_us": 728.5934,
+                  "on_us": 726.5067,
+                  "overhead_pct": -0.0734484328043794,
+                  "csv_count": 16,
+                  "trace": {
+                    "json": "#private-artifacts",
+                    "events": 16256
+                  }
+                },
+                {
+                  "label": "bs512-combined-b",
+                  "method": "combined",
+                  "mean_us": 724.8126,
+                  "rank_max_mean_us": 726.3841,
+                  "on_us": null,
+                  "overhead_pct": null,
+                  "csv_count": 8,
+                  "trace": null
+                }
+              ]
+            }
+          },
+          "reduction_pct": -0.1333245788285531,
+          "output_hashes_equal": true
+        },
+        {
+          "ep": 8,
+          "bs": 1024,
+          "status": "audited_complete",
+          "methods": {
+            "control": {
+              "mean_us": 1081.3804499999999,
+              "rank_max_mean_us": 1083.3348,
+              "starts": 2,
+              "runs": [
+                {
+                  "label": "bs1024-control-a",
+                  "method": "control",
+                  "mean_us": 1080.5394999999999,
+                  "rank_max_mean_us": 1082.482,
+                  "on_us": 1084.016,
+                  "overhead_pct": 0.32173742838648156,
+                  "csv_count": 16,
+                  "trace": {
+                    "json": "#private-artifacts",
+                    "events": 18560
+                  }
+                },
+                {
+                  "label": "bs1024-control-b",
+                  "method": "control",
+                  "mean_us": 1082.2214,
+                  "rank_max_mean_us": 1084.1876,
+                  "on_us": null,
+                  "overhead_pct": null,
+                  "csv_count": 8,
+                  "trace": null
+                }
+              ]
+            },
+            "combined": {
+              "mean_us": 1084.2716,
+              "rank_max_mean_us": 1086.3236499999998,
+              "starts": 2,
+              "runs": [
+                {
+                  "label": "bs1024-combined-a",
+                  "method": "combined",
+                  "mean_us": 1087.0678,
+                  "rank_max_mean_us": 1089.1552,
+                  "on_us": 1082.0401,
+                  "overhead_pct": -0.46250105099241434,
+                  "csv_count": 16,
+                  "trace": {
+                    "json": "#private-artifacts",
+                    "events": 18560
+                  }
+                },
+                {
+                  "label": "bs1024-combined-b",
+                  "method": "combined",
+                  "mean_us": 1081.4754,
+                  "rank_max_mean_us": 1083.4921,
+                  "on_us": null,
+                  "overhead_pct": null,
+                  "csv_count": 8,
+                  "trace": null
+                }
+              ]
+            }
+          },
+          "reduction_pct": -0.26735733940816964,
+          "output_hashes_equal": true
+        },
+        {
+          "ep": 8,
+          "bs": 2048,
+          "status": "audited_complete",
+          "methods": {
+            "control": {
+              "mean_us": 2412.6937,
+              "rank_max_mean_us": 2414.8021,
+              "starts": 2,
+              "runs": [
+                {
+                  "label": "bs2048-control-a",
+                  "method": "control",
+                  "mean_us": 2413.0544,
+                  "rank_max_mean_us": 2414.7598,
+                  "on_us": 2413.6911,
+                  "overhead_pct": 0.026385646341009483,
+                  "csv_count": 16,
+                  "trace": {
+                    "json": "#private-artifacts",
+                    "events": 16192
+                  }
+                },
+                {
+                  "label": "bs2048-control-b",
+                  "method": "control",
+                  "mean_us": 2412.333,
+                  "rank_max_mean_us": 2414.8444,
+                  "on_us": null,
+                  "overhead_pct": null,
+                  "csv_count": 8,
+                  "trace": null
+                }
+              ]
+            },
+            "combined": {
+              "mean_us": 2360.022,
+              "rank_max_mean_us": 2362.0117499999997,
+              "starts": 2,
+              "runs": [
+                {
+                  "label": "bs2048-combined-a",
+                  "method": "combined",
+                  "mean_us": 2359.3062,
+                  "rank_max_mean_us": 2361.0788,
+                  "on_us": 2359.3123,
+                  "overhead_pct": 0.00025855058576329526,
+                  "csv_count": 16,
+                  "trace": {
+                    "json": "#private-artifacts",
+                    "events": 15680
+                  }
+                },
+                {
+                  "label": "bs2048-combined-b",
+                  "method": "combined",
+                  "mean_us": 2360.7378,
+                  "rank_max_mean_us": 2362.9447,
+                  "on_us": null,
+                  "overhead_pct": null,
+                  "csv_count": 8,
+                  "trace": null
+                }
+              ]
+            }
+          },
+          "reduction_pct": 2.1831076195042876,
+          "output_hashes_equal": true
+        },
+        {
+          "ep": 8,
+          "bs": 4096,
+          "status": "audited_complete",
+          "methods": {
+            "control": {
+              "mean_us": 4131,
+              "rank_max_mean_us": 4134.284799999999,
+              "starts": 2,
+              "runs": [
+                {
+                  "label": "bs4096-control-a",
+                  "method": "control",
+                  "mean_us": 4131.2082,
+                  "rank_max_mean_us": 4134.7986,
+                  "on_us": 4138.5041,
+                  "overhead_pct": 0.1766045100317193,
+                  "csv_count": 16,
+                  "trace": {
+                    "json": "#private-artifacts",
+                    "events": 25280
+                  }
+                },
+                {
+                  "label": "bs4096-control-b",
+                  "method": "control",
+                  "mean_us": 4130.7918,
+                  "rank_max_mean_us": 4133.771,
+                  "on_us": null,
+                  "overhead_pct": null,
+                  "csv_count": 8,
+                  "trace": null
+                }
+              ]
+            },
+            "combined": {
+              "mean_us": 4042.2698,
+              "rank_max_mean_us": 4046.02815,
+              "starts": 2,
+              "runs": [
+                {
+                  "label": "bs4096-combined-a",
+                  "method": "combined",
+                  "mean_us": 4042.5258,
+                  "rank_max_mean_us": 4045.4033,
+                  "on_us": 4042.6681,
+                  "overhead_pct": 0.0035200764828768882,
+                  "csv_count": 16,
+                  "trace": {
+                    "json": "#private-artifacts",
+                    "events": 24256
+                  }
+                },
+                {
+                  "label": "bs4096-combined-b",
+                  "method": "combined",
+                  "mean_us": 4042.0137999999997,
+                  "rank_max_mean_us": 4046.6530000000002,
+                  "on_us": null,
+                  "overhead_pct": null,
+                  "csv_count": 8,
+                  "trace": null
+                }
+              ]
+            }
+          },
+          "reduction_pct": 2.1479109174533995,
+          "output_hashes_equal": true
+        },
+        {
+          "ep": 32,
+          "bs": 32,
+          "status": "pending"
+        },
+        {
+          "ep": 32,
+          "bs": 96,
+          "status": "pending"
+        },
+        {
+          "ep": 32,
+          "bs": 256,
+          "status": "pending"
+        },
+        {
+          "ep": 32,
+          "bs": 512,
+          "status": "pending"
+        },
+        {
+          "ep": 32,
+          "bs": 1024,
+          "status": "pending"
+        },
+        {
+          "ep": 32,
+          "bs": 2048,
+          "status": "pending"
+        },
+        {
+          "ep": 32,
+          "bs": 4096,
+          "status": "pending"
+        }
+      ],
+      "campaigns": [
+        {
+          "ep": 8,
+          "status": "audited_complete",
+          "placement_note": "同一固定节点组；Ascend950DT/CANN B080，具体放置见本地记录",
+          "summary_url": "#private-artifacts"
+        },
+        {
+          "ep": 32,
+          "status": "partial",
+          "placement_note": "同一固定节点组；Ascend950DT/CANN B080，具体放置见本地记录",
+          "summary_url": "#private-artifacts"
+        }
+      ]
     }
   },
   "environment": {
@@ -78290,7 +78828,7 @@
   },
   "publication": {
     "audience": "public",
-    "snapshot": "r31-two-round-wave-1023",
+    "snapshot": "r31-aiv1-wave-matrix-1024",
     "original_artifacts": "local_archive_not_published",
     "note": "数值与离线快照一致；原始timer/CSV及服务器文件未公开。"
   }

@@ -13,7 +13,7 @@ const out = path.join(root, 'megamoe-performance');
 const sha = text => crypto.createHash('sha256').update(text).digest('hex');
 const originalHtml = fs.readFileSync(path.join(source, 'index.html'), 'utf8');
 const original = JSON.parse(fs.readFileSync(path.join(source, 'results.json'), 'utf8'));
-const snapshot = original.stage1?.r31_two_round_wave ? 'r31-two-round-wave-1023' : original.stage1?.version_matrix ? 'version-matrix-1023' : original.stage1?.ep32_r31 ? 'ep32-r31-layout-ds-1021-' + original.stage1.ep32_r31.status : 'ds-converge-final-1021';
+const snapshot = original.stage1?.r31_aiv1_wave_matrix ? 'r31-aiv1-wave-matrix-1024' : original.stage1?.r31_two_round_wave ? 'r31-two-round-wave-1023' : original.stage1?.version_matrix ? 'version-matrix-1023' : original.stage1?.ep32_r31 ? 'ep32-r31-layout-ds-1021-' + original.stage1.ep32_r31.status : 'ds-converge-final-1021';
 const privateAnchor = '#private-artifacts';
 let hiddenLinks = 0, hiddenPaths = 0;
 function scrub(value) {
