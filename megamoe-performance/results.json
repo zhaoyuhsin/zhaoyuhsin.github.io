@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "dataset_id": "ep8-balanced-fullcomm-1020",
-  "updated_at": "2026-10-24 · R31两轮wave＋AIV1完成等待统测",
+  "updated_at": "2026-10-24 · 五轮消融与跨EP回归",
   "title": "MegaMoE · 离线性能实验室",
   "rows": [
     {
@@ -78819,6 +78819,1986 @@
           "summary_url": "#private-artifacts"
         }
       ]
+    },
+    "five_rounds_1024": {
+      "baseline_revision": "904131cfa5c22e27eb8e278ec9019ab4dbb0392a",
+      "scope": "完整通信kernel Duration；timer-off；warm10/20采后10；逐轮rank-min均值，同时保留rank-max",
+      "accuracy": "not_run_user_requested",
+      "experiments": [
+        {
+          "id": "r1",
+          "title": "Combine一行配额",
+          "branch": "codex/megamoe-r1-combine-one-row-1024",
+          "cases": [
+            {
+              "round": "r1",
+              "ep": 8,
+              "bs": 512,
+              "control": {
+                "mean_us": 729.9707000000001,
+                "rank_max_mean_us": 731.62605,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs512-control-a",
+                    "method": "control",
+                    "mean_us": 727.5619,
+                    "rank_max_mean_us": 729.1587,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs512-control-b",
+                    "method": "control",
+                    "mean_us": 732.3795,
+                    "rank_max_mean_us": 734.0934,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  }
+                ]
+              },
+              "candidate": {
+                "mean_us": 728.1251,
+                "rank_max_mean_us": 730.1575,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs512-combined-a",
+                    "method": "combined",
+                    "mean_us": 727.3094,
+                    "rank_max_mean_us": 729.177,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs512-combined-b",
+                    "method": "combined",
+                    "mean_us": 728.9408,
+                    "rank_max_mean_us": 731.138,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  }
+                ]
+              },
+              "reduction_pct": 0.25283206572539463,
+              "output_hashes_equal": true,
+              "source": "r1-ep8-r01cpu7-a/summary.json",
+              "placement": {
+                "rack": "01",
+                "nodes": [
+                  "CPU7"
+                ]
+              },
+              "revision": "5d1add9b581ea82845092db6bf59203d706b1f00",
+              "source_url": "#private-artifacts"
+            },
+            {
+              "round": "r1",
+              "ep": 8,
+              "bs": 1024,
+              "control": {
+                "mean_us": 1082.7420000000002,
+                "rank_max_mean_us": 1084.4639,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs1024-control-a",
+                    "method": "control",
+                    "mean_us": 1082.2036,
+                    "rank_max_mean_us": 1083.9922,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs1024-control-b",
+                    "method": "control",
+                    "mean_us": 1083.2804,
+                    "rank_max_mean_us": 1084.9356,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  }
+                ]
+              },
+              "candidate": {
+                "mean_us": 1084.8526499999998,
+                "rank_max_mean_us": 1086.6986,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs1024-combined-a",
+                    "method": "combined",
+                    "mean_us": 1085.5609,
+                    "rank_max_mean_us": 1087.2013,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs1024-combined-b",
+                    "method": "combined",
+                    "mean_us": 1084.1444,
+                    "rank_max_mean_us": 1086.1959,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  }
+                ]
+              },
+              "reduction_pct": -0.1949356356361509,
+              "output_hashes_equal": true,
+              "source": "r1-ep8-r01cpu7-a/summary.json",
+              "placement": {
+                "rack": "01",
+                "nodes": [
+                  "CPU7"
+                ]
+              },
+              "revision": "5d1add9b581ea82845092db6bf59203d706b1f00",
+              "source_url": "#private-artifacts"
+            },
+            {
+              "round": "r1",
+              "ep": 8,
+              "bs": 4096,
+              "control": {
+                "mean_us": 4044.06355,
+                "rank_max_mean_us": 4046.77405,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs4096-control-a",
+                    "method": "control",
+                    "mean_us": 4045.9024,
+                    "rank_max_mean_us": 4048.5651,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs4096-control-b",
+                    "method": "control",
+                    "mean_us": 4042.2246999999998,
+                    "rank_max_mean_us": 4044.983,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  }
+                ]
+              },
+              "candidate": {
+                "mean_us": 4049.69455,
+                "rank_max_mean_us": 4052.4863,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs4096-combined-a",
+                    "method": "combined",
+                    "mean_us": 4049.879,
+                    "rank_max_mean_us": 4052.7066,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs4096-combined-b",
+                    "method": "combined",
+                    "mean_us": 4049.5101,
+                    "rank_max_mean_us": 4052.266,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  }
+                ]
+              },
+              "reduction_pct": -0.1392411353179801,
+              "output_hashes_equal": true,
+              "source": "r1-ep8-r01cpu7-a/summary.json",
+              "placement": {
+                "rack": "01",
+                "nodes": [
+                  "CPU7"
+                ]
+              },
+              "revision": "5d1add9b581ea82845092db6bf59203d706b1f00",
+              "source_url": "#private-artifacts"
+            },
+            {
+              "round": "r1",
+              "ep": 32,
+              "bs": 4096,
+              "control": {
+                "mean_us": 4587.88265,
+                "rank_max_mean_us": 4594.581899999999,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs4096-control-a",
+                    "method": "control",
+                    "mean_us": 4634.2511,
+                    "rank_max_mean_us": 4640.2017,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 32,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs4096-control-b",
+                    "method": "control",
+                    "mean_us": 4541.5142,
+                    "rank_max_mean_us": 4548.9621,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 32,
+                    "trace": null
+                  }
+                ]
+              },
+              "candidate": {
+                "mean_us": 4200.74605,
+                "rank_max_mean_us": 4207.486800000001,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs4096-combined-a",
+                    "method": "combined",
+                    "mean_us": 4211.5163,
+                    "rank_max_mean_us": 4218.8967,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 32,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs4096-combined-b",
+                    "method": "combined",
+                    "mean_us": 4189.9758,
+                    "rank_max_mean_us": 4196.0769,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 32,
+                    "trace": null
+                  }
+                ]
+              },
+              "reduction_pct": 8.438241113250788,
+              "output_hashes_equal": true,
+              "source": "r1-ep32-r01-8624-c/summary.json",
+              "placement": {
+                "rack": "01",
+                "nodes": [
+                  "CPU8",
+                  "CPU6",
+                  "CPU2",
+                  "CPU4"
+                ]
+              },
+              "revision": "5d1add9b581ea82845092db6bf59203d706b1f00",
+              "source_url": "#private-artifacts"
+            }
+          ]
+        },
+        {
+          "id": "r2",
+          "title": "先提交激活再收FIX完成",
+          "branch": "codex/megamoe-r2-activation-before-fix-1024",
+          "cases": [
+            {
+              "round": "r2",
+              "ep": 8,
+              "bs": 512,
+              "control": {
+                "mean_us": 727.4292499999999,
+                "rank_max_mean_us": 729.1927000000001,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs512-control-a",
+                    "method": "control",
+                    "mean_us": 726.2053,
+                    "rank_max_mean_us": 728.0251000000001,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs512-control-b",
+                    "method": "control",
+                    "mean_us": 728.6532,
+                    "rank_max_mean_us": 730.3603,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  }
+                ]
+              },
+              "candidate": {
+                "mean_us": 725.6896,
+                "rank_max_mean_us": 727.4780499999999,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs512-combined-a",
+                    "method": "combined",
+                    "mean_us": 724.9555,
+                    "rank_max_mean_us": 726.7943,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs512-combined-b",
+                    "method": "combined",
+                    "mean_us": 726.4237,
+                    "rank_max_mean_us": 728.1618,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  }
+                ]
+              },
+              "reduction_pct": 0.23915040534867593,
+              "output_hashes_equal": true,
+              "source": "r2-ep8-r01cpu8-a/summary.json",
+              "placement": {
+                "rack": "01",
+                "nodes": [
+                  "CPU8"
+                ]
+              },
+              "revision": "374114bcfa952c5f875a1f224516da1395c238bd",
+              "source_url": "#private-artifacts"
+            },
+            {
+              "round": "r2",
+              "ep": 8,
+              "bs": 1024,
+              "control": {
+                "mean_us": 1075.2986,
+                "rank_max_mean_us": 1077.086,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs1024-control-a",
+                    "method": "control",
+                    "mean_us": 1075.7249,
+                    "rank_max_mean_us": 1077.8695,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs1024-control-b",
+                    "method": "control",
+                    "mean_us": 1074.8723,
+                    "rank_max_mean_us": 1076.3025,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  }
+                ]
+              },
+              "candidate": {
+                "mean_us": 1074.4628,
+                "rank_max_mean_us": 1076.6058,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs1024-combined-a",
+                    "method": "combined",
+                    "mean_us": 1077.7963,
+                    "rank_max_mean_us": 1079.8103,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs1024-combined-b",
+                    "method": "combined",
+                    "mean_us": 1071.1293,
+                    "rank_max_mean_us": 1073.4013,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  }
+                ]
+              },
+              "reduction_pct": 0.07772724711071488,
+              "output_hashes_equal": true,
+              "source": "r2-ep8-r01cpu8-a/summary.json",
+              "placement": {
+                "rack": "01",
+                "nodes": [
+                  "CPU8"
+                ]
+              },
+              "revision": "374114bcfa952c5f875a1f224516da1395c238bd",
+              "source_url": "#private-artifacts"
+            },
+            {
+              "round": "r2",
+              "ep": 8,
+              "bs": 4096,
+              "control": {
+                "mean_us": 4041.74575,
+                "rank_max_mean_us": 4045.37905,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs4096-control-a",
+                    "method": "control",
+                    "mean_us": 4042.3146,
+                    "rank_max_mean_us": 4045.2814,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs4096-control-b",
+                    "method": "control",
+                    "mean_us": 4041.1769,
+                    "rank_max_mean_us": 4045.4767,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  }
+                ]
+              },
+              "candidate": {
+                "mean_us": 4041.5747499999998,
+                "rank_max_mean_us": 4044.41925,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs4096-combined-a",
+                    "method": "combined",
+                    "mean_us": 4041.0646,
+                    "rank_max_mean_us": 4044.0376,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs4096-combined-b",
+                    "method": "combined",
+                    "mean_us": 4042.0849,
+                    "rank_max_mean_us": 4044.8009,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  }
+                ]
+              },
+              "reduction_pct": 0.0042308450500683215,
+              "output_hashes_equal": true,
+              "source": "r2-ep8-r01cpu8-a/summary.json",
+              "placement": {
+                "rack": "01",
+                "nodes": [
+                  "CPU8"
+                ]
+              },
+              "revision": "374114bcfa952c5f875a1f224516da1395c238bd",
+              "source_url": "#private-artifacts"
+            },
+            {
+              "round": "r2",
+              "ep": 32,
+              "bs": 4096,
+              "control": {
+                "mean_us": 4585.195299999999,
+                "rank_max_mean_us": 4591.97105,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs4096-control-a",
+                    "method": "control",
+                    "mean_us": 4548.528499999999,
+                    "rank_max_mean_us": 4555.981400000001,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 32,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs4096-control-b",
+                    "method": "control",
+                    "mean_us": 4621.8621,
+                    "rank_max_mean_us": 4627.9607,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 32,
+                    "trace": null
+                  }
+                ]
+              },
+              "candidate": {
+                "mean_us": 4525.148999999999,
+                "rank_max_mean_us": 4531.004650000001,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs4096-combined-a",
+                    "method": "combined",
+                    "mean_us": 4498.2225,
+                    "rank_max_mean_us": 4503.6059000000005,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 32,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs4096-combined-b",
+                    "method": "combined",
+                    "mean_us": 4552.0755,
+                    "rank_max_mean_us": 4558.4034,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 32,
+                    "trace": null
+                  }
+                ]
+              },
+              "reduction_pct": 1.3095690820410621,
+              "output_hashes_equal": true,
+              "source": "r2-ep32-r01-8624-seq-a/summary.json",
+              "placement": {
+                "rack": "01",
+                "nodes": [
+                  "CPU8",
+                  "CPU6",
+                  "CPU2",
+                  "CPU4"
+                ]
+              },
+              "revision": "374114bcfa952c5f875a1f224516da1395c238bd",
+              "source_url": "#private-artifacts"
+            }
+          ]
+        },
+        {
+          "id": "r3",
+          "title": "一轮AIC wave",
+          "branch": "codex/megamoe-r3-one-round-wave-1024",
+          "cases": [
+            {
+              "round": "r3",
+              "ep": 8,
+              "bs": 512,
+              "control": {
+                "mean_us": 723.1133500000001,
+                "rank_max_mean_us": 724.69995,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs512-control-a",
+                    "method": "control",
+                    "mean_us": 723.0689,
+                    "rank_max_mean_us": 724.447,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs512-control-b",
+                    "method": "control",
+                    "mean_us": 723.1578000000001,
+                    "rank_max_mean_us": 724.9529,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  }
+                ]
+              },
+              "candidate": {
+                "mean_us": 724.52035,
+                "rank_max_mean_us": 725.92535,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs512-combined-a",
+                    "method": "combined",
+                    "mean_us": 725.5022,
+                    "rank_max_mean_us": 726.8403,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs512-combined-b",
+                    "method": "combined",
+                    "mean_us": 723.5385,
+                    "rank_max_mean_us": 725.0104,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  }
+                ]
+              },
+              "reduction_pct": -0.1945753041345366,
+              "output_hashes_equal": true,
+              "source": "r3-ep8-r01cpu6-b/summary.json",
+              "placement": {
+                "rack": "01",
+                "nodes": [
+                  "CPU6"
+                ]
+              },
+              "revision": "71b72188c9d47a1f28174678dca9226bff9d6bff",
+              "source_url": "#private-artifacts"
+            },
+            {
+              "round": "r3",
+              "ep": 8,
+              "bs": 1024,
+              "control": {
+                "mean_us": 1072.28175,
+                "rank_max_mean_us": 1074.1284,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs1024-control-a",
+                    "method": "control",
+                    "mean_us": 1072.2824,
+                    "rank_max_mean_us": 1074.0081,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs1024-control-b",
+                    "method": "control",
+                    "mean_us": 1072.2811,
+                    "rank_max_mean_us": 1074.2487,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  }
+                ]
+              },
+              "candidate": {
+                "mean_us": 1073.1621,
+                "rank_max_mean_us": 1075.0261,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs1024-combined-a",
+                    "method": "combined",
+                    "mean_us": 1071.5023999999999,
+                    "rank_max_mean_us": 1073.4679,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs1024-combined-b",
+                    "method": "combined",
+                    "mean_us": 1074.8218,
+                    "rank_max_mean_us": 1076.5843,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  }
+                ]
+              },
+              "reduction_pct": -0.08210062327367318,
+              "output_hashes_equal": true,
+              "source": "r3-ep8-r01cpu6-b/summary.json",
+              "placement": {
+                "rack": "01",
+                "nodes": [
+                  "CPU6"
+                ]
+              },
+              "revision": "71b72188c9d47a1f28174678dca9226bff9d6bff",
+              "source_url": "#private-artifacts"
+            },
+            {
+              "round": "r3",
+              "ep": 8,
+              "bs": 4096,
+              "control": {
+                "mean_us": 4041.9557,
+                "rank_max_mean_us": 4045.05075,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs4096-control-a",
+                    "method": "control",
+                    "mean_us": 4041.848,
+                    "rank_max_mean_us": 4044.8849999999998,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs4096-control-b",
+                    "method": "control",
+                    "mean_us": 4042.0634,
+                    "rank_max_mean_us": 4045.2165,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  }
+                ]
+              },
+              "candidate": {
+                "mean_us": 4056.33375,
+                "rank_max_mean_us": 4059.51845,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs4096-combined-a",
+                    "method": "combined",
+                    "mean_us": 4053.4862,
+                    "rank_max_mean_us": 4056.39,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs4096-combined-b",
+                    "method": "combined",
+                    "mean_us": 4059.1813,
+                    "rank_max_mean_us": 4062.6469,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  }
+                ]
+              },
+              "reduction_pct": -0.3557201282537559,
+              "output_hashes_equal": true,
+              "source": "r3-ep8-r01cpu6-b/summary.json",
+              "placement": {
+                "rack": "01",
+                "nodes": [
+                  "CPU6"
+                ]
+              },
+              "revision": "71b72188c9d47a1f28174678dca9226bff9d6bff",
+              "source_url": "#private-artifacts"
+            },
+            {
+              "round": "r3",
+              "ep": 32,
+              "bs": 4096,
+              "control": {
+                "mean_us": 4550.61535,
+                "rank_max_mean_us": 4557.62195,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs4096-control-a",
+                    "method": "control",
+                    "mean_us": 4585.0226,
+                    "rank_max_mean_us": 4591.1051,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 32,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs4096-control-b",
+                    "method": "control",
+                    "mean_us": 4516.2081,
+                    "rank_max_mean_us": 4524.1388,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 32,
+                    "trace": null
+                  }
+                ]
+              },
+              "candidate": {
+                "mean_us": 4544.5385,
+                "rank_max_mean_us": 4551.7199,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs4096-combined-a",
+                    "method": "combined",
+                    "mean_us": 4531.4207,
+                    "rank_max_mean_us": 4538.9107,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 32,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs4096-combined-b",
+                    "method": "combined",
+                    "mean_us": 4557.6563,
+                    "rank_max_mean_us": 4564.5291,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 32,
+                    "trace": null
+                  }
+                ]
+              },
+              "reduction_pct": 0.13353908279679638,
+              "output_hashes_equal": true,
+              "source": "r3-ep32-r01-8624-seq-a/summary.json",
+              "placement": {
+                "rack": "01",
+                "nodes": [
+                  "CPU8",
+                  "CPU6",
+                  "CPU2",
+                  "CPU4"
+                ]
+              },
+              "revision": "71b72188c9d47a1f28174678dca9226bff9d6bff",
+              "source_url": "#private-artifacts"
+            }
+          ]
+        },
+        {
+          "id": "r4",
+          "title": "三轮AIC wave",
+          "branch": "codex/megamoe-r4-three-round-wave-1024",
+          "cases": [
+            {
+              "round": "r4",
+              "ep": 8,
+              "bs": 512,
+              "control": {
+                "mean_us": 727.37685,
+                "rank_max_mean_us": 728.8827,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs512-control-a",
+                    "method": "control",
+                    "mean_us": 727.9649,
+                    "rank_max_mean_us": 729.4989,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs512-control-b",
+                    "method": "control",
+                    "mean_us": 726.7888,
+                    "rank_max_mean_us": 728.2665,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  }
+                ]
+              },
+              "candidate": {
+                "mean_us": 725.5962,
+                "rank_max_mean_us": 727.18815,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs512-combined-a",
+                    "method": "combined",
+                    "mean_us": 727.0883,
+                    "rank_max_mean_us": 728.6569999999999,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs512-combined-b",
+                    "method": "combined",
+                    "mean_us": 724.1041,
+                    "rank_max_mean_us": 725.7193,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  }
+                ]
+              },
+              "reduction_pct": 0.24480432667055574,
+              "output_hashes_equal": true,
+              "source": "r4-ep8-r01cpu5-a/summary.json",
+              "placement": {
+                "rack": "01",
+                "nodes": [
+                  "CPU5"
+                ]
+              },
+              "revision": "f29c5173b0861c91588bb7a50c83bb5dd27c5ad5",
+              "source_url": "#private-artifacts"
+            },
+            {
+              "round": "r4",
+              "ep": 8,
+              "bs": 1024,
+              "control": {
+                "mean_us": 1081.54575,
+                "rank_max_mean_us": 1083.5527499999998,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs1024-control-a",
+                    "method": "control",
+                    "mean_us": 1082.797,
+                    "rank_max_mean_us": 1084.7984,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs1024-control-b",
+                    "method": "control",
+                    "mean_us": 1080.2945,
+                    "rank_max_mean_us": 1082.3071,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  }
+                ]
+              },
+              "candidate": {
+                "mean_us": 1084.8004,
+                "rank_max_mean_us": 1086.7231499999998,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs1024-combined-a",
+                    "method": "combined",
+                    "mean_us": 1088.7167,
+                    "rank_max_mean_us": 1090.6325,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs1024-combined-b",
+                    "method": "combined",
+                    "mean_us": 1080.8841,
+                    "rank_max_mean_us": 1082.8138,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  }
+                ]
+              },
+              "reduction_pct": -0.3009257814567734,
+              "output_hashes_equal": true,
+              "source": "r4-ep8-r01cpu5-a/summary.json",
+              "placement": {
+                "rack": "01",
+                "nodes": [
+                  "CPU5"
+                ]
+              },
+              "revision": "f29c5173b0861c91588bb7a50c83bb5dd27c5ad5",
+              "source_url": "#private-artifacts"
+            },
+            {
+              "round": "r4",
+              "ep": 8,
+              "bs": 4096,
+              "control": {
+                "mean_us": 4042.12445,
+                "rank_max_mean_us": 4045.1899000000003,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs4096-control-a",
+                    "method": "control",
+                    "mean_us": 4041.8677,
+                    "rank_max_mean_us": 4045.1039,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs4096-control-b",
+                    "method": "control",
+                    "mean_us": 4042.3812,
+                    "rank_max_mean_us": 4045.2759,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  }
+                ]
+              },
+              "candidate": {
+                "mean_us": 4053.5944,
+                "rank_max_mean_us": 4056.35465,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs4096-combined-a",
+                    "method": "combined",
+                    "mean_us": 4053.4546,
+                    "rank_max_mean_us": 4056.1118,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs4096-combined-b",
+                    "method": "combined",
+                    "mean_us": 4053.7342,
+                    "rank_max_mean_us": 4056.5975,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  }
+                ]
+              },
+              "reduction_pct": -0.2837604369158031,
+              "output_hashes_equal": true,
+              "source": "r4-ep8-r01cpu5-a/summary.json",
+              "placement": {
+                "rack": "01",
+                "nodes": [
+                  "CPU5"
+                ]
+              },
+              "revision": "f29c5173b0861c91588bb7a50c83bb5dd27c5ad5",
+              "source_url": "#private-artifacts"
+            },
+            {
+              "round": "r4",
+              "ep": 32,
+              "bs": 4096,
+              "control": {
+                "mean_us": 4588.4891,
+                "rank_max_mean_us": 4595.235049999999,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs4096-control-a",
+                    "method": "control",
+                    "mean_us": 4591.1621,
+                    "rank_max_mean_us": 4598.0782,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 32,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs4096-control-b",
+                    "method": "control",
+                    "mean_us": 4585.8161,
+                    "rank_max_mean_us": 4592.3919,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 32,
+                    "trace": null
+                  }
+                ]
+              },
+              "candidate": {
+                "mean_us": 4750.05365,
+                "rank_max_mean_us": 4757.7194,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs4096-combined-a",
+                    "method": "combined",
+                    "mean_us": 4759.9818,
+                    "rank_max_mean_us": 4767.3199,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 32,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs4096-combined-b",
+                    "method": "combined",
+                    "mean_us": 4740.1255,
+                    "rank_max_mean_us": 4748.1189,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 32,
+                    "trace": null
+                  }
+                ]
+              },
+              "reduction_pct": -3.521083879222897,
+              "output_hashes_equal": true,
+              "source": "r4-ep32-r01-8624-seq-a/summary.json",
+              "placement": {
+                "rack": "01",
+                "nodes": [
+                  "CPU8",
+                  "CPU6",
+                  "CPU2",
+                  "CPU4"
+                ]
+              },
+              "revision": "f29c5173b0861c91588bb7a50c83bb5dd27c5ad5",
+              "source_url": "#private-artifacts"
+            }
+          ]
+        },
+        {
+          "id": "r5",
+          "title": "Combine四行配额",
+          "branch": "codex/megamoe-r5-combine-four-rows-1024",
+          "cases": [
+            {
+              "round": "r5",
+              "ep": 8,
+              "bs": 512,
+              "control": {
+                "mean_us": 728.6507,
+                "rank_max_mean_us": 730.57845,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs512-control-a",
+                    "method": "control",
+                    "mean_us": 729.8698,
+                    "rank_max_mean_us": 731.6605,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs512-control-b",
+                    "method": "control",
+                    "mean_us": 727.4316,
+                    "rank_max_mean_us": 729.4964,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  }
+                ]
+              },
+              "candidate": {
+                "mean_us": 728.61645,
+                "rank_max_mean_us": 730.39375,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs512-combined-a",
+                    "method": "combined",
+                    "mean_us": 729.3559,
+                    "rank_max_mean_us": 731.0833,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs512-combined-b",
+                    "method": "combined",
+                    "mean_us": 727.877,
+                    "rank_max_mean_us": 729.7042,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  }
+                ]
+              },
+              "reduction_pct": 0.00470046896270393,
+              "output_hashes_equal": true,
+              "source": "r5-ep8-r01cpu7-a/summary.json",
+              "placement": {
+                "rack": "01",
+                "nodes": [
+                  "CPU7"
+                ]
+              },
+              "revision": "a9a12bfa677982534c9fa61d3eed8ec11a777e37",
+              "source_url": "#private-artifacts"
+            },
+            {
+              "round": "r5",
+              "ep": 8,
+              "bs": 1024,
+              "control": {
+                "mean_us": 1084.1448,
+                "rank_max_mean_us": 1086.47525,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs1024-control-a",
+                    "method": "control",
+                    "mean_us": 1080.512,
+                    "rank_max_mean_us": 1083.0606,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs1024-control-b",
+                    "method": "control",
+                    "mean_us": 1087.7776,
+                    "rank_max_mean_us": 1089.8899,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  }
+                ]
+              },
+              "candidate": {
+                "mean_us": 1083.7033999999999,
+                "rank_max_mean_us": 1085.4443999999999,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs1024-combined-a",
+                    "method": "combined",
+                    "mean_us": 1086.6833,
+                    "rank_max_mean_us": 1088.6494,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs1024-combined-b",
+                    "method": "combined",
+                    "mean_us": 1080.7235,
+                    "rank_max_mean_us": 1082.2394,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  }
+                ]
+              },
+              "reduction_pct": 0.0407141186306581,
+              "output_hashes_equal": true,
+              "source": "r5-ep8-r01cpu7-a/summary.json",
+              "placement": {
+                "rack": "01",
+                "nodes": [
+                  "CPU7"
+                ]
+              },
+              "revision": "a9a12bfa677982534c9fa61d3eed8ec11a777e37",
+              "source_url": "#private-artifacts"
+            },
+            {
+              "round": "r5",
+              "ep": 8,
+              "bs": 4096,
+              "control": {
+                "mean_us": 4045.09735,
+                "rank_max_mean_us": 4048.1749,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs4096-control-a",
+                    "method": "control",
+                    "mean_us": 4045.9249,
+                    "rank_max_mean_us": 4048.7136,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs4096-control-b",
+                    "method": "control",
+                    "mean_us": 4044.2698,
+                    "rank_max_mean_us": 4047.6362,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  }
+                ]
+              },
+              "candidate": {
+                "mean_us": 4042.7168,
+                "rank_max_mean_us": 4045.7193500000003,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs4096-combined-a",
+                    "method": "combined",
+                    "mean_us": 4043.4061,
+                    "rank_max_mean_us": 4046.6188,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs4096-combined-b",
+                    "method": "combined",
+                    "mean_us": 4042.0275,
+                    "rank_max_mean_us": 4044.8199,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 8,
+                    "trace": null
+                  }
+                ]
+              },
+              "reduction_pct": 0.058850252392561586,
+              "output_hashes_equal": true,
+              "source": "r5-ep8-r01cpu7-a/summary.json",
+              "placement": {
+                "rack": "01",
+                "nodes": [
+                  "CPU7"
+                ]
+              },
+              "revision": "a9a12bfa677982534c9fa61d3eed8ec11a777e37",
+              "source_url": "#private-artifacts"
+            },
+            {
+              "round": "r5",
+              "ep": 32,
+              "bs": 4096,
+              "control": {
+                "mean_us": 4623.73275,
+                "rank_max_mean_us": 4630.21245,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs4096-control-a",
+                    "method": "control",
+                    "mean_us": 4699.0417,
+                    "rank_max_mean_us": 4705.7564,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 32,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs4096-control-b",
+                    "method": "control",
+                    "mean_us": 4548.4238000000005,
+                    "rank_max_mean_us": 4554.6685,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 32,
+                    "trace": null
+                  }
+                ]
+              },
+              "candidate": {
+                "mean_us": 4228.9214,
+                "rank_max_mean_us": 4236.1885,
+                "starts": 2,
+                "runs": [
+                  {
+                    "label": "bs4096-combined-a",
+                    "method": "combined",
+                    "mean_us": 4195.5832,
+                    "rank_max_mean_us": 4202.8474,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 32,
+                    "trace": null
+                  },
+                  {
+                    "label": "bs4096-combined-b",
+                    "method": "combined",
+                    "mean_us": 4262.2596,
+                    "rank_max_mean_us": 4269.5296,
+                    "on_us": null,
+                    "overhead_pct": null,
+                    "csv_count": 32,
+                    "trace": null
+                  }
+                ]
+              },
+              "reduction_pct": 8.538801253164985,
+              "output_hashes_equal": true,
+              "source": "r5-ep32-r01-8624-seq-a/summary.json",
+              "placement": {
+                "rack": "01",
+                "nodes": [
+                  "CPU8",
+                  "CPU6",
+                  "CPU2",
+                  "CPU4"
+                ]
+              },
+              "revision": "a9a12bfa677982534c9fa61d3eed8ec11a777e37",
+              "source_url": "#private-artifacts"
+            }
+          ]
+        }
+      ],
+      "attempts": [
+        {
+          "round": "r1",
+          "ep": 32,
+          "status": "failed",
+          "folder": "r1-ep32-r01-8524-b",
+          "finished_workers": [],
+          "completed": []
+        },
+        {
+          "round": "r1",
+          "ep": 32,
+          "status": "audited_complete",
+          "folder": "r1-ep32-r01-8624-c",
+          "finished_workers": [
+            "preflight",
+            "bs4096-control-a",
+            "bs4096-combined-a",
+            "bs4096-combined-b",
+            "bs4096-control-b"
+          ],
+          "completed": [
+            "preflight",
+            "bs4096-control-a",
+            "bs4096-combined-a",
+            "bs4096-combined-b",
+            "bs4096-control-b"
+          ]
+        },
+        {
+          "round": "r1",
+          "ep": 32,
+          "status": "failed",
+          "folder": "r1-ep32-r05-7341-a",
+          "finished_workers": [
+            "preflight",
+            "bs512-control-a"
+          ],
+          "completed": [
+            "preflight",
+            "bs512-control-a"
+          ]
+        },
+        {
+          "round": "r1",
+          "ep": 8,
+          "status": "audited_complete",
+          "folder": "r1-ep8-r01cpu7-a",
+          "finished_workers": [
+            "preflight",
+            "bs512-control-a",
+            "bs512-combined-a",
+            "bs512-combined-b",
+            "bs512-control-b",
+            "bs1024-control-a",
+            "bs1024-combined-a",
+            "bs1024-combined-b",
+            "bs1024-control-b",
+            "bs4096-control-a",
+            "bs4096-combined-a",
+            "bs4096-combined-b",
+            "bs4096-control-b"
+          ],
+          "completed": [
+            "preflight",
+            "bs512-control-a",
+            "bs512-combined-a",
+            "bs512-combined-b",
+            "bs512-control-b",
+            "bs1024-control-a",
+            "bs1024-combined-a",
+            "bs1024-combined-b",
+            "bs1024-control-b",
+            "bs4096-control-a",
+            "bs4096-combined-a",
+            "bs4096-combined-b",
+            "bs4096-control-b"
+          ]
+        },
+        {
+          "round": "r2",
+          "ep": 32,
+          "status": "audited_complete",
+          "folder": "r2-ep32-r01-8624-seq-a",
+          "finished_workers": [
+            "preflight",
+            "bs4096-control-a",
+            "bs4096-combined-a",
+            "bs4096-combined-b",
+            "bs4096-control-b"
+          ],
+          "completed": [
+            "preflight",
+            "bs4096-control-a",
+            "bs4096-combined-a",
+            "bs4096-combined-b",
+            "bs4096-control-b"
+          ]
+        },
+        {
+          "round": "r2",
+          "ep": 8,
+          "status": "audited_complete",
+          "folder": "r2-ep8-r01cpu8-a",
+          "finished_workers": [
+            "preflight",
+            "bs512-control-a",
+            "bs512-combined-a",
+            "bs512-combined-b",
+            "bs512-control-b",
+            "bs1024-control-a",
+            "bs1024-combined-a",
+            "bs1024-combined-b",
+            "bs1024-control-b",
+            "bs4096-control-a",
+            "bs4096-combined-a",
+            "bs4096-combined-b",
+            "bs4096-control-b"
+          ],
+          "completed": [
+            "preflight",
+            "bs512-control-a",
+            "bs512-combined-a",
+            "bs512-combined-b",
+            "bs512-control-b",
+            "bs1024-control-a",
+            "bs1024-combined-a",
+            "bs1024-combined-b",
+            "bs1024-control-b",
+            "bs4096-control-a",
+            "bs4096-combined-a",
+            "bs4096-combined-b",
+            "bs4096-control-b"
+          ]
+        },
+        {
+          "round": "r3",
+          "ep": 32,
+          "status": "audited_complete",
+          "folder": "r3-ep32-r01-8624-seq-a",
+          "finished_workers": [
+            "preflight",
+            "bs4096-control-a",
+            "bs4096-combined-a",
+            "bs4096-combined-b",
+            "bs4096-control-b"
+          ],
+          "completed": [
+            "preflight",
+            "bs4096-control-a",
+            "bs4096-combined-a",
+            "bs4096-combined-b",
+            "bs4096-control-b"
+          ]
+        },
+        {
+          "round": "r3",
+          "ep": 8,
+          "status": "failed",
+          "folder": "r3-ep8-r01cpu6-a",
+          "finished_workers": [
+            "preflight",
+            "bs512-control-a"
+          ],
+          "completed": [
+            "preflight",
+            "bs512-control-a"
+          ]
+        },
+        {
+          "round": "r3",
+          "ep": 8,
+          "status": "audited_complete",
+          "folder": "r3-ep8-r01cpu6-b",
+          "finished_workers": [
+            "preflight",
+            "bs512-control-a",
+            "bs512-combined-a",
+            "bs512-combined-b",
+            "bs512-control-b",
+            "bs1024-control-a",
+            "bs1024-combined-a",
+            "bs1024-combined-b",
+            "bs1024-control-b",
+            "bs4096-control-a",
+            "bs4096-combined-a",
+            "bs4096-combined-b",
+            "bs4096-control-b"
+          ],
+          "completed": [
+            "preflight",
+            "bs512-control-a",
+            "bs512-combined-a",
+            "bs512-combined-b",
+            "bs512-control-b",
+            "bs1024-control-a",
+            "bs1024-combined-a",
+            "bs1024-combined-b",
+            "bs1024-control-b",
+            "bs4096-control-a",
+            "bs4096-combined-a",
+            "bs4096-combined-b",
+            "bs4096-control-b"
+          ]
+        },
+        {
+          "round": "r4",
+          "ep": 32,
+          "status": "audited_complete",
+          "folder": "r4-ep32-r01-8624-seq-a",
+          "finished_workers": [
+            "preflight",
+            "bs4096-control-a",
+            "bs4096-combined-a",
+            "bs4096-combined-b",
+            "bs4096-control-b"
+          ],
+          "completed": [
+            "preflight",
+            "bs4096-control-a",
+            "bs4096-combined-a",
+            "bs4096-combined-b",
+            "bs4096-control-b"
+          ]
+        },
+        {
+          "round": "r4",
+          "ep": 8,
+          "status": "audited_complete",
+          "folder": "r4-ep8-r01cpu5-a",
+          "finished_workers": [
+            "preflight",
+            "bs512-control-a",
+            "bs512-combined-a",
+            "bs512-combined-b",
+            "bs512-control-b",
+            "bs1024-control-a",
+            "bs1024-combined-a",
+            "bs1024-combined-b",
+            "bs1024-control-b",
+            "bs4096-control-a",
+            "bs4096-combined-a",
+            "bs4096-combined-b",
+            "bs4096-control-b"
+          ],
+          "completed": [
+            "preflight",
+            "bs512-control-a",
+            "bs512-combined-a",
+            "bs512-combined-b",
+            "bs512-control-b",
+            "bs1024-control-a",
+            "bs1024-combined-a",
+            "bs1024-combined-b",
+            "bs1024-control-b",
+            "bs4096-control-a",
+            "bs4096-combined-a",
+            "bs4096-combined-b",
+            "bs4096-control-b"
+          ]
+        },
+        {
+          "round": "r5",
+          "ep": 32,
+          "status": "audited_complete",
+          "folder": "r5-ep32-r01-8624-seq-a",
+          "finished_workers": [
+            "preflight",
+            "bs4096-control-a",
+            "bs4096-combined-a",
+            "bs4096-combined-b",
+            "bs4096-control-b"
+          ],
+          "completed": [
+            "preflight",
+            "bs4096-control-a",
+            "bs4096-combined-a",
+            "bs4096-combined-b",
+            "bs4096-control-b"
+          ]
+        },
+        {
+          "round": "r5",
+          "ep": 8,
+          "status": "audited_complete",
+          "folder": "r5-ep8-r01cpu7-a",
+          "finished_workers": [
+            "preflight",
+            "bs512-control-a",
+            "bs512-combined-a",
+            "bs512-combined-b",
+            "bs512-control-b",
+            "bs1024-control-a",
+            "bs1024-combined-a",
+            "bs1024-combined-b",
+            "bs1024-control-b",
+            "bs4096-control-a",
+            "bs4096-combined-a",
+            "bs4096-combined-b",
+            "bs4096-control-b"
+          ],
+          "completed": [
+            "preflight",
+            "bs512-control-a",
+            "bs512-combined-a",
+            "bs512-combined-b",
+            "bs512-control-b",
+            "bs1024-control-a",
+            "bs1024-combined-a",
+            "bs1024-combined-b",
+            "bs1024-control-b",
+            "bs4096-control-a",
+            "bs4096-combined-a",
+            "bs4096-combined-b",
+            "bs4096-control-b"
+          ]
+        }
+      ],
+      "scans": [
+        {
+          "file": "scan-1204.jsonl",
+          "time_utc": "2026-10-24T04:01:09.226502+00:00",
+          "available_nodes": [
+            "01/CPU7"
+          ],
+          "authentication_failures": 17
+        },
+        {
+          "file": "scan-1210.jsonl",
+          "time_utc": "2026-10-24T04:06:41.920923+00:00",
+          "available_nodes": [
+            "01/CPU5",
+            "01/CPU6",
+            "01/CPU7",
+            "01/CPU8",
+            "05/CPU1",
+            "05/CPU2",
+            "05/CPU3",
+            "05/CPU4",
+            "05/CPU5",
+            "05/CPU6",
+            "05/CPU7",
+            "05/CPU8"
+          ],
+          "authentication_failures": 16
+        },
+        {
+          "file": "scan-1217.jsonl",
+          "time_utc": "2026-10-24T04:16:52.684998+00:00",
+          "available_nodes": [
+            "01/CPU2",
+            "01/CPU4",
+            "01/CPU5",
+            "01/CPU7",
+            "01/CPU8"
+          ],
+          "authentication_failures": 16
+        },
+        {
+          "file": "scan-final-1246.jsonl",
+          "time_utc": "2026-10-24T04:45:39.897664+00:00",
+          "available_nodes": [
+            "01/CPU1",
+            "01/CPU2",
+            "01/CPU4",
+            "01/CPU6",
+            "01/CPU7",
+            "01/CPU8",
+            "05/CPU1",
+            "05/CPU2",
+            "05/CPU3",
+            "05/CPU4",
+            "05/CPU5",
+            "05/CPU6",
+            "05/CPU7",
+            "05/CPU8"
+          ],
+          "authentication_failures": 0
+        }
+      ],
+      "ep128": {
+        "status": "pending",
+        "note": "尚未找到16节点同时空闲且软件一致的窗口，不继承历史性能"
+      },
+      "status": "screening_complete",
+      "coverage_note": "EP8: BS512/1024/4096；EP32: BS4096。不是全BS/全EP验收。",
+      "progress": "五轮20格ABBA已审计；R5完整被动流水与off/on CSV已本地归档。四轮资源扫描后，最终14节点可用，不够EP128；不是全BS/全EP验收",
+      "conclusions": [
+        "当前分支不能称全EP全shape最优；本轮不与不同机器窗口的DS直接判胜负。",
+        "EP8 R1–R4没有明确可合入收益：小幅正差与启动波动重叠，一轮/三轮wave的BS4096均回退，继续保留两轮预算。",
+        "EP32 R1/BS4096的一行Combine配额出现约8.44%降耗，两个候选均快于两个基线；这只支持本shape，不能继承到小BS或EP128。",
+        "R5四行Combine配额：EP8三项变化均小于0.1%，EP32/BS4096降耗8.54%（4623.73→4228.92μs），作为统一研究候选优先扩测；与R1来自不同窗口，不能宣称4行一定快于1行。",
+        "R2在EP32均值降耗1.31%，但启动波动较大；暂不叠加，组合收益必须重测。两轮wave继续保留。"
+      ],
+      "diagnostics": [
+        {
+          "method": "control",
+          "off_us": 4582.0508,
+          "on_us": 4507.8026,
+          "overhead_pct": -1.6204141604017175,
+          "events": 21376,
+          "json_url": "#private-artifacts",
+          "off_csv": "#private-artifacts",
+          "on_csv": "#private-artifacts"
+        },
+        {
+          "method": "combined",
+          "off_us": 4194.9024,
+          "on_us": 4189.7957,
+          "overhead_pct": -0.12173584777562807,
+          "events": 26240,
+          "json_url": "#private-artifacts",
+          "off_csv": "#private-artifacts",
+          "on_csv": "#private-artifacts"
+        }
+      ],
+      "trace_analysis": {
+        "scope": "rank0、全部32group；最后一次timer-on调用，不是20次性能均值",
+        "cycles_per_us": 1000,
+        "methods": {
+          "control": {
+            "native_kernel_envelope_us": 4399.698,
+            "aic_issue_window_mean_us": 3900.085125,
+            "aic_outside_issue_mean_us": 208.54246875,
+            "AIC_GMM1_ISSUE": {
+              "count": 2304,
+              "sum_per_lane_us": 2473.4425,
+              "max_us": 39.727,
+              "last_end_relative_us": 3977.897
+            },
+            "AIC_GMM2_ISSUE": {
+              "count": 2688,
+              "sum_per_lane_us": 1218.10015625,
+              "max_us": 69.751,
+              "last_end_relative_us": 4054.533
+            },
+            "AIC_GMM1_WAIT": {
+              "count": 2176,
+              "sum_per_lane_us": 70.10334375,
+              "max_us": 66.192,
+              "last_end_relative_us": 3943.395
+            },
+            "AIC_GMM2_WAIT": {
+              "count": 2496,
+              "sum_per_lane_us": 138.0804375,
+              "max_us": 71.626,
+              "last_end_relative_us": 4039.563
+            },
+            "AIV_COMBINE_ISSUE": {
+              "count": 1280,
+              "sum_per_lane_us": 1027.59209375,
+              "max_us": 106.248,
+              "last_end_relative_us": 4110.057
+            },
+            "AIV_SWIGLU_ISSUE": {
+              "count": 2304,
+              "sum_per_lane_us": 813.356375,
+              "max_us": 77.15,
+              "last_end_relative_us": 3986.036
+            },
+            "AIV_DISPATCH_ISSUE": {
+              "count": 1280,
+              "sum_per_lane_us": 762.83503125,
+              "max_us": 80.203,
+              "last_end_relative_us": 2355.702
+            },
+            "combine_total_owned_rows": 24576,
+            "combine_max_callback_rows": 24
+          },
+          "combined": {
+            "native_kernel_envelope_us": 4194.044,
+            "aic_issue_window_mean_us": 3783.84221875,
+            "aic_outside_issue_mean_us": 87.5146875,
+            "AIC_GMM1_ISSUE": {
+              "count": 2304,
+              "sum_per_lane_us": 2474.8415,
+              "max_us": 36.641,
+              "last_end_relative_us": 3828.036
+            },
+            "AIC_GMM2_ISSUE": {
+              "count": 2688,
+              "sum_per_lane_us": 1221.48603125,
+              "max_us": 17.326,
+              "last_end_relative_us": 3904.105
+            },
+            "AIC_GMM1_WAIT": {
+              "count": 2176,
+              "sum_per_lane_us": 63.524375,
+              "max_us": 50.07,
+              "last_end_relative_us": 3793.4
+            },
+            "AIC_GMM2_WAIT": {
+              "count": 2496,
+              "sum_per_lane_us": 16.6409375,
+              "max_us": 7.737,
+              "last_end_relative_us": 3889.269
+            },
+            "AIV_COMBINE_ISSUE": {
+              "count": 6144,
+              "sum_per_lane_us": 666.641125,
+              "max_us": 21.808,
+              "last_end_relative_us": 3982.007
+            },
+            "AIV_SWIGLU_ISSUE": {
+              "count": 2304,
+              "sum_per_lane_us": 801.332375,
+              "max_us": 43.881,
+              "last_end_relative_us": 3835.758
+            },
+            "AIV_DISPATCH_ISSUE": {
+              "count": 1280,
+              "sum_per_lane_us": 1070.34959375,
+              "max_us": 68.939,
+              "last_end_relative_us": 1993.715
+            },
+            "combine_total_owned_rows": 24576,
+            "combine_max_callback_rows": 4
+          }
+        }
+      },
+      "trace_report_url": "#private-artifacts",
+      "report_url": "#private-artifacts",
+      "summary_url": "#private-artifacts"
     }
   },
   "environment": {
@@ -78828,7 +80808,7 @@
   },
   "publication": {
     "audience": "public",
-    "snapshot": "r31-aiv1-wave-matrix-1024",
+    "snapshot": "five-rounds-1024",
     "original_artifacts": "local_archive_not_published",
     "note": "数值与离线快照一致；原始timer/CSV及服务器文件未公开。"
   }
