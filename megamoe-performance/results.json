@@ -80877,6 +80877,115 @@
       "accuracy": "not_run_user_requested",
       "summary_url": "#private-artifacts",
       "report_url": "#private-artifacts"
+    },
+    "r31_ep32_performance_resume_1024": {
+      "revision": "904131cfa5c22e27eb8e278ec9019ab4dbb0392a",
+      "branch": "codex/megamoe-r31-two-round-wave-1023",
+      "progress": "01柜新窗口BS32/96两次启动已审计；BS256启动前被外部vLLM占卡，后续待补。旧05柜BS4096在下方单列，不混算",
+      "cases": [
+        {
+          "ep": 32,
+          "bs": 32,
+          "status": "audited_complete",
+          "methods": {
+            "control": {
+              "mean_us": 203.45835,
+              "rank_max_mean_us": 207.46865,
+              "starts": 2,
+              "runs": [
+                {
+                  "label": "bs32-control-a",
+                  "method": "control",
+                  "mean_us": 203.6643,
+                  "rank_max_mean_us": 207.8449,
+                  "on_us": null,
+                  "overhead_pct": null,
+                  "csv_count": 32,
+                  "trace": null
+                },
+                {
+                  "label": "bs32-control-b",
+                  "method": "control",
+                  "mean_us": 203.2524,
+                  "rank_max_mean_us": 207.0924,
+                  "on_us": null,
+                  "overhead_pct": null,
+                  "csv_count": 32,
+                  "trace": null
+                }
+              ]
+            }
+          },
+          "reduction_pct": null,
+          "output_hashes_equal": true
+        },
+        {
+          "ep": 32,
+          "bs": 96,
+          "status": "audited_complete",
+          "methods": {
+            "control": {
+              "mean_us": 237.2371,
+              "rank_max_mean_us": 240.65895,
+              "starts": 2,
+              "runs": [
+                {
+                  "label": "bs96-control-a",
+                  "method": "control",
+                  "mean_us": 237.0347,
+                  "rank_max_mean_us": 240.7831,
+                  "on_us": null,
+                  "overhead_pct": null,
+                  "csv_count": 32,
+                  "trace": null
+                },
+                {
+                  "label": "bs96-control-b",
+                  "method": "control",
+                  "mean_us": 237.4395,
+                  "rank_max_mean_us": 240.5348,
+                  "on_us": null,
+                  "overhead_pct": null,
+                  "csv_count": 32,
+                  "trace": null
+                }
+              ]
+            }
+          },
+          "reduction_pct": null,
+          "output_hashes_equal": true
+        },
+        {
+          "ep": 32,
+          "bs": 256,
+          "status": "pending"
+        },
+        {
+          "ep": 32,
+          "bs": 512,
+          "status": "pending"
+        },
+        {
+          "ep": 32,
+          "bs": 1024,
+          "status": "pending"
+        },
+        {
+          "ep": 32,
+          "bs": 2048,
+          "status": "pending"
+        },
+        {
+          "ep": 32,
+          "bs": 4096,
+          "status": "pending"
+        }
+      ],
+      "status": "partial",
+      "scope": "full communication kernel Duration; timer-off; last10/20; mean per-round rank-min",
+      "accuracy": "not_run_user_requested",
+      "summary_url": "#private-artifacts",
+      "report_url": "#private-artifacts"
     }
   },
   "environment": {
@@ -80886,7 +80995,7 @@
   },
   "publication": {
     "audience": "public",
-    "snapshot": "r31-ep32-performance-1024",
+    "snapshot": "r31-ep32-resume-1024",
     "original_artifacts": "local_archive_not_published",
     "note": "数值与离线快照一致；原始timer/CSV及服务器文件未公开。"
   }
