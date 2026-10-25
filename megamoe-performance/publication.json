@@ -1,9 +1,9 @@
 {
-  "snapshot": "ep32-rail-prefill-1025",
-  "source_html_sha256": "e06a8446795ca8a80fcd2817164d4a4b213236c376decf7e7c4e9b8fd3dd9a55",
-  "source_results_sha256": "b3adce9391db4259473b4126647c12aac2c489a1160c1840908c8797fa3b56d7",
-  "public_html_sha256": "27a557b4b84d397949e205d69371ce5aec5e0d3f106279003a43241ead1e741d",
-  "hidden_links": 10261,
+  "snapshot": "ep32-ready-reduce-1025-diagnostic",
+  "source_html_sha256": "795b9fa06c667bf0aa6db27c39f758f7d2afd85021d8626f074cb0cc5d4bd32a",
+  "source_results_sha256": "a91af4c880b04394d9ae8e5510407c540afd97d4f18d274400af48f11474a952",
+  "public_html_sha256": "bd5ff8e22b20613cc1a0a0b1781d5a2de29dde400d56b15230dedd577e5889cb",
+  "hidden_links": 10263,
   "hidden_paths": 81,
   "artifacts_published": false,
   "measurements_modified": false
