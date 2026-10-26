@@ -1,0 +1,327 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MegaMoE 20项优化对照表 · YuHsin</title><style>
+body{max-width:1440px;margin:32px auto;padding:0 24px;color:#22333e;font:16px/1.85 system-ui,"Microsoft YaHei",sans-serif}nav{display:flex;gap:20px;flex-wrap:wrap;border-bottom:1px solid #d7e1e5;padding-bottom:16px}a{color:#087f76}h1{font-size:30px}h2{margin-top:38px}table{display:block;overflow:auto;border-collapse:collapse;font-size:14px;line-height:1.65;margin:20px 0;width:100%}td,th{border:1px solid #d7e1e5;padding:10px 12px;min-width:140px;vertical-align:top}th{background:#edf5f4;text-align:left}td:nth-child(2),td:nth-child(3){min-width:245px}code{font-size:.9em;overflow-wrap:anywhere;background:#f1f4f5;padding:1px 4px}blockquote{margin:24px 0;border-left:4px solid #087f76;background:#f0f6f5;padding:8px 18px}footer{border-top:1px solid #d7e1e5;margin-top:40px;padding:20px 0;color:#64748b}@media print{body{max-width:none;font-size:10pt}nav{display:none}table{display:table;font-size:8pt}td,th{min-width:0!important}tr{break-inside:avoid}}</style></head><body>
+<nav aria-label="文档导航"><a href="./#optimization-table">文件下载</a><a href="../megamoe-performance/index.html">性能实验室</a><a href="files/megamoe-optimization-table-20261026.md" download="MegaMoE_20项优化对照表_20261026.md">下载 Markdown</a><a href="files/megamoe-optimization-table-20261026.zip" download="MegaMoE_20项优化对照表_20261026.zip">下载 ZIP</a></nav><main><h1>从最早 main 到当前分支：优化分类、收益与适用倾向</h1>
+<p>更新：2026-10-25。本表只整理历史证据与当前代码，不启动新实验。</p>
+<blockquote>
+<p>发布说明（2026-10-26）：本表保留2026-10-25的历史证据口径。“当前分支”固定指Wave+GM原生提交<code>095b4c7f</code>；2026-10-26该分支已快进成为个人仓库<code>main</code>（提交<code>7de059f</code>）。升级main不代表已证明全EP/全BS最优，表内风险与缺测说明仍然有效。</p>
+</blockquote>
+<h2>比较边界</h2>
+<ul>
+<li><strong>起点：历史 main24，<code>24b42213</code>。</strong> 这是此前EP32/BS4096约4603μs所指的main，不是移动中的main分支名。</li>
+<li><strong>终点：Wave+GM，原生<code>095b4c7f</code>，分支<code>codex/megamoe-wave-gm-1025</code>。</strong> 它继承Wave/CV <code>4a0de857</code>的主体，再统一关闭CV；不能把最新实验分支称为已证明最优版本。</li>
+<li>更早的<code>8ffafeb</code>是另一条“计算优化前main”基线。GMM2流水复用、GMM1异步完成在main24里已经存在，下面单列为基础，不重复计入main24之后的新增收益。</li>
+<li>固定模型：H7168、I3072、E384、top-k6、共享专家0、FP8激活/FP4权重。BS为每卡输入token数。</li>
+</ul>
+<p><strong>收益不是相对main24的一张可加账单。</strong> 每行写的是当时对直接父版本的消融；父版本、CANN、机器和测量方式不完全相同。今天撤掉该项会损失多少，仍需在今天的组合上反向消融。当前没有main24与095在同一窗口完成的全EP/全BS总对照，不能据此宣称总共提升多少。</p>
+<p>证据标签：<strong>双启</strong>=每种方法两次独立启动；<strong>筛选</strong>=历史单次或非严格成组对照；<strong>无隔离数值</strong>=不能归给该项单独收益。主表未注明时均为EP8完整通信kernel、timer-off的历史记录；纯计算另标。不同表中的收益不可相加。</p>
+<h2>主表：当前保留、演进或取消的优化</h2>
+<table>
+<thead>
+<tr>
+<th>分类</th>
+<th>优化与当前状态</th>
+<th>实测收益及边界</th>
+<th>小BS / 大BS倾向</th>
+<th>小EP / 大EP倾向</th>
+<th>我的评价</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>供数①</td>
+<td><strong>FP4交替移位解包</strong>；保留</td>
+<td>对小BS预算版，BS32/96/256分别省55.79/51.29/45.51μs；1024省11.20μs，4096无明显收益〔S1，筛选〕</td>
+<td>小M供数暴露时收益大；大BS可能被计算隐藏</td>
+<td>不由EP直接决定；同BS增EP后专家M增大，收益可能缩小，未逐EP隔离验证</td>
+<td><strong>值得保留的等价基础优化</strong>；不承诺所有shape同幅获益</td>
+</tr>
+<tr>
+<td>供数②</td>
+<td><strong>流式权重与复用数据分开缓存</strong>；保留并演进</td>
+<td>FP4权重早期单项：BS32/96省38.02/36.95μs；后续SF按完整专家M分类：BS512为753.38→731.52μs（2.90%），1024仅约0.09%〔S1/S2，后者双启〕</td>
+<td>小M流式权重适合少分配缓存；多M块需保留复用。FP4本体与SF不是同一条判断</td>
+<td>随专家M、工作集改变；不宜按“EP大就绕缓存”处理</td>
+<td><strong>条件性好，必须按复用分类</strong>；SF用完整专家M，不能误用slice M</td>
+</tr>
+<tr>
+<td>供数③</td>
+<td><strong>AIV0 packed输入/FP8输出UB独立轮转，输出交错布局</strong>；保留，后续布局演进</td>
+<td>相对有效父版：BS32/96/256省39.68/35.79/28.72μs；1024反增13.38μs〔S1，筛选〕</td>
+<td>小BS更易暴露槽位衔接；中BS可能因资源配额抵消</td>
+<td>EP改变M和复用，不能外推同收益；未逐EP单独测</td>
+<td><strong>所有权解耦值得保留，槽数不是越多越好</strong>；当前不能直接继承旧布局收益</td>
+</tr>
+<tr>
+<td>供数④</td>
+<td><strong>小M K512/N128供数、A复用与独立L0 credit</strong>；保留</td>
+<td>BS32/96/256/1024省11.21/16.97/23.58/13.49μs；4096增加1.95μs〔S1，筛选〕</td>
+<td>针对M≤128；大M仍走K256/N256，不能统一强开</td>
+<td>同BS下小EP更容易落入小M路径；大EP可自动退出该区间</td>
+<td><strong>好的资源条件特化</strong>，优于为每个BS写独立算法</td>
+</tr>
+<tr>
+<td>供数⑤</td>
+<td><strong>权重SF按N256块内pair-major预排，读端匹配</strong>；保留</td>
+<td>在当时计算leaf父版上，BS512为778.53→754.20μs（3.12%），1024为1106.97→1079.52μs（2.48%）；之后撤销该leaf仍保留布局〔S2，双启〕</td>
+<td>中BS已有正证据；不能说只适合decode，大M净收益未单独闭合</td>
+<td>是地址/读请求组织优化，理论不限定小EP；EP32/128独立收益缺测</td>
+<td><strong>值得保留的布局优化</strong>；打包与读端必须一起改，不能把DS反向消融数值当我方收益</td>
+</tr>
+<tr>
+<td>供数⑥</td>
+<td><strong>FP4本体K512/N128离线预排＋B-scale在input-ready前预取</strong>；保留原数学</td>
+<td>两项组合R31：BS512为730.90→718.55μs（1.69%），1024为1074.23→1069.25μs（0.46%）；各双启。2048/4096单次筛选无明确收益〔S3〕</td>
+<td>小/中M请求组织、输入等待暴露时有价值；大BS收益易被隐藏</td>
+<td>EP改变等待和复用；R31整体EP32回退不证明这两项各自有害</td>
+<td><strong>有收益但不是全域答案</strong>；两项组合不能拆成两份净收益</td>
+</tr>
+<tr>
+<td>生命周期①</td>
+<td><strong>GMM1/GMM2跨阶段handoff，延续游标/credit</strong>；保留</td>
+<td>对UB解耦父版，BS32/96/256/1024/4096省8.56/12.23/13.18/4.16/65.94μs〔S1，筛选〕</td>
+<td>大BS历史收益较大，小BS也有固定成本节省</td>
+<td>减少重复初始化/归还有普遍机制价值；跨EP净收益未隔离</td>
+<td><strong>值得长期保留的结构优化</strong>；只交接兼容资源，不能删真实完成边界</td>
+</tr>
+<tr>
+<td>生命周期②</td>
+<td><strong>AIV1三类scratch常驻＋跨任务异步事件</strong>；保留，协议继续演进</td>
+<td>不能把常驻UB单项认定为稳定提速；后续共享epilogue/FIX协议累计节点在BS512约降4.10%，属于当时组合父版的局部收益〔S4，双启〕</td>
+<td>减少切换成本，但小BS可能被轮询/credit成本抵消；大BS又受UB预算限制</td>
+<td>大EP通信交互变多，不一定随之更好</td>
+<td><strong>资源管理基础值得保留，调度仍需优化</strong>；不写成“常驻UB独立快4.10%”</td>
+</tr>
+<tr>
+<td>生命周期③</td>
+<td><strong>GMM2真实FIX完成等待转交AIV1，按slice发布原ready计数</strong>；保留</td>
+<td>两轮Wave父版→合并版：BS2048省52.67μs（2.18%），4096省88.73μs（2.15%）；其余五BS变化在±0.3%〔S5，双启〕</td>
+<td>当时普通GM/Wave的大BS有收益；原小任务路径基本未改</td>
+<td>EP8有直接证据；EP32单项完整矩阵不能由整版成绩反推</td>
+<td><strong>有明确局部收益，值得保留</strong>；完成事件仍按Wave推进，不等于token-prefix提前归约</td>
+</tr>
+<tr>
+<td>调度①</td>
+<td><strong>小BS扩大同类Wave连续提交预算</strong>；保留</td>
+<td>BS32/96/256对main24省50.40/54.28/60.52μs；4096基本不变〔S1，筛选〕</td>
+<td>小BS摊薄短批次切换；不可套到大M，过大Wave会推迟下游</td>
+<td>高EP每专家M变大、专家数变少，需要重新看任务粒度</td>
+<td><strong>有效但强条件性</strong>；它与下面“大M缩Wave”不矛盾</td>
+</tr>
+<tr>
+<td>调度②</td>
+<td><strong>中大BS gate/up配对：一个N256物理块放gate128/up128</strong>；保留</td>
+<td>历史EP8：BS1024省43.13μs（3.53%），4096省16.74μs（0.40%），均筛选；EP32若保留不匹配的Wave预算，配对可明显回退〔S1/S6〕</td>
+<td>配对减少投影/消费衔接，但改变逻辑N任务与发布节奏；不能只看GEMM FLOPs</td>
+<td>EP32大M已出现反例；EP128未有当前单项验收</td>
+<td><strong>必须配套Wave预算保留</strong>；不能评价为无条件更优</td>
+</tr>
+<tr>
+<td>调度③</td>
+<td><strong>配对中大BS的Wave按两轮AIC预算规划</strong>；保留</td>
+<td>R31的EP32/BS4096：4791.54→4257.09μs（11.15%）；另一历史配对父版4703.41→4275.18μs（9.10%）〔S6，双启〕</td>
+<td>主要修复大M配对后Wave过大、尾段延迟；小BS不是直接减半</td>
+<td>EP32大BS有强正证据；其他EP/BS不能继承该百分比</td>
+<td><strong>近阶段最有说服力的调度优化之一</strong>；两组收益不同父版，不能累加</td>
+</tr>
+<tr>
+<td>调度④</td>
+<td><strong>BS≥512开启GMM2滞后一波</strong>；保留，所有EP统一规则</td>
+<td>EP32开启lag消融：BS512/1024/2048降2.66%/18.65%/21.30%；若小BS也强开，32/96/256反增1.26%/2.47%/9.08%。EP8/2048由无lag改有lag降12.22%〔S7，双启〕</td>
+<td>小BS等一波增加启动延迟；中大BS提供下游输入提前量。4096对照原本已lag，无新增收益</td>
+<td>EP8/32已有条件证据；EP64/128虽配置相同，尚不代表性能验证通过</td>
+<td><strong>强条件性好，当前阈值是实测折中而非理论最优</strong></td>
+</tr>
+<tr>
+<td>调度⑤</td>
+<td><strong>统一Wave，删除Linear调度入口</strong>；保留</td>
+<td>删除专用入口与重放代码；没有“只删除死代码”的独立净收益。Wave＋全BS lag诊断相对原入口，EP8/512与1024仍慢1.38%/2.14%，不是最终BS512阈值版独立收益〔S7〕</td>
+<td>主要收益是降低维护成本；部分中BS仍有性能取舍</td>
+<td>统一主体便于跨EP维护，但不意味着参数必须相同</td>
+<td><strong>工程上好，性能上不宣称赢家</strong>；不要把少if等同自动更快</td>
+</tr>
+<tr>
+<td>通信控制①</td>
+<td><strong>Scalar直读/写metadata、行owner与索引调度对齐</strong>；部分保留并用于现有Wave</td>
+<td>当时累计迁移中，Combine metadata直读约0.38%；Dispatch metadata/索引/strided等多项变化很小，部分回退〔S4〕</td>
+<td>短任务可能减少小DMA，也可能增加Scalar瓶颈</td>
+<td>大EP元数据/寻址更多，不等于一定获益</td>
+<td><strong>单项弱、应合并评价维护价值</strong>；不能把12级迁移全部写成正收益</td>
+</tr>
+<tr>
+<td>输入准备</td>
+<td><strong>预量化FP8记录批量打包</strong>；保留</td>
+<td>BS1024/4096省5.34/10.88μs；小BS波动〔S1，筛选〕</td>
+<td>大BS更能摊薄逐token搬运；小BS收益小</td>
+<td>原理不特定EP，但跨EP单项未验收</td>
+<td><strong>低复杂度、小而实用</strong>；不是删除量化或输入准备</td>
+</tr>
+<tr>
+<td>尾段归约①</td>
+<td><strong>Unpermute向量化，首个乘积初始化累加器</strong>；保留兼容条件</td>
+<td>BS256/1024/4096省5.52/6.86/19.45μs；小BS基本不变〔S1，筛选〕</td>
+<td>大BS最终归约工作多，收益更明显</td>
+<td>每卡BS相同则归约量近似同级；网络尾部可能遮住收益，未跨EP隔离</td>
+<td><strong>实现形态改进值得保留</strong>；原加法顺序和BF16舍入不变</td>
+</tr>
+<tr>
+<td>尾段归约②</td>
+<td><strong>一次性归约输入不分配缓存；激活/SF保留复用提示</strong>；保留特定架构实现</td>
+<td>归约读：1024/4096省4.85/17.78μs；激活/SF提示：1024省8.25μs，4096反增1.21μs〔S1，筛选〕</td>
+<td>前者偏大BS；后者取决于跨N复用，独立收益较弱</td>
+<td>按复用/工作集判断，不按EP一刀切</td>
+<td><strong>区分数据类别是好设计；具体提示属于弱证据、平台相关项</strong></td>
+</tr>
+<tr>
+<td>通路选择</td>
+<td><strong>统一关闭CV，使用Wave+GM</strong>；最新实验分支已做</td>
+<td>EP8七BS均在±0.5%；EP32/1024约慢1.48%，额外AB复核慢2.55%后控制层失败〔S8，主矩阵双启〕</td>
+<td>目前未显示CV对EP8小/中BS有显著净收益；不是GM完全无损证明</td>
+<td>EP32原版已全GM，不能归因为取消CV；EP64/128未测</td>
+<td><strong>简化候选，不是新增性能优化</strong>；保留CV源码未彻底清理，不推荐自动取代4a0</td>
+</tr>
+<tr>
+<td>工程与测量</td>
+<td><strong>可读性重构、配置单一来源、完整被动timer</strong>；保留</td>
+<td>无算子净收益数值；GM本次完整矩阵timer最大正向开销约1.55%，含单点复核最大2.57%〔S8〕</td>
+<td>小BS更敏感；打点不能预设总是1%</td>
+<td>只在rank0采详细流水减少跨rank扰动；其他EP需实测</td>
+<td><strong>工程上应保留</strong>；诊断工具开销不是算法优化收益</td>
+</tr>
+</tbody></table>
+<h3>怎么读“大小EP倾向”</h3>
+<p>在当前E384/top-k6的均匀路由期望下：</p>
+<p><code>每专家M ≈ EP × BS / 64</code>，<code>每卡专家数 = 384 / EP</code>。</p>
+<p>例如BS512时，EP8/32/64/128的期望M分别为64/256/512/1024。因此小M供数方案在EP8有效，不保证同BS到EP128仍走同一物理路径；相反，多M块权重复用、专家数量减少、通信拓扑和尾波都发生变化。</p>
+<p>主表EP列除明确实测外都是机制倾向，不是跨EP收益证明。当前最缺的是相同版本、相同拓扑合同下的EP64/128单项或组合验收。</p>
+<h2>已有基础与未合入项：避免把它们算错</h2>
+<table>
+<thead>
+<tr>
+<th>分类</th>
+<th>项目</th>
+<th>证据与评价</th>
+<th>相对main24的状态</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>早期计算基础</td>
+<td>GMM2 wave内复用流水</td>
+<td>历史纯计算4118.18→4026.68μs（2.22%）</td>
+<td>main24已含，不是本轮新增</td>
+</tr>
+<tr>
+<td>早期计算基础</td>
+<td>GMM1异步完成，消费者等真实FIX</td>
+<td>历史纯计算4027.00→3923.56μs（2.57%）；两项基础合并后的EP8/4096完整通信曾4455.51→4254.15μs（4.52%）</td>
+<td>main24已含；纯计算百分比不与完整通信相加</td>
+</tr>
+<tr>
+<td>通信基础</td>
+<td>小BS rail聚合/转发的route路径</td>
+<td>main24和095的<code>mega_moe_send_mask.hpp</code>在Git中对象哈希完全相同；不是今天新增的特性</td>
+<td>已继承；不能把当前小BS全部优势再次归给新迁移</td>
+</tr>
+<tr>
+<td>未合入</td>
+<td>大BS扩大rail范围</td>
+<td>EP32/512约+0.43%弱变化；1024/2048/4096反增1.08%/2.15%/0.92%</td>
+<td>不在当前分支，不扩大默认范围</td>
+</tr>
+<tr>
+<td>未合入</td>
+<td>专家完成证书驱动提前Unpermute</td>
+<td>EP32两窗配对AB而非完整ABBA；512/4096反增2.24%/1.85%，2048平均降1.80%但不一致</td>
+<td>不在当前分支；不能写成已有正优化</td>
+</tr>
+<tr>
+<td>历史原型/撤回</td>
+<td>DS C API计算leaf</td>
+<td>撤回leaf仍保留SF布局效果，说明不能把收益全归给leaf</td>
+<td>当前原数学CATLASS/TLA路径，不算全面换成DS后端</td>
+</tr>
+<tr>
+<td>未普遍保留</td>
+<td>朴素SwiGLU/MX全融合、简单增buffer/取消lag</td>
+<td>曾出现中大BS明显回退</td>
+<td>不能仅凭“更融合、更多槽、更早计算”就保留</td>
+</tr>
+</tbody></table>
+<h2>综合评价：哪些最值得留下</h2>
+<h3>1. 基础性较好，但不叫全shape必赚</h3>
+<p>FP4等价解包、输入/输出独立生命周期、兼容资源handoff、真实FIX的消费者等待、生产/消费布局一致性。这些解决的是明确的冗余或所有权问题，适合作为长期框架。<strong>“机制合理”不等于已证明每个EP都正收益。</strong></p>
+<h3>2. 当前最需要按资源条件使用的策略</h3>
+<p>gate/up配对、Wave预算、GMM2 lag、小M K/N计划、缓存和credit配额。这些没有脱离条件的好坏：</p>
+<ul>
+<li>小BS扩大Wave，主要摊薄固定开销；大M配对后缩Wave，主要减少下游启动/收尾延迟。</li>
+<li>lag不是延迟越少越好，而是给GMM2留足输入提前量；小BS不一定有足够工作把等待摊掉。</li>
+<li>配对没有减少GMM数学FLOPs，收益来自任务组织和衔接；失配的Wave/ready粒度可以反过来造成回退。</li>
+</ul>
+<p><strong>我最看重的近期证据是：两轮Wave预算与中大BS lag。</strong> 它们既有较大的局部收益，也有小BS/错误预算的反例，因果解释比“把DS更多代码搬过来”更具体。</p>
+<h3>3. 单项收益弱，优先保持简单</h3>
+<p>Scalar metadata微调、物理分核小调整、部分缓存提示、CV/GM选择。它们可以是当前组合的合理部分，但在没有新的反向消融之前，不应在汇报中各算一条显著收益，更不应继续为0.x%的不稳定变化增加多条执行路径。</p>
+<h3>4. 当前不能宣称的结论</h3>
+<ul>
+<li>没有main24到当前版本同窗的全矩阵总收益；不能把上表各项相加。</li>
+<li>新分支不等于最优；Wave+GM尚有EP32/1024回退风险。</li>
+<li>当前slice ready不等于细粒度token-prefix提前归约。当前AIV1在收到Wave真实完成事件后重放并发布slice计数，仍可能存在消费者就绪粒度的优化空间。</li>
+<li>“保留原数学/输出差分一致”不等于所有版本都通过独立Golden。历史部分试验做过精度，近期按要求仅作性能和指纹回归；不能继承成当前全矩阵精度PASS。</li>
+</ul>
+<h2>证据索引与代码入口</h2>
+<table>
+<thead>
+<tr>
+<th>标识</th>
+<th>历史身份/证据</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>S1</td>
+<td><code>codex/megamoe-best-unified-ep8-32-128-1012</code>中的<code>analysis/unified-ep-1012/optimizations.json</code>；代表提交16f69d4、d09ea96、af53fb4、7cff1bc、721cfb5、49e8174、db2c017</td>
+<td>早期EP8单项筛选目录；适用于当时父版本和B070环境</td>
+</tr>
+<tr>
+<td>S2</td>
+<td><a href="https://gitcode.com/Yancy_/DeepEP/blob/7de059fc5b5534c660926c51b84b7e3687b89915/analysis/ds-bisect-1021/PLAN.md">DS数据面二分计划</a>；离线网站<code>ds_bisect</code>的c3、c4、c5-r1节点</td>
+<td>SF布局、leaf撤回、完整专家M缓存策略的双启记录</td>
+</tr>
+<tr>
+<td>S3</td>
+<td>d986ac9，<code>codex/megamoe-packed-prefetch-original-math-1021</code>；离线网站<code>ds_converge.latest_original</code></td>
+<td>原数学R31组合；512/1024双启，其余单次</td>
+</tr>
+<tr>
+<td>S4</td>
+<td>离线网站<code>ds_ladder</code>的l1–l12；2059fd9共享epilogue/FIX节点</td>
+<td>累计迁移父版效应，不能逐项累加</td>
+</tr>
+<tr>
+<td>S5</td>
+<td><a href="https://gitcode.com/Yancy_/DeepEP/blob/7de059fc5b5534c660926c51b84b7e3687b89915/analysis/r31-aiv1-wave-matrix-1024/RESULTS.md">AIV1完成等待结果</a>；<a href="https://gitcode.com/Yancy_/DeepEP/blob/7de059fc5b5534c660926c51b84b7e3687b89915/experiments/megamoe/GMM2_AIV1_WAIT.md">协议说明</a>，f2f1197→904131c</td>
+<td>EP8大BS完整通信双启消融；说明Wave完成与slice通知的差别</td>
+</tr>
+<tr>
+<td>S6</td>
+<td><a href="https://gitcode.com/Yancy_/DeepEP/blob/7de059fc5b5534c660926c51b84b7e3687b89915/analysis/r31-two-round-wave-1023/README.md">R31两轮Wave</a>，7512c6c；离线网站<code>ep32_paired_wave</code></td>
+<td>EP32/4096两组不同父版的双启证据</td>
+</tr>
+<tr>
+<td>S7</td>
+<td>离线网站<code>ep32_all_lag_1024</code>；<code>git show 2cc3261:analysis/r31-wave-lag1-all-1024/RESULTS.md</code></td>
+<td>EP32全BS开启lag与EP8 Wave+lag对照；当前规则最终为BS≥512</td>
+</tr>
+<tr>
+<td>S8</td>
+<td><a href="https://gitcode.com/Yancy_/DeepEP/blob/7de059fc5b5534c660926c51b84b7e3687b89915/analysis/wave-gm-1025/README.md">当前GM消融</a>，095b4c7f对4a0de857</td>
+<td>EP8/32七BS完整ABBA及单独标注的不完整复核</td>
+</tr>
+</tbody></table>
+<p>公开性能证据入口为<a href="https://zhaoyuhsin.github.io/megamoe-performance/index.html">性能实验室</a>，结构化摘要为其<code>results.json</code>，本表字段抽样快照见关键数值核对（本机核对快照，不随公开包发布）。公开摘要没有原始timer/CSV，原始证据另在本地归档。</p>
+<p>阅读当前实现：</p>
+<ul>
+<li><a href="https://gitcode.com/Yancy_/DeepEP/blob/7de059fc5b5534c660926c51b84b7e3687b89915/experiments/megamoe/csrc/kernels/mega_moe/catlass_gmm/block_prologue_a8w4.hpp">AIV0 FP4转换与独立UB环</a>。</li>
+<li><a href="https://gitcode.com/Yancy_/DeepEP/blob/7de059fc5b5534c660926c51b84b7e3687b89915/experiments/megamoe/csrc/kernels/mega_moe/catlass_gmm/a8w4_k_plan.hpp">小M供数计划</a>、<a href="https://gitcode.com/Yancy_/DeepEP/blob/7de059fc5b5534c660926c51b84b7e3687b89915/experiments/megamoe/csrc/kernels/mega_moe/catlass_gmm/packed_weight_tiles.hpp">FP4 packed地址</a>、<a href="https://gitcode.com/Yancy_/DeepEP/blob/7de059fc5b5534c660926c51b84b7e3687b89915/experiments/megamoe/csrc/kernels/mega_moe/catlass_gmm/mega_moe_grouped_matmul.hpp">handoff/SF/缓存</a>。</li>
+<li><a href="https://gitcode.com/Yancy_/DeepEP/blob/7de059fc5b5534c660926c51b84b7e3687b89915/experiments/megamoe/csrc/forward.cpp">host Wave预算</a>、<a href="https://gitcode.com/Yancy_/DeepEP/blob/7de059fc5b5534c660926c51b84b7e3687b89915/experiments/megamoe/csrc/kernels/mega_moe/mega_moe_wave_a8w4.hpp">Wave/lag/AIV1/ready编排</a>。</li>
+<li><a href="https://gitcode.com/Yancy_/DeepEP/blob/7de059fc5b5534c660926c51b84b7e3687b89915/experiments/megamoe/csrc/kernels/mega_moe/stage/mega_moe_unpermute.hpp">Unpermute</a>、<a href="https://gitcode.com/Yancy_/DeepEP/blob/7de059fc5b5534c660926c51b84b7e3687b89915/experiments/megamoe/csrc/kernels/mega_moe/common/mega_moe_aiv1_ub_layout.hpp">GM/CV统一策略入口</a>。</li>
+</ul>
+<p>后续最值得做的是对“当前组合”反向消融：先固定Wave/lag，再分别撤销预排、SF缓存与AIV1某一阻塞边界，重新验证收益是否仍在。不要照着历史表重复把已含的优化加一次。</p>
+</main><footer>历史单项收益相对各自父版，不能累加；本页不发布原始timer、CSV或机器访问资料。</footer></body></html>
