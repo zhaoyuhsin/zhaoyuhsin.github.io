@@ -28,7 +28,7 @@
 <body>
 <div style="padding:9px 20px;background:#f6f7f2;color:#245c48;font:12px/1.6 system-ui,sans-serif;display:flex;gap:20px;flex-wrap:wrap"><a style="color:inherit" href="../index.html">← YuHsin 个人主页</a><a style="color:inherit" href="index.html">流水仿真</a><a style="color:inherit" href="wiki.html#ratio-lab">通算比例</a><a style="color:inherit" href="trace-v2.html">Trace分析</a></div>
 <!-- Standalone update 2026-10-08: EP presets, total experts and theoretical task FLOPs. Based on source build 606c9a47625eb1bf4f10d85f2acc63cbafdc5931fa9dbfc5708b3066c8340ba5; this hash identifies the input, not this updated file. -->
-<header><div><h1>MegaMoE · 实测 Trace V2.7.4</h1><p>阶段边界、CUBE 窗口与可见空泡，从实测事件分别计算</p></div><span class="tag">单文件离线 · 数据不上传</span></header>
+<header><div><h1>MegaMoE · 实测 Trace V2.8.0</h1><p>阶段边界、CUBE 窗口与可见空泡，从实测事件分别计算</p></div><span class="tag">单文件离线 · 数据不上传</span></header>
 <div class="layout">
   <aside>
     <section class="panel"><h2>分析配置</h2><p class="hint">通信卡数点击立即生效；其他参数修改后点击“重新分析”。核数填写单卡硬件配置。</p>
@@ -74,6 +74,7 @@
       <div id="rankControls" class="actions hidden" style="margin-top:10px"><label>观察 Rank / 进程<select id="rank"></select></label><button id="json" disabled>导出分析 JSON</button><button id="stageCsv" disabled>导出阶段 CSV</button><button id="csv" disabled>导出逐核 CSV</button></div>
     </section>
     <div id="results" class="hidden">
+      <section id="observationNotice" class="panel note hidden" role="status"></section>
       <section class="panel"><h2>关键指标 · 当前 Rank</h2><p id="windowInfo" class="hint"></p><div id="metrics" class="metrics"></div><h3>理论计算与实测时间明细</h3><div class="table-scroll"><table id="metricDetailsTable"><thead><tr><th>项目</th><th>数值</th><th>单位</th><th>计算过程 / 口径</th></tr></thead><tbody></tbody></table></div><p class="hint">“无空泡”采用逐核活动并集的核均等效时间，“含空泡”采用该阶段全卡首尾跨度。通信时间含本地、Full-mesh、Clos任务，未按短任务阈值过滤；Clos带宽仍沿用剔短后原始dur核均分母，不能用本表通信时间直接代替。计算与通信可以重叠，不可相加当作端到端。</p><p id="coverage" class="note"></p><details><summary>计算公式与辅助口径</summary><div id="cubeFormulas" class="formula"></div></details></section>
       <section class="panel"><h2>AIV1 / AIC / AIV0 · 忙碌与可见空闲汇总</h2><p id="activityScope" class="hint"></p><div id="activityMetrics" class="activity-metrics"></div><p class="hint">每核忙碌Bᵢ = 当前口径任务在Dispatch→Combine窗口内的区间并集；可见空闲Iᵢ = T − Bᵢ（仅包含此窗口内的空隙）。总体忙碌占比 = ΣBᵢ / (配置核数 × T)，空闲占比 = 1 − 忙碌占比。累计时间单位为核·μs，每核平均时间单位为μs。</p><details><summary>忙闲口径与缺失记录说明</summary><p class="hint">默认将名称中独立词段WAIT、WAITING、SYNC、BARRIER或明确输入/输出同步识别为等待，排除这些事件；其他任务（含初始化、搬运等）均参与忙碌并集。工作任务内部的未拆分等待无法扣除；如果等待记录被外层工作任务覆盖，该段仍计入工作区间。也可在左侧切换为全部任务占用口径。</p><p class="hint">“可见空闲”表示该口径下没有工作任务记录，不保证硬件实际空闲。全文件无正时长记录的核显示缺失，整类核的汇总留空；已在文件出现但窗口内无事件的核显示“窗口无记录”，按可见忙碌0计算。时间未对齐、已压缩、多次运行混合或窗口为0时，不给出整体忙闲占比。该窗口从当前Rank的观察范围内选取；手工截窗时也受截窗限制。缺少Dispatch或Combine边界时，忙闲时间和占比留空，不回退到全文件。此改动不改变端到端、MFU和带宽的统计窗口。该指标不等同于指令利用率，也不替代仅统计GEMM的CUBE指标。</p></details></section>
       <section class="panel"><h2>Dispatch / Combine · 两种带宽对照</h2>
@@ -135,11 +136,27 @@
 
   /** 严格匹配活动阶段；WAIT、SYNC、PROLOGUE 不属于实际任务区间。 */
   function stageOf(name) {
+    // ISSUE只改变观测语义，不改变任务所属阶段；WAIT/SYNC/BEGIN/END仍不算工作任务。
+    name = String(name || '').replace(/_ISSUE(?=_|$)/ig, '');
     // 共享专家的数字后缀可能只是任务编号，不据此猜GEMM1/2；单独分类但统一计入CUBE。
     if (/wave_global_AIC_SHARED_GMM/i.test(String(name || '')) &&
-        !/(?:^|_)(?:WAIT|WAITING|SYNC|BARRIER|PROLOGUE)(?:_|$)/i.test(String(name))) return 'shared_gemm';
+        !/(?:^|_)(?:WAIT|WAITING|SYNC|BARRIER|PROLOGUE|BEGIN|END|DRAIN)(?:_|$)/i.test(String(name))) return 'shared_gemm';
     const match = String(name || '').match(/^(?:wave_(?:\d+|global)_)?(?:AIC_|AIV[01]?_)?(DISPATCH|COMBINE|SWIGLU|SWIGELU|GMM1|GMM2|GEMM1|GEMM2)(?:_(?:CLOS|FULL_MESH|FULLMESH|LOCAL))?(?:_\d+)?$/i);
     return match ? match[1].toLowerCase().replace('swigelu', 'swiglu').replace(/^gmm/, 'gemm') : null;
+  }
+
+  /** 先保留原始语义，再汇总；绝不把Scalar提交结束当作异步硬件完成。 */
+  function timingOf(event) {
+    if (/(?:^|_)(?:WAIT|WAITING|SYNC|BARRIER)(?:_|$)/i.test(event.name)) return 'sync';
+    if (/(?:^|_)(?:BEGIN|END)(?:_|$)/i.test(event.name)) return 'marker';
+    return /(?:^|_)ISSUE(?:_|$)/i.test(event.name) ||
+      (stageOf(event.name) && event.args?.observation === 'scalar_issue_with_native_dependencies') ? 'issue' : 'interval';
+  }
+
+  function timingStats(events) {
+    const issueCount = events.filter(event => event.timing === 'issue').length;
+    const intervalCount = events.length - issueCount;
+    return {issueCount, intervalCount, timingMode: !events.length ? 'none' : issueCount ? intervalCount ? 'mixed' : 'issue' : 'interval'};
   }
 
   /** 输入同步与最终跨 Rank 等待定义端点；EXPORT_SYNC 并不是计算输出同步。 */
@@ -278,7 +295,7 @@
       const correctCore = COMM.includes(candidate) ? lane.kind === 'AIV1' : candidate === 'swiglu' ? lane.kind.startsWith('AIV') :
         GEMM_STAGES.includes(candidate) ? lane.kind === 'AIC' : false;
       if (candidate && !correctCore) excluded++;
-      events.push({ identity, ...lane, stage: correctCore ? candidate : null, sync, name: String(event.name || ''),
+      events.push({ identity, ...lane, stage: correctCore ? candidate : null, sync, timing: timingOf(event), name: String(event.name || ''),
         start: event.ts, duration: event.dur, args, pid, tid: event.tid ?? null, sourceIndex: index });
     }
     if (!events.length) throw new Error(filteredInputSyncCount ? `已过滤 ${filteredInputSyncCount} 条 INPUT_CROSS_RANK_SYNC，剩余内容没有可分析的芯片核区间` : '没有可识别核的 ph=X 区间');
@@ -434,7 +451,7 @@
       return [stage, { start: aligned ? range.start : null, end: aligned ? range.end : null,
         envelopeUs: aligned ? range.envelopeUs : null, unionUs: aligned ? unionUs(selected) : null,
         sumCoreUs: sumCoreUs(selected), count: selected.length, present: selected.length > 0,
-        coreCount: new Set(selected.map(event => `${event.kind}/${event.core}`)).size }];
+        coreCount: new Set(selected.map(event => `${event.kind}/${event.core}`)).size, ...timingStats(selected) }];
     }));
   }
 
@@ -443,7 +460,7 @@
     const gemms = events.filter(event => event.kind === 'AIC' && GEMM_STAGES.includes(event.stage)), cores = [];
     for (let core = 0; core < config.aicCores; core++) {
       const selected = gemms.filter(event => event.core === core), range = bounds(selected), activeUs = unionUs(selected);
-      cores.push({ core, count: selected.length, start: range.start, end: range.end, windowUs: selected.length ? range.envelopeUs : null,
+      cores.push({ ...timingStats(selected), core, count: selected.length, start: range.start, end: range.end, windowUs: selected.length ? range.envelopeUs : null,
         activeUs: selected.length ? activeUs : null, bubbleUs: selected.length ? Math.max(0, range.envelopeUs - activeUs) : null,
         intervals: merged(selected) });
     }
@@ -455,7 +472,7 @@
     if (!complete) warnings.push(`CUBE 只有 ${present}/${config.aicCores} 个 AIC 有正耗时 GEMM；全核利用率留空，已记录核贡献只作为下界。`);
     if (gemms.reduce((total, event) => total + event.duration, 0) > activeCoreUs + 1e-6) warnings.push('同核 GEMM 区间重叠，已按并集合并，不重复计算活动核时。');
     warnings.push('CUBE 指标是 GEMM 打点时间占比；隐藏在 GEMM 打点内的等待和搬运无法扣除，不代表指令级利用率或实际 FLOPS/峰值。');
-    return { start: window.aligned ? range.start : null, end: window.aligned ? range.end : null,
+    return { ...timingStats(gemms), start: window.aligned ? range.start : null, end: window.aligned ? range.end : null,
       windowUs: window.aligned && gemms.length ? range.envelopeUs : null,
       windowRatio: valid && gemms.length ? range.envelopeUs / window.durationUs : null,
       activeCoreUs, activeRatio: valid && complete ? activeCoreUs / denominator : null,
@@ -471,7 +488,7 @@
 
   /** 显式等待/同步按完整词段识别；不把任务内部尚未单独打点的等待猜出来。 */
   function isExplicitWait(event) {
-    return Boolean(event.sync) || /(?:^|_)(?:WAIT|WAITING|SYNC|BARRIER)(?:_|$)/i.test(event.name);
+    return event.timing === 'marker' || Boolean(event.sync) || /(?:^|_)(?:WAIT|WAITING|SYNC|BARRIER)(?:_|$)/i.test(event.name);
   }
 
   /** 忙闲专用窗口：选定Rank/观察范围内，最早Dispatch开始至最晚Combine结束。
@@ -558,16 +575,17 @@
     // 单卡峰值对应所有AIC，故无空泡等效时间=逐AIC GEMM并集核时之和/配置AIC核数。
     // 不能把跨核并集当成所有核都忙，也不能将累计核时直接当成墙钟时间。
     const computeActiveUs = cube.activeRatio !== null ? cube.activeCoreUs / config.aicCores : null;
-    const computeRatio = !reason && computeActiveUs > 0 ? theoreticalUs / computeActiveUs : null;
+    const computeReason = cube.issueCount ? '包含ISSUE提交区间，不能据此恢复实际计算完成时间' : reason;
+    const computeRatio = !computeReason && computeActiveUs > 0 ? theoreticalUs / computeActiveUs : null;
     // 原版仅计算MFU现在明确称为“含空泡”，继续保留全卡GEMM首尾包络口径。
-    const computeEnvelopeRatio = !reason && cube.windowUs > 0 ? theoreticalUs / cube.windowUs : null;
+    const computeEnvelopeRatio = !computeReason && cube.windowUs > 0 ? theoreticalUs / cube.windowUs : null;
     if (ratio > 1) warnings.push('MFU超过100%：请核对H/D、路由行数、共享专家、精度对应峰值算力及Trace窗口完整性；结果未裁剪为100%。');
     if (computeRatio > 1 || computeEnvelopeRatio > 1) warnings.push('CUBE仅计算MFU超过100%：请核对模型计算量、峰值算力和GEMM打点完整性；结果未裁剪为100%。');
     if (sharedExpertsSource === 'detected_one') warnings.push('检测到共享GEMM：MFU按用户给定的1个共享专家计入BS×6HD FLOPs，假定与路由专家相同H/D；任务后缀不用于推断专家数量。');
     return {...workload, routedRows, sharedRows, rows, effectiveSharedExperts, sharedExpertsSource,
       rowsSource: config.mfuRoutedRows > 0 ? 'configured_actual' : 'balanced_shape',
       gemm1Flops, gemm2Flops, flops, peakTflops: config.peakTflops, theoreticalUs,
-      durationUs: window.durationUs, ratio, reason, wholeGemm, isE2E: window.isE2E,
+      durationUs: window.durationUs, ratio, reason, computeReason, wholeGemm, isE2E: window.isE2E,
       computeStart: cube.start, computeEnd: cube.end, computeWindowUs: cube.windowUs, computeRatio,
       computeEnvelopeRatio, computeActiveUs, computeActiveCoreUs: cube.activeCoreUs,
       computeTimeMethod: 'mean_per_aic_gemm_union',
@@ -629,7 +647,7 @@
           plan[stage].source === 'shape_balanced' ? plan[stage].bytes / config.cores : null : null;
         if (rawSumUs > timeUs + 1e-6) warnings.push(`AIV1 ${core} ${stage} 重叠/重复：原始累计 ${rawSumUs.toFixed(3)} μs，改用并集 ${timeUs.toFixed(3)} μs。`);
         const range = bounds(selected);
-        row[stage] = { count: selected.length, start: range.start, end: range.end, timeUs, rawSumUs, unionUs: timeUs,
+        row[stage] = { ...timingStats(selected), count: selected.length, start: range.start, end: range.end, timeUs, rawSumUs, unionUs: timeUs,
           bytes, byteSource: bytes !== null ? plan[stage].source : 'unavailable', gbps: bandwidth(bytes, timeUs),
           rankEquivalentGbps: bandwidth(plan[stage].bytes, timeUs), waves: [...new Set(selected.map(event => event.args.wave_id).filter(value => value !== undefined && value !== null))] };
       }
@@ -646,7 +664,7 @@
       const rankBytes = plan[stage].source === 'trace_payload' ? complete ? plan[stage].bytes : null : plan[stage].bytes;
       const aligned = window.aligned && !window.repeatedSync;
       if (!complete) warnings.push(`${stage} 只有 ${positive.length}/${config.cores} 核有正耗时记录；全 Rank 带宽不外推。`);
-      summary[stage] = { count: selected.length, present: present.length, complete, rankBytes, observedBytes, byteSource: plan[stage].source,
+      summary[stage] = { ...timingStats(selected), count: selected.length, present: present.length, complete, rankBytes, observedBytes, byteSource: plan[stage].source,
         sumCoreUs: total, meanCoreUs: present.length ? total / present.length : null,
         start: aligned ? range.start : null, end: aligned ? range.end : null,
         unionUs: aligned ? unionUs(selected) : null, envelopeUs: aligned ? range.envelopeUs : null,
@@ -848,6 +866,13 @@
       overlapPreservedUs: quantUs - unionUs(removed), removedWithinWindowUs: rawWindow.durationUs - (end - start),
       rawWindow: {start: rawWindow.start, end: rawWindow.end, durationUs: rawWindow.durationUs},
       removedIntervals: applied, timeBasis: quant.length ? 'fp8_input_adjusted' : 'original'};
+    // 被动打点的异步执行可能越过ISSUE结束；不能按Scalar空白推导可扣除的QUANT时间。
+    if (rawEvents.some(event => event.timing === 'issue')) {
+      const skippedIssueCount = rawEvents.filter(event => /^(?:wave_global_)?AIV[01]?_QUANT_ISSUE(?:_0)?$/i.test(event.name)).length;
+      warnings.push('检测到ISSUE流水：保留原始时间轴，不自动扣除输入QUANT；Scalar空白不证明异步硬件空闲。');
+      return {allEvents: rawEvents, window: rawWindow, info: {...info, matchedEventCount: 0, skippedIssueCount,
+        removedWallUs: 0, removedWithinWindowUs: 0, overlapPreservedUs: quantUs, removedIntervals: [], timeBasis: 'original'}};
+    }
     if (!quant.length) return {allEvents: rawEvents, window: rawWindow, info};
     warnings.push(`按FP8直接输入口径排除 ${quant.length} 条输入QUANT；跨核并集 ${quantUs.toFixed(3)} μs，当前窗口扣除 ${info.removedWithinWindowUs.toFixed(3)} μs。与其他实际工作重叠的时间保留。`);
     if (!rawWindow.aligned) warnings.push('QUANT已排除，但时间轴未对齐，不能可靠扣除跨核墙钟时间；相关占比仍留空。');
@@ -872,6 +897,16 @@
     for (const event of rawEvents) if (event.core >= (event.kind === 'AIC' ? config.aicCores : config.cores)) throw new Error(`${event.kind} group_id=${event.core} 超出配置核数`);
     const adjusted = excludeInputQuantization(rawEvents, chooseWindow(rawEvents, config, warnings), warnings);
     const {allEvents, window} = adjusted, events = clip(allEvents, window);
+    const issueCount = allEvents.filter(event => event.stage && event.timing === 'issue').length;
+    const observation = {hasIssue: issueCount > 0, issueCount,
+      syncCount: allEvents.filter(event => event.timing === 'sync').length,
+      markerCount: allEvents.filter(event => event.timing === 'marker').length,
+      protocols: [...new Set(allEvents.map(event => event.args.timer_protocol).filter(Boolean))]};
+    if (issueCount) warnings.unshift(`已识别 ${issueCount} 条ISSUE任务：阶段/逐核图为提交区间，带宽为字节÷提交时间折算，不是链路实测；仅计算MFU留空，提交间隙不等于硬件气泡。`);
+    for (const stage of STAGES) {
+      const stats = timingStats(allEvents.filter(event => event.stage === stage));
+      if (stats.timingMode === 'mixed') warnings.push(`${stage} 同时包含ISSUE和历史区间：未猜测配对或删除记录；汇总为混合观测口径，不能解释为硬件完成耗时。`);
+    }
     const rows = config.bs * config.topk;
     const localGroup = physicalRank === null ? null : Math.min(config.fmGroup, config.ep - Math.floor(physicalRank / config.fmGroup) * config.fmGroup);
     const fraction = config.scope === 'all' ? 1 : config.scope === 'remote' ? (config.ep - 1) / config.ep : localGroup === null ? null : (config.ep - localGroup) / config.ep;
@@ -899,7 +934,7 @@
     warnings.push('事件编号不等于 Tile/专家编号；带宽是有效字节与打点区间之比，内部等待无法自动去除。');
     return { version: 2, filename: trace.filename, format: trace.format, rank, physicalRank, config, rows, rowBytes, rowByteBreakdown, fraction, shapeVolume,
       volume: Object.fromEntries(COMM.map(stage => [stage, plan[stage].bytes])), byteSources: Object.fromEntries(COMM.map(stage => [stage, plan[stage].source])),
-      window, allStages: stageStats(allEvents, window.aligned), stages: stageStats(events, window.aligned), cube, ...communication,
+      window, observation, allStages: stageStats(allEvents, window.aligned), stages: stageStats(events, window.aligned), cube, ...communication,
       clos, bandwidthComparison, coreActivity, coreActivityWindow, mfu, communicationTiming, inputQuantization: adjusted.info, rankSelection: trace.rankSelection, filteredInputSyncCount: trace.filteredInputSyncCount ?? 0,
       warnings: [...new Set(warnings)], events, allEvents };
   }
@@ -1189,21 +1224,31 @@ globalThis.TRACE_V2_DEMO_CONFIG={"aicCores":2,"cores":2};
   /** 各主卡始终写出分母口径，代理窗口不能标为实测端到端。 */
   function renderMetrics(r){
     const w=r.window,c=r.cube,t=w.durationUs,m=r.mfu;
+    const issue=c.issueCount>0;
     $('windowInfo').textContent=`Rank ${r.rank} · ${r.filename} · ${w.isE2E?'输入/输出同步窗口':'观测窗口（端到端代理）'}：${fmt(w.start)} → ${fmt(w.end)} μs；分母 T = ${fmt(t)} μs。`;
     if(r.inputQuantization.matchedEventCount)$('windowInfo').textContent+=` FP8直接输入口径：排除${r.inputQuantization.matchedEventCount}条输入QUANT；T=${fmt(r.inputQuantization.rawWindow.durationUs)} − ${fmt(r.inputQuantization.removedWithinWindowUs)} = ${fmt(t)} μs。指标和流水均使用扣除后的时间轴。`;
     const cards=[
       ['任务总计算量（整个EP）',m.clusterTflops,'TFLOPs',`单次完整FFN层：6×${r.config.ep}×${r.config.bs}×(${r.config.topk}+${m.effectiveSharedExperts})×${r.config.hidden}×${r.config.intermediate}/10¹²\n总路由专家=${r.config.totalExperts}；每卡=${r.config.experts}\n模型Shape推算，非Trace截窗内实测运算量；各源Rank bs相同。单Rank MFU仍使用单Rank计算量。`,'primary'],
       ['本Rank FFN计算量',m.rankTflops,'TFLOPs',`GEMM1=${fmt(m.gemm1Flops/1e12,6)}；GEMM2=${fmt(m.gemm2Flops/1e12,6)} TFLOPs\n6×${m.rows}×${r.config.hidden}×${r.config.intermediate}/10¹²\n${m.rowsSource==='balanced_shape'?'均衡估算':'使用本Rank实填路由行数'}；共享专家=${m.effectiveSharedExperts}。只计GEMM，乘加计2次。`,'primary'],
-      ['CUBE端到端MFU（最严格）',m.ratio===null?null:m.ratio*100,'%',`M=${fmt(m.routedRows,0)}路由行 + ${fmt(m.sharedRows,0)}共享行\nF=6×${fmt(m.rows,0)}×${r.config.hidden}×${r.config.intermediate}\n=${fmt(m.flops/1e9,3)} GFLOPs\n理论时间=${fmt(m.flops/1e9,3)} GFLOPs ÷ ${fmt(m.peakTflops)} TFLOPs/s=${fmt(m.theoreticalUs)} μs\nMFU=${fmt(m.theoreticalUs)} ÷ ${fmt(t)} ×100%\n${m.rowsSource==='balanced_shape'?'路由行数为BS×Top-K均衡估算':'路由行数来自手填实际值'}${m.reason?'；'+m.reason:''}${w.isE2E?'':'；分母为观测窗口代理'}`,'primary'],
+      [w.isE2E?'CUBE端到端MFU':'观测窗口MFU（代理）',m.ratio===null?null:m.ratio*100,'%',`M=${fmt(m.routedRows,0)}路由行 + ${fmt(m.sharedRows,0)}共享行\nF=6×${fmt(m.rows,0)}×${r.config.hidden}×${r.config.intermediate}\n=${fmt(m.flops/1e9,3)} GFLOPs\n理论时间=${fmt(m.flops/1e9,3)} GFLOPs ÷ ${fmt(m.peakTflops)} TFLOPs/s=${fmt(m.theoreticalUs)} μs\nMFU=${fmt(m.theoreticalUs)} ÷ ${fmt(t)} ×100%\n${m.rowsSource==='balanced_shape'?'路由行数为BS×Top-K均衡估算':'路由行数来自手填实际值'}${m.reason?'；'+m.reason:''}${w.isE2E?'':'；分母为观测窗口代理，非完成时延或硬件利用率'}`,'primary'],
       ['CUBE仅计算MFU',m.computeRatio===null?null:m.computeRatio*100,'%',`每AIC的GEMM1/2及共享GEMM先求区间并集\n无空泡核均时间=${fmt(m.computeActiveCoreUs)} 核·μs ÷ ${r.config.aicCores}核 = ${fmt(m.computeActiveUs)} μs\nMFU=${fmt(m.theoreticalUs)} ÷ ${fmt(m.computeActiveUs)} ×100%\n扣除各核任务间空泡；打点内部未拆出的等待仍保留${m.reason?'；'+m.reason:''}`,'primary'],
       ['CUBE仅计算MFU（含空泡）',m.computeEnvelopeRatio===null?null:m.computeEnvelopeRatio*100,'%',`理论时间=${fmt(m.theoreticalUs)} μs\nGEMM窗口=最后结束 − 最早开始\n${fmt(m.computeEnd)} − ${fmt(m.computeStart)} = ${fmt(m.computeWindowUs)} μs\nMFU=${fmt(m.theoreticalUs)} ÷ ${fmt(m.computeWindowUs)} ×100%\n排除窗口前后 ${fmt(m.outsideComputeUs)} μs；窗口内部空泡仍保留${m.reason?'；'+m.reason:''}`,'primary'],
-      ['通信掩盖率',c.windowRatio===null?null:c.windowRatio*100,'%',`CUBE含空泡时间=最晚GEMM结束 − 最早GEMM开始\n${fmt(c.end)} − ${fmt(c.start)} = ${fmt(c.windowUs)} μs\n通信掩盖率=${fmt(c.windowUs)} ÷ ${fmt(t)} ×100%\n按GEMM首尾跨度计算，包含中间空泡${w.isE2E?'':'；分母为观测窗口代理'}`,'primary'],
-      ['端到端时间',w.aligned&&!w.repeatedSync&&t>0?t:null,'μs',`T=结束 − 开始\n${fmt(w.end)} − ${fmt(w.start)} = ${fmt(t)} μs\n${w.isE2E?'输入同步开始至输出同步结束':'可见/指定窗口代理，未确认真实端到端'}`,'primary'],
+      [issue?'GEMM提交包络 / 观察窗':'通信掩盖率',c.windowRatio===null?null:c.windowRatio*100,'%',`最晚GEMM打点结束 − 最早GEMM打点开始\n${fmt(c.end)} − ${fmt(c.start)} = ${fmt(c.windowUs)} μs\n${fmt(c.windowUs)} ÷ ${fmt(t)} ×100%\n${issue?'包含ISSUE：仅为提交包络占比，不代表通信被硬件计算掩盖':'按GEMM首尾跨度计算，包含中间空泡'}${w.isE2E?'':'；分母为观测窗口代理'}`,'primary'],
+      [w.isE2E?'端到端时间':'观测窗口时长（代理）',w.aligned&&!w.repeatedSync&&t>0?t:null,'μs',`T=结束 − 开始\n${fmt(w.end)} − ${fmt(w.start)} = ${fmt(t)} μs\n${w.isE2E?'输入同步开始至输出同步结束':'可见/指定窗口代理，未确认真实端到端'}`,'primary'],
       ...['dispatch','combine'].map(stage=>{const s=r.bandwidthComparison[stage];return [`${names[stage]} Clos预测带宽`,s.predictedGbps,'GB/s',`Clos有效字节=${fmt(s.closBytes,0)} B\n剔短后平均时间=${fmt(s.keptSumCoreUs)} 核·μs ÷ ${s.normalizationCores}核 = ${fmt(s.predictedMeanCoreUs)} μs\n${fmt(s.closBytes,0)} ÷ ${fmt(s.predictedMeanCoreUs)} ÷1000\n剔除${s.excludedCount}条短任务；${s.closByteSource==='trace_payload'?'Trace字节':s.closByteSource==='shape_balanced'?'Shape均衡字节估算':'字节不足'}；${s.complete?'原版Rank折算口径':'缺核，带宽留空'}`,'primary'];})
     ];
+    // ISSUE下不把短提交区间冒充实际计算耗时；保留原公式但明确显示不可推导原因。
+    for(const card of cards){
+      if(card[0].startsWith('CUBE仅计算MFU')&&m.computeReason)card[3]+='\n'+m.computeReason;
+      if(card[0].includes('Clos预测带宽')){
+        const stage=card[0].startsWith('Dispatch')?'dispatch':'combine';
+        if(r.allStages[stage].issueCount){card[0]=`${names[stage]} ISSUE折算带宽`;card[3]+='\n分母为提交时间，非链路实测带宽；剔短也不能恢复硬件完成时间。';}
+      }
+    }
     $('metrics').innerHTML=cards.map(([label,v,unit,hint,cls])=>`<div class="metric ${cls}"><div class="label">${esc(label)}</div><div class="value">${fmt(v,unit==='TFLOPs'?6:2)} <small>${unit}</small></div><div class="hint">${esc(hint)}</div></div>`).join('');
     renderMetricDetails(r);
     $('coverage').textContent=`有正耗时 GEMM 的 AIC ${c.present}/${r.config.aicCores}。${c.complete?'核编号覆盖完整；仍需确认未裁剪事件。':'缺失核不能当作空闲核；全卡核均占比可能无法确认。'} ${w.aligned?'跨核时间按统一坐标计算。':'时间原点不统一或已经压缩，跨核边界与占比不可解释。'} 打点内部等待仍包含在“活动”中。`;
+    if(issue)$('coverage').textContent+=' 本文件包含ISSUE：GEMM时间仅为提交区间；下面的活动/空白统计不表示硬件实际忙闲。仅计算MFU因此留空。';
     $('cubeFormulas').innerHTML=`SwiGLU：GEMM1 [M,H]×[H,2D]，F₁=4MHD=${fmt(m.gemm1Flops/1e9,3)} GFLOPs；GEMM2 [M,D]×[D,H]，F₂=2MHD=${fmt(m.gemm2Flops/1e9,3)} GFLOPs（乘加计2次运算）。<br>单卡MFU=(F₁+F₂)/(单卡峰值TFLOPs/s×10⁶×T[μs])，峰值不乘经验利用率，也不再乘卡数或AIC核数。只计模型有用GEMM，不增加tile补齐或向量算子FLOPs。<br>默认路由行M=BS×Top-K；负载不均衡请填写本Rank各路由专家实际处理行数之和。共享专家额外计BS×共享专家数行，并假定相同H/D；本次采用${m.effectiveSharedExperts}个（${m.sharedExpertsSource==='detected_one'?'检测到共享打点，按1个估算':'配置值或未检测到'}）。完整性仅按可见事件检查，MFU仍依赖模型配置正确且Trace没有漏采。<br>两项Clos预测沿用剔短后累计dur/配置AIV1核数的Rank折算分母，与MFU的端到端分母不同。`;
   }
   /** 展示理论量和实测时间代入值；核均活动、首尾包络及带宽累计dur口径分别标明。 */
@@ -1224,6 +1269,10 @@ globalThis.TRACE_V2_DEMO_CONFIG={"aicCores":2,"cores":2};
       rows.push([stage+'_active',`${label}通信时间（无空泡）`,s.withoutBubblesUs,'μs',`Σ各AIV1本阶段区间并集 ÷ 配置核数 = ${fmt(s.activeCoreUs)}核·μs ÷ ${s.cores}；缺核留空，未剔短。跨核墙钟活动并集另为${fmt(s.wallActiveUs)}μs`]);
     }
     rows.push(['e2e','端到端时间',w.aligned&&!w.repeatedSync&&w.durationUs>0?w.durationUs:null,'μs',`${fmt(w.end)} − ${fmt(w.start)}；${w.isE2E?'输入/输出同步边界':'观测窗口代理'}`]);
+    for(const row of rows){
+      if(r.cube.issueCount&&row[0].startsWith('compute_')){row[1]=row[1].replace('实际计算时间','GEMM提交区间时间');row[4]+='；包含ISSUE，不是实际计算完成时间';}
+      for(const stage of ['dispatch','combine'])if(r.allStages[stage].issueCount&&row[0].startsWith(stage+'_')){row[1]=row[1].replace('通信时间','提交区间时间');row[4]+='；不含独立SYNC，不代表搬运完成';}
+    }
     $('metricDetailsTable').querySelector('tbody').innerHTML=rows.map(([key,label,value,unit,formula])=>`<tr data-timing="${key}"><td>${esc(label)}</td><td>${fmt(value,3)}</td><td>${unit}</td><td>${esc(formula)}</td></tr>`).join('');
   }
   /** 三类核汇总使用核均占比；累计核时与每核平均时间同时展示，缺失不填0。 */
@@ -1232,6 +1281,7 @@ globalThis.TRACE_V2_DEMO_CONFIG={"aicCores":2,"cores":2};
     const status={missing:'缺失记录',recorded:'有记录',outside_window:'窗口无记录'},w=r.coreActivityWindow;
     const scope=w.available?`忙闲专用窗口：最早 Dispatch 开始 ${fmt(w.start)} μs → 最晚 Combine 结束 ${fmt(w.end)} μs；T = ${fmt(w.end)} − ${fmt(w.start)} = ${fmt(w.durationUs)} μs`:`忙闲窗口不可用：${w.reason}`;
     $('activityScope').textContent=`${scope}；口径：${r.config.coreActivityMode==='all'?'全部任务，包含显式等待/同步':'工作任务，排除显式等待/同步'}。蓝色为忙碌，灰色为可见空闲。`;
+    if(r.observation.hasIssue)$('activityScope').textContent+=' ISSUE流水中，蓝色仅表示Scalar记录覆盖，灰色仅表示未记录；不能解释为硬件忙闲。';
     $('activityMetrics').innerHTML=types.map(kind=>{
       const s=r.coreActivity[kind];
       const coverage=`全文件正时长记录 ${s.present}/${s.count} 核`;
@@ -1248,7 +1298,7 @@ globalThis.TRACE_V2_DEMO_CONFIG={"aicCores":2,"cores":2};
     if(!result)return;const collection=$('stageScope').value==='all'?result.allStages:result.stages,w=result.window;
     $('stageTable').querySelector('tbody').innerHTML=stageEntries().map(([key,label])=>{
       const s=collection[key],a=s?.start??null,b=s?.end??null;
-      return `<tr class="${s?.count?'':'empty'}"><td><i class="swatch" style="background:${colors[key]}"></i>${label}</td><td>${s?.count??0} / ${s?.coreCount??0}</td><td>${fmt(a)}</td><td>${fmt(b)}</td><td>${fmt(a===null?null:a-w.start)}</td><td>${fmt(b===null?null:b-w.start)}</td><td>${fmt(s?.count?s.envelopeUs:null)}</td><td>${fmt(s?.count?s.unionUs:null)}</td></tr>`;
+      return `<tr class="${s?.count?'':'empty'}"><td><i class="swatch" style="background:${colors[key]}"></i>${label}${s?.issueCount?` · ${s.timingMode==='mixed'?'混合':'ISSUE提交'}`:''}</td><td>${s?.count??0} / ${s?.coreCount??0}</td><td>${fmt(a)}</td><td>${fmt(b)}</td><td>${fmt(a===null?null:a-w.start)}</td><td>${fmt(b===null?null:b-w.start)}</td><td>${fmt(s?.count?s.envelopeUs:null)}</td><td>${fmt(s?.count?s.unionUs:null)}</td></tr>`;
     }).join('');drawOverview();
   }
   /** Canvas按设备像素比绘图，仅分配当前可视宽度，放大不创建超宽位图。 */
@@ -1270,6 +1320,7 @@ globalThis.TRACE_V2_DEMO_CONFIG={"aicCores":2,"cores":2};
     renderClos(r);
     const v=r.shapeVolume||r.volume;
     $('volume').textContent=`Shape全层均衡估算参考：${r.rows} 路由行；所选范围 Dispatch ${fmt(v.dispatch===null?null:v.dispatch/1048576)} MiB / Combine ${fmt(v.combine===null?null:v.combine/1048576)} MiB。裁剪或字节不明时不会用此参考值计算带宽。`;
+    if(r.observation.hasIssue)$('volume').textContent+=' 含ISSUE的通信只提供字节/提交区间折算，不表示真实搬运带宽。';
     const rows=[['有记录核数',s=>`${s.present}/${r.config.cores}`],['事件数',s=>s.count],['同核合并后累计核时 μs',s=>fmt(s.sumCoreUs)],['跨核墙钟活动并集 μs',s=>fmt(s.unionUs)],['首尾包络 μs',s=>fmt(s.envelopeUs)],['本次使用字节来源',s=>s.byteSource??'Shape估算（见检查）'],['本次使用字节 MiB',s=>fmt((s.bytes??s.observedBytes)===null?null:(s.bytes??s.observedBytes)/1048576)],['字节 / 墙钟活动并集 GB/s',s=>fmt(s.unionGbps)],['字节 / 首尾包络 GB/s',s=>fmt(s.envelopeGbps)]];
     $('summaryTable').querySelector('tbody').innerHTML=rows.map(([label,f])=>`<tr><td>${label}</td><td>${esc(f(r.summary.dispatch))}</td><td>${esc(f(r.summary.combine))}</td></tr>`).join('');
     $('coreTable').querySelector('tbody').innerHTML=r.cores.map(c=>`<tr><td>${c.core}</td>`+['dispatch','combine'].map(k=>{const s=c[k];return `<td>${s.count}</td><td>${fmt(s.count?s.timeUs:null)}</td><td>${esc(s.byteSource??(s.bytes===null?'不可用':'Shape均分'))}</td><td>${fmt(s.gbps)}</td>`;}).join('')+'</tr>').join('');
@@ -1285,7 +1336,7 @@ globalThis.TRACE_V2_DEMO_CONFIG={"aicCores":2,"cores":2};
       return [
         ['① 全量字节折算（偏高参考）',s.allGbps,s.allBytes,s.allMeanCoreUs,s.allByteSource,'含Full-mesh和本地数据'],
         ['② Clos预测（剔除短任务）',s.predictedGbps,s.closBytes,s.predictedMeanCoreUs,s.closByteSource,`剔除 ${s.excludedCount} 条，保留 ${s.keptCount} 条任务`]
-      ].map(([label,value,bytes,time,source,hint])=>`<div class="metric primary"><div class="label">${names[stage]} · ${label}</div><div class="value">${fmt(value)} <small>GB/s</small></div><div class="hint">${byteLabel(source)} · ${hint}${s.coverage==='recorded_subset'?' · 已导入片段':''}<br>${fmt(bytes===null?null:bytes/1048576)} MiB ÷ 全核平均累计 ${fmt(time)} μs${s.complete?'':'<br>原始记录缺核，整卡带宽留空'}</div></div>`).join('');
+      ].map(([label,value,bytes,time,source,hint])=>`<div class="metric primary"><div class="label">${names[stage]} · ${label}${r.allStages[stage].issueCount?' · ISSUE折算':''}</div><div class="value">${fmt(value)} <small>GB/s</small></div><div class="hint">${byteLabel(source)} · ${hint}${s.coverage==='recorded_subset'?' · 已导入片段':''}<br>${fmt(bytes===null?null:bytes/1048576)} MiB ÷ 全核平均累计 ${fmt(time)} μs${r.allStages[stage].issueCount?'<br>分母含Scalar提交时间；非链路实测带宽':''}${s.complete?'':'<br>原始记录缺核，整卡带宽留空'}</div></div>`).join('');
     }).join('');
     const rows=[
       ['① 全量有效字节 MiB',s=>fmt(s.allBytes===null?null:s.allBytes/1048576)],
@@ -1333,7 +1384,7 @@ globalThis.TRACE_V2_DEMO_CONFIG={"aicCores":2,"cores":2};
     ctx.fillStyle='white';ctx.fillRect(0,0,left,height);ctx.fillStyle='#64748b';ctx.fillText('相对窗口起点',8,16);lanes.forEach((lane,i)=>ctx.fillText(`${lane.kind} · ${lane.core}`,8,top+i*row+16));$('zoomLabel').textContent=zoom+'×';$('zoomOut').disabled=zoom===1;$('zoomIn').disabled=zoom===32;
   }
   /** 波次/专家只能来自导出的字段，不能从interval编号猜测专家或tile。 */
-  function eventText(e,t){const a=e.args||{},wave=a.wave_id??e.name.match(/^wave_(\d+)_/i)?.[1],expert=a.expert_id??a.expert_idx??a.expert??a.task?.expert_id;return `${e.kind} ${e.core} · ${names[e.stage]||e.name}\nWave ${wave??'未提供'} · Expert ${expert??'未提供'}\n${result.inputQuantization.matchedEventCount?'扣量化后时刻':'绝对时刻'} ${fmt(t)} μs · 窗口相对 ${fmt(t-result.window.start)} μs\n窗口内 ${fmt(e.start)} → ${fmt(e.start+e.duration)} μs，持续 ${fmt(e.duration)} μs\n${e.clipped?`原始任务 ${fmt(e.originalStart)} → ${fmt(e.originalStart+e.originalDuration)} μs（已裁剪）\n`:''}${e.rawStart!==undefined?`原Trace任务 ${fmt(e.rawStart)} → ${fmt(e.rawStart+e.rawDuration)} μs\n`:''}${e.name}`;}
+  function eventText(e,t){const a=e.args||{},wave=a.wave_id??e.name.match(/^wave_(\d+)_/i)?.[1],expert=a.expert_id??a.expert_idx??a.expert??a.task?.expert_id;const semantic=e.timing==='issue'?'ISSUE：Scalar提交区间，结束不代表硬件完成':e.timing==='sync'?'等待/同步区间（单列，不计入阶段有效任务）':e.timing==='marker'?'边界标记（不当作GEMM任务）':'历史任务区间（是否包含完成同步由原打点决定）';return `${e.kind} ${e.core} · ${names[e.stage]||e.name}\n${semantic}\nWave ${wave??'未提供'} · Expert ${expert??'未提供'}\n${result.inputQuantization.matchedEventCount?'扣量化后时刻':'绝对时刻'} ${fmt(t)} μs · 窗口相对 ${fmt(t-result.window.start)} μs\n窗口内 ${fmt(e.start)} → ${fmt(e.start+e.duration)} μs，持续 ${fmt(e.duration)} μs\n${e.clipped?`原始任务 ${fmt(e.originalStart)} → ${fmt(e.originalStart+e.originalDuration)} μs（已裁剪）\n`:''}${e.rawStart!==undefined?`原Trace任务 ${fmt(e.rawStart)} → ${fmt(e.rawStart+e.rawDuration)} μs\n`:''}${e.name}`;}
   /** 悬停展示命中区间；重叠时告知命中数并保留原始字段供检查。 */
   function inspect(event,pin=false){
     if(!chart||!result)return;const rect=$('timelineCanvas').getBoundingClientRect(),x=event.clientX-rect.left,y=event.clientY-rect.top,i=Math.floor((y-chart.top)/chart.row),lane=lanes[i];
@@ -1344,13 +1395,13 @@ globalThis.TRACE_V2_DEMO_CONFIG={"aicCores":2,"cores":2};
     const tip=$('tooltip');tip.textContent=text;tip.classList.remove('hidden');tip.style.left=Math.max(8,Math.min(event.clientX+14,innerWidth-tip.offsetWidth-12))+'px';tip.style.top=Math.max(8,Math.min(event.clientY+14,innerHeight-tip.offsetHeight-12))+'px';
   }
   /** 渲染与计算分开，使缩放/切换范围不触发解析。 */
-  function render(r){$('detailBox').open=false;$('eventDetails').textContent='悬停或点击流水中的任务查看。';$('results').classList.remove('hidden');renderMetrics(r);renderActivity(r);renderStages();renderCube(r);renderComm(r);const visible=r.warnings.slice(0,10),rest=r.warnings.slice(10);$('warnings').innerHTML=visible.map(w=>`<li>${esc(w)}</li>`).join('')+(rest.length?`<li><details><summary>展开其余 ${rest.length} 条检查信息</summary><ul>${rest.map(w=>`<li>${esc(w)}</li>`).join('')}</ul></details></li>`:'');prepareTimeline();}
+  function render(r){$('detailBox').open=false;$('eventDetails').textContent='悬停或点击流水中的任务查看。';$('results').classList.remove('hidden');const notice=$('observationNotice');notice.classList.toggle('hidden',!r.observation.hasIssue);notice.textContent=`已兼容被动timer：${r.observation.issueCount}条ISSUE任务；${r.observation.syncCount}条等待/同步、${r.observation.markerCount}条边界标记分开保留。彩色阶段代表Scalar提交区间，不等于硬件实际执行/完成。通信GB/s为字节÷提交区间折算；含ISSUE的GEMM不能推导仅计算MFU，相关值留空。观察窗MFU仍按模型FLOPs/峰值/窗口估算，不代表真实端到端MFU。QUANT不自动扣除。`;renderMetrics(r);renderActivity(r);renderStages();renderCube(r);renderComm(r);const visible=r.warnings.slice(0,10),rest=r.warnings.slice(10);$('warnings').innerHTML=visible.map(w=>`<li>${esc(w)}</li>`).join('')+(rest.length?`<li><details><summary>展开其余 ${rest.length} 条检查信息</summary><ul>${rest.map(w=>`<li>${esc(w)}</li>`).join('')}</ul></details></li>`:'');prepareTimeline();}
   /** 同步纯计算仅在明确提交时执行；保留耗时便于发现大文件回归。 */
   function run(config=read(),rank=$('rank').value){
     if(!trace){message('请先导入流水文件。');return;}
     try{const start=performance.now();result=A.analyze(trace,config,rank);const draft=read();markDirty(Object.keys(A.defaults).some(key=>draft[key]!==result.config[key])||$('rank').value!==result.rank);render(result);let warning='';try{localStorage.setItem(storageKey,JSON.stringify(result.config));}catch{warning=' 当前环境不支持保存参数。';}message(`${trace.filename} · Rank ${result.rank} · ${trace.rawEventCount} 条原始事件${trace.rankSelection?.mode==='pid_rank0'?`；按pid仅保留Rank 0，排除其他pid ${trace.rankSelection.excludedEventCount} 条`:""}${trace.filteredInputSyncCount?`；已过滤 ${trace.filteredInputSyncCount} 条 INPUT_CROSS_RANK_SYNC`:''}\n分析与展示 ${fmt(performance.now()-start,1)} ms；当前结果使用已提交配置。${warning}`);}catch(e){invalidate();message(`指标计算/绘图失败（文件已解析）
 ${e.message}
-解析器版本：V2.7.4`,true);}
+解析器版本：V2.8.0`,true);}
   }
   /** 文件版本号用于避免慢文件覆盖后来导入的文件。 */
   function load(text,name){invalidate();trace=null;$('rankControls').classList.add('hidden');try{trace=A.parse(text,name,{rank0Only:true});$('rank').innerHTML=trace.ranks.map(r=>`<option value="${esc(r)}">${esc(r)}</option>`).join('');$('rankControls').classList.remove('hidden');zoom=1;$('timelineViewport').scrollLeft=0;run();}catch(e){message(e.message,true);}}
@@ -1379,7 +1430,7 @@ ${e.message}
       if(data.filteredInputSyncCount)trace.warnings.push(`已过滤 ${data.filteredInputSyncCount} 条 INPUT_CROSS_RANK_SYNC（整个导入文件）。`);
       $('rank').innerHTML=trace.ranks.map(r=>`<option value="${esc(r)}">${esc(r)}</option>`).join('');
       $('rankControls').classList.remove('hidden');zoom=1;$('timelineViewport').scrollLeft=0;run();
-    }catch(e){if(current===generation){invalidate();trace=null;message(`导入失败 · ${importStage}\n${file.name}（${fmt(file.size/1024/1024,2)} MiB）\n${e.message}\n解析器版本：V2.7.4`,true);}}
+    }catch(e){if(current===generation){invalidate();trace=null;message(`导入失败 · ${importStage}\n${file.name}（${fmt(file.size/1024/1024,2)} MiB）\n${e.message}\n解析器版本：V2.8.0`,true);}}
   }
   /** Blob导出保持离线；及时撤销Object URL释放内存。 */
   function download(name,type,text){const url=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
@@ -1401,9 +1452,9 @@ ${e.message}
   $('timelineViewport').addEventListener('scroll',drawTimeline,{passive:true});$('zoomIn').addEventListener('click',()=>{zoom=Math.min(zoom*2,32);drawTimeline();});$('zoomOut').addEventListener('click',()=>{zoom=Math.max(zoom/2,1);drawTimeline();});$('zoomReset').addEventListener('click',()=>{zoom=1;$('timelineViewport').scrollLeft=0;drawTimeline();});
   $('timelineCanvas').addEventListener('mousemove',e=>inspect(e));$('timelineCanvas').addEventListener('mouseleave',()=>$('tooltip').classList.add('hidden'));$('timelineCanvas').addEventListener('click',e=>inspect(e,true));
   new ResizeObserver(()=>{if(result){drawOverview();drawTimeline();}}).observe($('timelineViewport'));
-  $('json').addEventListener('click',()=>{if(result&&!dirty)download('tracev2-analysis.json','application/json',JSON.stringify({...result,exportedAt:new Date().toISOString(),units:{time:'us',bandwidth:'decimal GB/s',ratios:'0..1'},metricNotes:'Communication coverage (cube.windowRatio) = global GEMM envelope including bubbles / selected end-to-end window; active ratio is per-AIC union / configured AIC count / selected window. Trace spans can include internal waits.'},null,2));});
-  $('stageCsv').addEventListener('click',()=>{if(!result||dirty)return;const rows=[['rank','scope','stage','count','cores','start_us','end_us','envelope_us','wall_union_us','sum_core_us','window_start_us','window_end_us']];for(const [scope,stages] of [['full_trace',result.allStages],['window',result.stages]])for(const key of Object.keys(names)){const s=stages[key];rows.push([result.rank,scope,key,s.count,s.coreCount,s.start,s.end,s.count?s.envelopeUs:null,s.count?s.unionUs:null,s.sumCoreUs,result.window.start,result.window.end]);}csv('tracev2-stages.csv',rows);});
-  $('csv').addEventListener('click',()=>{if(!result||dirty)return;const rows=[['rank','kind','core','stage','count','start_us','end_us','window_us','active_us','bubble_us','bytes','gbps']];for(const c of result.cube.cores)rows.push([result.rank,'AIC',c.core,'GEMM1+GEMM2+SHARED_GMM',c.count,c.start,c.end,c.windowUs,c.activeUs,c.bubbleUs,null,null]);for(const c of result.cores)for(const stage of ['dispatch','combine']){const s=c[stage];rows.push([result.rank,'AIV1',c.core,stage,s.count,s.start,s.end,null,s.timeUs,null,s.bytes,s.gbps]);}csv('tracev2-cores.csv',rows);});
+  $('json').addEventListener('click',()=>{if(result&&!dirty)download('tracev2-analysis.json','application/json',JSON.stringify({...result,parserVersion:'2.8.0',exportedAt:new Date().toISOString(),units:{time:'us',bandwidth:'decimal GB/s',ratios:'0..1'},metricNotes:result.observation.hasIssue?'ISSUE spans are Scalar submission intervals, not hardware completion or utilization. Bandwidth fields are byte/submission-time proxies. Compute-only MFU with ISSUE is unavailable; observation-window MFU is not strict E2E MFU. See observation, timingMode and per-event timing.':'Communication coverage (cube.windowRatio) = global GEMM envelope including bubbles / selected window; active ratio is per-AIC union / configured AIC count / selected window. Trace spans can include internal waits.'},null,2));});
+  $('stageCsv').addEventListener('click',()=>{if(!result||dirty)return;const rows=[['rank','scope','stage','count','cores','start_us','end_us','envelope_us','wall_union_us','sum_core_us','window_start_us','window_end_us','timing_mode','issue_count']];for(const [scope,stages] of [['full_trace',result.allStages],['window',result.stages]])for(const key of Object.keys(names)){const s=stages[key];rows.push([result.rank,scope,key,s.count,s.coreCount,s.start,s.end,s.count?s.envelopeUs:null,s.count?s.unionUs:null,s.sumCoreUs,result.window.start,result.window.end,s.timingMode,s.issueCount]);}csv('tracev2-stages.csv',rows);});
+  $('csv').addEventListener('click',()=>{if(!result||dirty)return;const rows=[['rank','kind','core','stage','count','start_us','end_us','window_us','active_us','bubble_us','bytes','gbps','timing_mode','issue_count']];for(const c of result.cube.cores)rows.push([result.rank,'AIC',c.core,'GEMM1+GEMM2+SHARED_GMM',c.count,c.start,c.end,c.windowUs,c.activeUs,c.bubbleUs,null,null,c.timingMode,c.issueCount]);for(const c of result.cores)for(const stage of ['dispatch','combine']){const s=c[stage];rows.push([result.rank,'AIV1',c.core,stage,s.count,s.start,s.end,null,s.timeUs,null,s.bytes,s.gbps,s.timingMode,s.issueCount]);}csv('tracev2-cores.csv',rows);});
   $('legend').innerHTML=Object.entries(names).map(([k,v])=>`<span><i class="swatch" style="background:${colors[k]}"></i>${v}</span>`).join('');
   // 首次迁移旧配置时开启用户要求的FP8 scale；保留其他参数，之后尊重用户的开关选择。
   try{const saved=localStorage.getItem(storageKey);const settings=saved?JSON.parse(saved):{...JSON.parse(localStorage.getItem('megamoe.tracev2.settings.v1')||'{}'),includeScale:true};apply(settings);}catch(e){apply(A.defaults);message('本地配置恢复失败，已使用默认值：'+e.message,true);}

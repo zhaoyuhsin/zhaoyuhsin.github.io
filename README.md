@@ -25,6 +25,14 @@ node scripts/check-site.mjs
 
 脚本只复制明确列出的网页与依赖，不复制旧备份、测试产物、实际Trace或设备文件。首页的小实验复用Wiki内的计算引擎。网页配置保存在访问者浏览器中，Trace分析不上传文件。
 
+## Trace V2.8：被动 timer 兼容
+
+`megamoe/trace-v2.html` 仍是单文件离线页。支持 `*_ISSUE`（包括 wave 前缀）及明确的被动提交元数据；原事件名、Wave、专家与时间保留。WAIT/SYNC、BEGIN/END不计入GMM或通信任务，逐核流水和悬停仍可查看。
+
+ISSUE表示Scalar提交，不表示硬件完成。阶段与核时统计标明提交口径，通信GB/s仅为字节/提交区间折算；含ISSUE的GEMM不显示仅计算MFU。不自动扣QUANT或压缩被动时间轴。缺少完整端点时，MFU只标为观测窗口代理。旧格式继续保留原口径。
+
+回归检查：`node scripts/check-trace-issue.mjs`。可在命令后传本地EP32回归JSON路径；测试只读取，不复制或上传真实Trace。
+
 ## MegaMoE 性能实验室
 
 公开页面：`https://zhaoyuhsin.github.io/megamoe-performance/index.html#ds-converge`。
