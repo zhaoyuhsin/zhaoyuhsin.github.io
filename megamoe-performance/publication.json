@@ -1,8 +1,8 @@
 {
   "snapshot": "wave-gm-ep8-ep32-1025",
-  "source_html_sha256": "006585bd0b76f3b8b9f4a7a99de94c5fc19216f8cee7aa12e7fc35cf321ba0c0",
+  "source_html_sha256": "8512bbcc0da9bc769841e7ba0dce3dbdfdf0910fb206d9e90290a9d7d5120515",
   "source_results_sha256": "3f2eedd3a53b9ec3b9f0cfa46253883d8aacc91b186642b81543bb7e25451ed2",
-  "public_html_sha256": "0b75a388fe4d615d05bc247cd083b9029424448784623b95466d22cf29c86a18",
+  "public_html_sha256": "f637c952d33ed134c596c4ab8cf7d370c0bdf3ef001e37c9e6d24a1c85ac9c8e",
   "hidden_links": 10265,
   "hidden_paths": 81,
   "artifacts_published": false,
