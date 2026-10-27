@@ -1,10 +1,10 @@
 {
-  "snapshot": "wave-gm-ep8-ep32-1025",
-  "source_html_sha256": "d852ad4bae2e47a5204cca6b7b90ae16f247d7810bc40c79407e8d0b48f507ac",
-  "source_results_sha256": "3f2eedd3a53b9ec3b9f0cfa46253883d8aacc91b186642b81543bb7e25451ed2",
-  "public_html_sha256": "6137a4600d807748306fae99a1371ccd24e9e227e923dba87cb61aa765adb615",
+  "snapshot": "main-gm-slice-summary-1027",
+  "source_html_sha256": "8097d038fcb6ec68f17d845e80e3d3bdb655c6e9cc8b9a5d77b2b756171ffec9",
+  "source_results_sha256": "4e78c02efa2168817a5d054366e56d5245b052b2eb0771bca07209d74904964b",
+  "public_html_sha256": "19fe7e4b2683ea3c345ce010437da5323d0178f56459fa3a78af98a658b155fe",
   "hidden_links": 10265,
-  "hidden_paths": 81,
+  "hidden_paths": 83,
   "artifacts_published": false,
   "measurements_modified": false
 }
