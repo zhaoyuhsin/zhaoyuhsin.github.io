@@ -3,49 +3,95 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="YuHsin 的个人工作台：记录算子性能分析，探索计算与通信的平衡。MegaMoE 流水仿真、Trace 分析、MTE/UB 与 MFU 工具。">
+  <meta name="description" content="YuHsin 的技术导航：按推理框架、算子优化、工程工具、性能实验和下载归档，查找 DeepInfer 与 MegaMoE 的笔记、工具和资料。">
   <meta name="theme-color" content="#f6f7f2">
-  <title>YuHsin · 算子性能工作台</title>
+  <title>YuHsin · 技术笔记与工具导航</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/home.css">
+  <link rel="stylesheet" href="assets/navigation.css">
   <script src="assets/ratio-model.js" defer></script>
   <script src="assets/home.js" defer></script>
 </head>
-<body>
+<body class="directory-page">
   <a class="skip" href="#main">跳到正文</a>
-  <header class="site-header"><a class="brand" href="./"><span class="mark" aria-hidden="true">YH</span><span>YuHsin<span class="brand-note"> / 个人工作台</span></span></a><nav aria-label="主导航" style="flex-wrap:wrap"><a href="#deepinfer-notes">DeepInfer 笔记</a><a href="#tools">工具</a><a href="megamoe-performance/index.html#ds-converge">性能实验室</a><a href="downloads/">文件下载</a><a href="#notes">方法</a><a href="https://github.com/zhaoyuhsin" target="_blank" rel="noopener noreferrer">GitHub <span aria-hidden="true">↗</span></a></nav></header>
+  <header class="site-header">
+    <a class="brand" href="./"><span class="mark" aria-hidden="true">YH</span><span>YuHsin<span class="brand-note"> / 技术导航</span></span></a>
+    <nav aria-label="主导航"><a href="#deepinfer-notes">推理框架</a><a href="#optimization-notes">算子优化</a><a href="#tools">工程工具</a><a href="#experiments">性能实验</a><a href="#downloads">下载归档</a></nav>
+  </header>
   <main id="main">
-    <section class="hero">
-      <div class="hero-copy"><p class="eyebrow"><span class="status-dot"></span> OPERATOR PERFORMANCE / 算子性能</p><h1>让计算与通信，<br>在同一条时间轴上<br><em>被看见。</em></h1><p class="intro">你好，我是 YuHsin。这里记录我对算子性能的探索，也放着一组可以直接上手的工程工具：从理论推导，到逐核流水，再到实测验证。</p><div class="hero-actions"><a class="button primary" href="megamoe/index.html">打开 MegaMoE 仿真 <span aria-hidden="true">↗</span></a><a class="text-link" href="#tools">浏览工具箱 <span aria-hidden="true">↓</span></a></div><p class="hero-caption">参数可调 · 浏览器内计算 · Trace 文件本地分析</p></div>
-      <div class="live-panel"><div class="panel-label"><span>LIVE EXPERIMENT</span><span class="small-tag">DeepSeek V4 Pro</span></div><h2>计算和通信，谁更长？</h2><p class="panel-intro">改变算力或拓扑，看看同一份工作量如何移动。</p>
+    <section class="directory-hero" aria-labelledby="directory-title">
+      <p class="eyebrow"><span class="status-dot"></span> YuHsin 的技术工作台</p>
+      <h1 id="directory-title">笔记、工具与实验，<br><em>按主题找到入口。</em></h1>
+      <p class="directory-intro">从推理全流程到算子优化，再到实测与仿真。先选主题，再进入文章、工具或资料。</p>
+      <nav class="category-menu" aria-label="内容分类">
+        <a href="#deepinfer-notes"><span>01</span><strong>推理框架</strong><small>DeepInfer · 全流程 · 负载</small></a>
+        <a href="#optimization-notes"><span>02</span><strong>算子优化</strong><small>MegaMoE · 布局 · 流水</small></a>
+        <a href="#tools"><span>03</span><strong>工程工具</strong><small>仿真 · Trace · 计算器</small></a>
+        <a href="#experiments"><span>04</span><strong>性能实验</strong><small>结果 · 项目状态 · 方法</small></a>
+        <a href="#downloads"><span>05</span><strong>下载归档</strong><small>Markdown · 配图 · 离线版</small></a>
+      </nav>
+      <div class="recent-links"><span>最近更新</span><a href="downloads/deepinfer-trace-analysis-20261028.html">DeepInfer 时延拆解 ↗</a><a href="downloads/deepinfer-megamoe-workload-20261028.html">MegaMoE 负载分析 ↗</a></div>
+    </section>
+
+    <section class="directory-section" id="deepinfer-notes" aria-labelledby="inference-title">
+      <div class="directory-heading"><div><p class="eyebrow">01 / 推理框架</p><h2 id="inference-title">理解一次推理在做什么</h2></div><p>先看执行流程，再看实际负载。两篇均可在手机直接阅读。</p></div>
+      <div class="entry-grid">
+        <article class="entry-card"><span class="entry-type">在线文章 · DeepInfer</span><h3><a href="downloads/deepinfer-trace-analysis-20261028.html">算子全景与时延拆解</a></h3><p>从请求、prefill / decode、主模型与草稿，逐级拆到 stream、算子耗时和同步配合；每段附 Trace 定位线索。</p><div class="entry-footer"><a class="text-link" href="downloads/deepinfer-trace-analysis-20261028.html">阅读文章 ↗</a><a class="quiet-link" href="downloads/#deepinfer-reading">下载原文与配图</a></div></article>
+        <article class="entry-card"><span class="entry-type">在线文章 · MegaMoE 负载</span><h3><a href="downloads/deepinfer-megamoe-workload-20261028.html">实际 Shape 与生产负载分析</a></h3><p>核对真实输入输出、主模型与草稿的激活形状、占位执行和专家负载边界，并对照公开请求样本与官方部署方案。</p><div class="entry-footer"><a class="text-link" href="downloads/deepinfer-megamoe-workload-20261028.html">阅读文章 ↗</a><a class="quiet-link" href="downloads/#deepinfer-reading">下载原文与配图</a></div></article>
+      </div>
+    </section>
+
+    <section class="directory-section" id="optimization-notes" aria-labelledby="optimization-title">
+      <div class="directory-heading"><div><p class="eyebrow">02 / 算子优化</p><h2 id="optimization-title">从优化思路到实现约束</h2></div><p>先看优化全貌，再按数据路径深入到布局和流水。</p></div>
+      <div class="entry-grid three-columns">
+        <article class="entry-card"><span class="entry-type">在线文章 · 优化总览</span><h3><a href="downloads/megamoe-optimization-table-20261026.html">MegaMoE 20 项优化对照</a></h3><p>整理历史方案的机制、收益、适用 BS / EP 和当前状态，区分保留、演进及未合入的优化。</p><div class="entry-footer"><a class="text-link" href="downloads/megamoe-optimization-table-20261026.html">阅读对照表 ↗</a><a class="quiet-link" href="downloads/#optimization-table">下载 Markdown</a></div></article>
+        <article class="entry-card"><span class="entry-type offline-type">离线笔记 · UB 布局</span><h3><a href="downloads/#ub-bank-notes">UB bank 冲突与交错双槽</a></h3><p>解释 padding、预排 NZ 与 256B 交错双槽的关系，附地址公式、配图和历史消融结果。</p><div class="entry-footer"><a class="text-link" href="downloads/#ub-bank-notes">查看资料与下载 ↓</a><span class="entry-hint">Markdown + 配图</span></div></article>
+        <article class="entry-card"><span class="entry-type offline-type">离线笔记 · 反量化与布局</span><h3><a href="downloads/files/megamoe-dequant-layout-notes-20261023.zip" download>MegaMoE 反量化与数据布局</a></h3><p>沿 A8W4 反量化与矩阵分块，梳理 GM / UB / L1 / L0 布局、完成事件和数据依赖。</p><div class="entry-footer"><a class="text-link" href="downloads/files/megamoe-dequant-layout-notes-20261023.zip" download>下载笔记与配图 ↓</a><span class="entry-hint">ZIP 离线包</span></div></article>
+      </div>
+    </section>
+
+    <section class="directory-section" id="tools" aria-labelledby="tools-title">
+      <div class="directory-heading"><div><p class="eyebrow">03 / 工程工具</p><h2 id="tools-title">按要解决的问题选工具</h2></div><p>以下均为浏览器工具；Trace 文件在本地处理。</p></div>
+      <div class="entry-grid three-columns">
+        <article class="entry-card"><span class="entry-type tool-type">交互工具 · 流水仿真</span><h3><a href="megamoe/index.html">MegaMoE 流水仿真</a></h3><p>调整模型、EP、Tile、拓扑与带宽，查看五阶段流水、逐核排布和 AIC 活跃比例。</p><div class="entry-footer"><a class="text-link" href="megamoe/index.html">打开仿真 ↗</a><span class="entry-hint">POD / PC16 / FullMesh</span></div></article>
+        <article class="entry-card"><span class="entry-type tool-type">交互工具 · 实测解析</span><h3><a href="megamoe/trace-v2.html">Trace 流水分析器</a></h3><p>导入 JSON / TXT，核对阶段耗时、核忙闲、MFU，以及 Dispatch / Combine 的带宽口径。</p><div class="entry-footer"><a class="text-link" href="megamoe/trace-v2.html">分析一份 Trace ↗</a><span class="entry-hint">文件不上传</span></div></article>
+        <article class="entry-card"><span class="entry-type tool-type">交互工具 · 理论建模</span><h3><a href="megamoe/wiki.html#ratio-lab">计算 / 通信比例</a></h3><p>从公式推导到多模型对比，调整精度与效率，反推达到平衡所需的通信带宽。</p><div class="entry-footer"><a class="text-link" href="megamoe/wiki.html#ratio-lab">打开公式 Wiki ↗</a><a class="quiet-link" href="megamoe/wiki-standalone.html" download>离线单文件</a></div></article>
+        <article class="entry-card"><span class="entry-type tool-type">交互工具 · 搬运与容量</span><h3><a href="megamoe/memory.html">MTE / UB 资源账本</a></h3><p>沿 AIC、AIV0 和 AIV1 的数据路径，理解搬运字节、缓冲容量、共享带宽与反压。</p><div class="entry-footer"><a class="text-link" href="megamoe/memory.html">查看资源账本 ↗</a></div></article>
+        <article class="entry-card"><span class="entry-type tool-type">交互工具 · 性能计算</span><h3><a href="megamoe/mfu-standalone.html">MFU 与方法对比</a></h3><p>用统一的 FFN 工作量和芯片峰值，比较不同 EP、shape 与方法的计算效率。</p><div class="entry-footer"><a class="text-link" href="megamoe/mfu-standalone.html">打开计算器 ↗</a><a class="quiet-link" href="megamoe/mfu-standalone.html" download>离线单文件</a></div></article>
+        <article class="entry-card"><span class="entry-type tool-type">交互工具 · 硬件参考</span><h3><a href="megamoe/benchmark.html">硬件基准与参数</a></h3><p>查看硬件基准入口，为带宽、算力和资源账本的比较提供参考。</p><div class="entry-footer"><a class="text-link" href="megamoe/benchmark.html">查看硬件基准 ↗</a></div></article>
+      </div>
+    </section>
+
+    <section class="directory-section" id="experiments" aria-labelledby="experiments-title">
+      <div class="directory-heading"><div><p class="eyebrow">04 / 性能实验</p><h2 id="experiments-title">结果、进展与调优方法</h2></div><p>统一进入性能实验室，按目的选择界面。</p></div>
+      <div class="entry-grid three-columns">
+        <article class="entry-card"><span class="entry-type">实验记录 · 性能结果</span><h3><a href="megamoe-performance/index.html#latest-summary">MegaMoE 性能对比</a></h3><p>查看公开性能汇总、历史曲线与测量口径；结果随 shape、EP 和版本分别记录。</p><div class="entry-footer"><a class="text-link" href="megamoe-performance/index.html#latest-summary">查看性能结果 ↗</a><a class="quiet-link" href="megamoe-performance/index.html#ds-converge">历史迁移记录</a></div></article>
+        <article class="entry-card"><span class="entry-type">实验记录 · 项目进展</span><h3><a href="megamoe-performance/index.html#project-status">项目状态与待办</a></h3><p>了解当前目标、已完成事项、剩余验证与注意事项。</p><div class="entry-footer"><a class="text-link" href="megamoe-performance/index.html#project-status">查看项目状态 ↗</a></div></article>
+        <article class="entry-card"><span class="entry-type">方法文档 · 调优 SKILL</span><h3><a href="megamoe-performance/index.html#tuning-skill">算子调优方法</a></h3><p>从可复现实验、对照分析到资源与同步检查，查阅随实验维护的调优方法。</p><div class="entry-footer"><a class="text-link" href="megamoe-performance/index.html#tuning-skill">阅读调优方法 ↗</a></div></article>
+      </div>
+      <details class="experiment-fold"><summary>小实验：计算和通信，谁更长？<span>调整精度与拓扑，快速查看理论比例</span></summary>
+        <div class="live-panel"><div class="panel-label"><span>LIVE EXPERIMENT</span><span class="small-tag">DeepSeek V4 Pro</span></div><h2>计算和通信，谁更长？</h2><p class="panel-intro">改变算力或拓扑，看看同一份工作量如何移动。</p>
         <div class="experiment-controls"><fieldset><legend>GMM 运算精度</legend><div class="segmented"><button type="button" data-bits="8" aria-pressed="true">8 bit</button><button type="button" data-bits="4" aria-pressed="false">4 bit · 2×峰值</button></div></fieldset><label>拓扑<select id="home-topology"><option value="140">POD · 140 GB/s</option><option value="230">PC16 · 230 GB/s</option></select></label></div>
         <div class="live-ratio"><span>计算 / 通信服务时间</span><div><strong id="home-ratio">—</strong><span class="ratio-unit">ρ</span></div><p id="home-relation" aria-live="polite">正在读取模型…</p></div>
         <div class="balance-track" role="img" aria-label="计算时间与通信时间的相对长度"><div class="track-row"><span>计算</span><div class="track"><i id="home-compute-bar"></i></div><b id="home-compute-label">—</b></div><div class="track-row"><span>通信</span><div class="track"><i id="home-comm-bar"></i></div><b id="home-comm-label">1.00</b></div></div>
         <div class="target-row"><span>ρ=1 所需单卡 Clos 带宽</span><strong id="home-target">—</strong></div><p class="experiment-note">EP64 · I=3072 · Dispatch 4bit / Combine 16bit<br>32 Cube，FP8峰值865 TFLOPS，计算与通信效率100%。4bit峰值按2倍假设；未计共享专家。服务量不等于完整流水时延。</p><a class="panel-link" href="megamoe/wiki.html#ratio-lab">打开完整模型对比与公式 <span aria-hidden="true">↗</span></a><noscript><p>此小实验需要JavaScript；仍可通过下方链接浏览全部工具。</p></noscript>
       </div>
+      </details>
     </section>
 
-    <section class="tool-section" id="deepinfer-notes" aria-labelledby="deepinfer-notes-title">
-      <div class="section-heading"><div><p class="eyebrow">DEEPINFER / 推理学习笔记</p><h2 id="deepinfer-notes-title">从真实 Trace 理解推理。</h2></div><p>2026-10-28 · 手机可直接阅读，附章节目录与配图。</p></div>
-      <div class="tool-grid">
-        <article class="tool"><div class="tool-top"><span class="tool-index">01 / TRACE &amp; LATENCY</span><span aria-hidden="true">μs</span></div><h3><a href="downloads/deepinfer-trace-analysis-20261028.html">算子全景与时延拆解</a></h3><p>从请求、prefill / decode、主模型与草稿模型，逐级拆到 stream、算子耗时和同步配合；每段给出 Trace 定位线索。</p><div class="tool-bottom"><a class="text-link" href="downloads/deepinfer-trace-analysis-20261028.html">阅读时延拆解 ↗</a><a class="quiet-link" href="downloads/#deepinfer-reading">下载 Markdown 与配图</a></div></article>
-        <article class="tool"><div class="tool-top"><span class="tool-index">02 / MEGAMOE WORKLOAD</span><span aria-hidden="true">▤</span></div><h3><a href="downloads/deepinfer-megamoe-workload-20261028.html">MegaMoE 负载与 Shape 分析</a></h3><p>核对真实输入输出、主模型与草稿的激活形状、占位执行和专家负载边界，并对照公开生产请求样本与官方部署方案。</p><div class="tool-bottom"><a class="text-link" href="downloads/deepinfer-megamoe-workload-20261028.html">阅读负载分析 ↗</a><a class="quiet-link" href="downloads/#deepinfer-reading">下载 Markdown 与配图</a></div></article>
+    <section class="directory-section" id="downloads" aria-labelledby="downloads-title">
+      <div class="directory-heading"><div><p class="eyebrow">05 / 下载归档</p><h2 id="downloads-title">带走原文与配图</h2></div><a class="text-link" href="downloads/">打开完整文件页 ↗</a></div>
+      <div class="archive-list">
+        <div class="archive-item"><div><h3>DeepInfer 时延拆解与负载分析</h3><p>两篇 Markdown + 7 张 PNG，适合离线对照阅读。</p></div><a class="archive-download" href="downloads/files/deepinfer-trace-and-workload-notes-20261028.zip" download>下载 ZIP ↓</a></div>
+        <div class="archive-item"><div><h3>MegaMoE 20 项优化对照</h3><p>优化机制、历史收益、适用条件与方案状态。</p></div><a class="archive-download" href="downloads/files/megamoe-optimization-table-20261026.zip" download>下载 ZIP ↓</a></div>
+        <div class="archive-item"><div><h3>UB bank 冲突与交错双槽</h3><p>Markdown + 4 张 PNG，含地址公式与消融记录。</p></div><a class="archive-download" href="downloads/files/megamoe-ub-bank-notes-20261023.zip" download>下载 ZIP ↓</a></div>
+        <div class="archive-item"><div><h3>MegaMoE 反量化与数据布局</h3><p>Markdown + 配图，含数据布局与流水约束说明。</p></div><a class="archive-download" href="downloads/files/megamoe-dequant-layout-notes-20261023.zip" download>下载 ZIP ↓</a></div>
       </div>
-    </section>
-
-    <section class="tool-section" id="tools"><div class="section-heading"><div><p class="eyebrow">THE WORKBENCH</p><h2>把问题放进工具里。</h2></div><p>不需要安装开发环境，打开页面即可调整参数。</p></div>
-      <a class="featured-tool" href="megamoe/index.html"><div><span class="tool-index">01 / 核心工具</span><h3>MegaMoE 流水仿真</h3><p>设置模型、EP、Tile策略、硬件与带宽，查看五阶段流水、逐核排布，以及AIC活跃比例。</p><div class="tags"><span>POD / PC16 / FullMesh</span><span>五阶段与逐核流水</span><span>Wave / CATLASS</span></div></div><span class="featured-arrow" aria-hidden="true">↗</span></a>
-      <div class="tool-grid">
-        <article class="tool"><div class="tool-top"><span class="tool-index">PERFORMANCE LAB</span><span aria-hidden="true">μs</span></div><h3><a href="megamoe-performance/index.html#ds-converge">MegaMoE 性能实验室</a></h3><p>查看我们与布局优化 DS 的实测对比、逐级迁移实验、项目进展与调优 SKILL。公开性能快照，不公开原始服务器附件。</p><div class="tool-bottom"><a class="text-link" href="megamoe-performance/index.html#ds-converge">查看最新迁移结果 ↗</a><a class="quiet-link" href="megamoe-performance/index.html#project-status">项目状态</a></div></article>
-        <article class="tool"><div class="tool-top"><span class="tool-index">02 / THEORY</span><span aria-hidden="true">ρ</span></div><h3><a href="megamoe/wiki.html#ratio-lab">计算 / 通信比例</a></h3><p>从公式约分到多模型对比，调整精度和效率，反推达到平衡所需的通信带宽。</p><div class="tool-bottom"><a class="text-link" href="megamoe/wiki.html#ratio-lab">进入公式 Wiki ↗</a><a class="quiet-link" href="megamoe/wiki-standalone.html" download>下载单文件</a></div></article>
-        <article class="tool"><div class="tool-top"><span class="tool-index">03 / MEASUREMENT</span><span aria-hidden="true">↔</span></div><h3><a href="megamoe/trace-v2.html">实测 Trace 分析</a></h3><p>导入JSON或TXT流水，核对阶段耗时、核忙闲、MFU与Dispatch / Combine带宽。</p><div class="tool-bottom"><a class="text-link" href="megamoe/trace-v2.html">分析一份流水 ↗</a><span class="tool-footnote">文件在浏览器本地处理</span></div></article>
-        <article class="tool"><div class="tool-top"><span class="tool-index">04 / DATA MOVEMENT</span><span aria-hidden="true">▤</span></div><h3><a href="megamoe/memory.html">MTE / UB 资源账本</a></h3><p>沿着AIC、AIV0和AIV1的数据路径，理解搬运字节、缓冲容量、共享带宽与反压。</p><div class="tool-bottom"><a class="text-link" href="megamoe/memory.html">查看数据流与容量 ↗</a><a class="quiet-link" href="megamoe/benchmark.html">硬件基准</a></div></article>
-        <article class="tool"><div class="tool-top"><span class="tool-index">05 / COMPARISON</span><span aria-hidden="true">%</span></div><h3><a href="megamoe/mfu-standalone.html">MFU 与方法对比</a></h3><p>输入端到端耗时，用统一的FFN计算量和芯片峰值比较不同EP及方法的性能。</p><div class="tool-bottom"><a class="text-link" href="megamoe/mfu-standalone.html">打开计算器 ↗</a><a class="quiet-link" href="megamoe/mfu-standalone.html" download>下载单文件</a></div></article>
-      </div>
+      <p class="archive-note">在线单文件工具的离线版，也可从上方“工程工具”卡片下载。</p>
     </section>
 
     <section class="notes-section" id="notes"><div><p class="eyebrow">A WAY OF THINKING</p><h2>性能结论，<br>从口径一致开始。</h2><p>我更关心一条结论是怎样得到的，以及换一个shape之后，它是否仍然成立。</p><a class="text-link" href="megamoe/wiki.html">阅读推导与建模边界 ↗</a></div><ol class="principles"><li><span>01</span><div><h3>先分清服务量与时间窗口</h3><p>计算和通信可以重叠；阶段包络不能直接相加，带宽服务量也不等于暴露在关键路径上的时间。</p></div></li><li><span>02</span><div><h3>用对分母，再讨论利用率</h3><p>MFU、逐核活跃比例和Profiler中的Cube指标各有口径，需要明确峰值、工作量和测量窗口。</p></div></li><li><span>03</span><div><h3>让仿真回到实测</h3><p>用相同配置的Tile与通信数据校准模型，再用端到端耗时验证优化；没有覆盖的成本，写在结果旁边。</p></div></li></ol></section>
   </main>
-  <footer class="site-footer"><a class="brand footer-brand" href="./"><span class="mark" aria-hidden="true">YH</span>YuHsin</a><span>计算 · 通信 · 可复现的工程实验</span><a href="https://github.com/zhaoyuhsin" target="_blank" rel="noopener noreferrer">GitHub ↗</a></footer>
+  <footer class="site-footer"><a class="brand footer-brand" href="./"><span class="mark" aria-hidden="true">YH</span>YuHsin</a><span>技术笔记 · 工程工具 · 可复现的实验</span><div class="footer-links"><a href="#notes">阅读方法</a><a href="downloads/">文件下载</a><a href="https://github.com/zhaoyuhsin" target="_blank" rel="noopener noreferrer">GitHub ↗</a></div></footer>
 </body>
 </html>
