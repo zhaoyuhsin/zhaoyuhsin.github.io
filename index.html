@@ -13,7 +13,7 @@
 </head>
 <body>
   <a class="skip" href="#main">跳到正文</a>
-  <header class="site-header"><a class="brand" href="./"><span class="mark" aria-hidden="true">YH</span><span>YuHsin<span class="brand-note"> / 个人工作台</span></span></a><nav aria-label="主导航" style="flex-wrap:wrap"><a href="#tools">工具</a><a href="megamoe-performance/index.html#ds-converge">性能实验室</a><a href="downloads/">文件下载</a><a href="#notes">方法</a><a href="https://github.com/zhaoyuhsin" target="_blank" rel="noopener noreferrer">GitHub <span aria-hidden="true">↗</span></a></nav></header>
+  <header class="site-header"><a class="brand" href="./"><span class="mark" aria-hidden="true">YH</span><span>YuHsin<span class="brand-note"> / 个人工作台</span></span></a><nav aria-label="主导航" style="flex-wrap:wrap"><a href="#deepinfer-notes">DeepInfer 笔记</a><a href="#tools">工具</a><a href="megamoe-performance/index.html#ds-converge">性能实验室</a><a href="downloads/">文件下载</a><a href="#notes">方法</a><a href="https://github.com/zhaoyuhsin" target="_blank" rel="noopener noreferrer">GitHub <span aria-hidden="true">↗</span></a></nav></header>
   <main id="main">
     <section class="hero">
       <div class="hero-copy"><p class="eyebrow"><span class="status-dot"></span> OPERATOR PERFORMANCE / 算子性能</p><h1>让计算与通信，<br>在同一条时间轴上<br><em>被看见。</em></h1><p class="intro">你好，我是 YuHsin。这里记录我对算子性能的探索，也放着一组可以直接上手的工程工具：从理论推导，到逐核流水，再到实测验证。</p><div class="hero-actions"><a class="button primary" href="megamoe/index.html">打开 MegaMoE 仿真 <span aria-hidden="true">↗</span></a><a class="text-link" href="#tools">浏览工具箱 <span aria-hidden="true">↓</span></a></div><p class="hero-caption">参数可调 · 浏览器内计算 · Trace 文件本地分析</p></div>
@@ -22,6 +22,14 @@
         <div class="live-ratio"><span>计算 / 通信服务时间</span><div><strong id="home-ratio">—</strong><span class="ratio-unit">ρ</span></div><p id="home-relation" aria-live="polite">正在读取模型…</p></div>
         <div class="balance-track" role="img" aria-label="计算时间与通信时间的相对长度"><div class="track-row"><span>计算</span><div class="track"><i id="home-compute-bar"></i></div><b id="home-compute-label">—</b></div><div class="track-row"><span>通信</span><div class="track"><i id="home-comm-bar"></i></div><b id="home-comm-label">1.00</b></div></div>
         <div class="target-row"><span>ρ=1 所需单卡 Clos 带宽</span><strong id="home-target">—</strong></div><p class="experiment-note">EP64 · I=3072 · Dispatch 4bit / Combine 16bit<br>32 Cube，FP8峰值865 TFLOPS，计算与通信效率100%。4bit峰值按2倍假设；未计共享专家。服务量不等于完整流水时延。</p><a class="panel-link" href="megamoe/wiki.html#ratio-lab">打开完整模型对比与公式 <span aria-hidden="true">↗</span></a><noscript><p>此小实验需要JavaScript；仍可通过下方链接浏览全部工具。</p></noscript>
+      </div>
+    </section>
+
+    <section class="tool-section" id="deepinfer-notes" aria-labelledby="deepinfer-notes-title">
+      <div class="section-heading"><div><p class="eyebrow">DEEPINFER / 推理学习笔记</p><h2 id="deepinfer-notes-title">从真实 Trace 理解推理。</h2></div><p>2026-10-28 · 手机可直接阅读，附章节目录与配图。</p></div>
+      <div class="tool-grid">
+        <article class="tool"><div class="tool-top"><span class="tool-index">01 / TRACE &amp; LATENCY</span><span aria-hidden="true">μs</span></div><h3><a href="downloads/deepinfer-trace-analysis-20261028.html">算子全景与时延拆解</a></h3><p>从请求、prefill / decode、主模型与草稿模型，逐级拆到 stream、算子耗时和同步配合；每段给出 Trace 定位线索。</p><div class="tool-bottom"><a class="text-link" href="downloads/deepinfer-trace-analysis-20261028.html">阅读时延拆解 ↗</a><a class="quiet-link" href="downloads/#deepinfer-reading">下载 Markdown 与配图</a></div></article>
+        <article class="tool"><div class="tool-top"><span class="tool-index">02 / MEGAMOE WORKLOAD</span><span aria-hidden="true">▤</span></div><h3><a href="downloads/deepinfer-megamoe-workload-20261028.html">MegaMoE 负载与 Shape 分析</a></h3><p>核对真实输入输出、主模型与草稿的激活形状、占位执行和专家负载边界，并对照公开生产请求样本与官方部署方案。</p><div class="tool-bottom"><a class="text-link" href="downloads/deepinfer-megamoe-workload-20261028.html">阅读负载分析 ↗</a><a class="quiet-link" href="downloads/#deepinfer-reading">下载 Markdown 与配图</a></div></article>
       </div>
     </section>
 
