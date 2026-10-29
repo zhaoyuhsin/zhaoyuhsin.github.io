@@ -1,0 +1,668 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="从请求调度到token生成，对照DeepInfer trace学习主模型、草稿模型与逐算子shape和耗时。"><title>四个mhc_post间区间：逐算子读懂一次主模型执行 · YuHsin</title><link rel="icon" href="../assets/favicon.svg" type="image/svg+xml"><style>*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:20px}body{margin:0;background:#fafbf8;color:#24352d;font:17px/1.85 system-ui,"Microsoft YaHei",sans-serif}a{color:#08766b;text-underline-offset:3px}a:hover{color:#064e46}body>header,main,body>footer{max-width:1140px;margin:auto;padding:24px}body>header{border-bottom:1px solid #dce3db}nav{display:flex;flex-wrap:wrap;gap:12px 22px;font-size:15px}.eyebrow{font-size:13px;letter-spacing:.08em;color:#526b5d}h1{font-size:clamp(28px,4vw,42px);line-height:1.35;margin:20px 0}h2{font-size:26px;line-height:1.5;margin-top:54px;padding-top:16px;border-top:1px solid #dce3db}h3{font-size:21px;line-height:1.55;margin-top:34px}p,li{overflow-wrap:anywhere}main>p{max-width:80ch}code{font:.88em/1.6 Consolas,monospace;overflow-wrap:anywhere}pre{padding:16px;background:#edf2ee;overflow:auto;border-radius:7px}pre code{white-space:pre-wrap;overflow-wrap:anywhere}.table-scroll{max-width:100%;overflow:auto;margin:20px 0}table{border-collapse:collapse;width:100%;font-size:15px}th,td{border-bottom:1px solid #dce3db;padding:10px 12px;text-align:left;vertical-align:top;min-width:90px}th{background:#edf3ed}td code{white-space:normal;word-break:break-word}table td:nth-child(2){max-width:470px}img{display:block;max-width:100%;height:auto;margin:26px auto}.image-caption{font-size:14px;color:#526b5d;text-align:center}.reading-tools{padding:16px 0;display:flex;flex-wrap:wrap;gap:14px}.reading-tools a{font-size:15px}.toc-box{padding:16px 20px;background:#edf3ed;margin:20px 0;border-radius:8px}summary{cursor:pointer;font-weight:600}.toc ul{padding-left:24px}.kernel-symbol{margin:18px 0;padding:12px 16px;border-left:3px solid #a9c8b8;background:#f0f4ef}.kernel-symbol summary{font-size:15px}.kernel-symbol pre{padding:12px 0;background:transparent}.scope-note{color:#526b5d;font-size:14px}.flow-panel{margin:22px 0}.flow-panel>summary{padding:14px 16px;background:#edf3ed;border-radius:7px}.flow-hint{font-size:14px;color:#526b5d}.operator-flow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px 22px;padding:0;list-style:none}.operator-flow>li{position:relative;min-width:0;padding:16px;border:1px solid #d4dfd7;border-radius:8px;background:var(--step-fill)}.operator-flow h4{margin:0;font-size:18px;line-height:1.5}.operator-flow .task{margin:5px 0 12px;font-size:14px;color:#496052}.operator-flow dl{margin:0}.operator-flow dt{font-size:13px;color:#496052;margin-top:8px}.operator-flow dd{margin:0;line-height:1.65}.operator-flow dd code{font-size:14px;white-space:pre-wrap}.node-symbol{margin-top:14px;font-size:13px}.node-symbol code{display:block;margin-top:8px;font-size:12px;overflow-wrap:anywhere}.operator-flow>li:not(:last-child)::after{content:"→";position:absolute;right:-19px;top:45%;color:#526b5d}.operator-flow>li:nth-child(3n):not(:last-child)::after{content:"↙";right:10px;top:auto;bottom:-27px}.image-original{font-size:14px}body>footer{margin-top:40px;border-top:1px solid #dce3db;font-size:14px;color:#526b5d}tr[id]{scroll-margin-top:24px}tr:target{background:#fff0ce}@media(max-width:940px){.operator-flow{grid-template-columns:repeat(2,minmax(0,1fr))}.operator-flow>li:nth-child(n):not(:last-child)::after{content:"→";right:-19px;top:45%;bottom:auto}.operator-flow>li:nth-child(2n):not(:last-child)::after{content:"↙";right:10px;top:auto;bottom:-27px}}@media(max-width:620px){body{font-size:17px}body>header,main,body>footer{padding:18px}h2{font-size:24px;margin-top:40px}.operator-flow{grid-template-columns:minmax(0,1fr)}.operator-flow>li:nth-child(n):not(:last-child)::after{content:"↓";right:50%;top:auto;bottom:-27px}.operator-flow dd code{font-size:15px}th,td{padding:8px;min-width:90px}.table-scroll table{min-width:620px}.reading-tools{gap:10px 16px}h3{font-size:20px}}@media print{body{background:#fff}.flow-panel{display:block}.operator-flow{grid-template-columns:repeat(2,minmax(0,1fr))}.operator-flow>li{break-inside:avoid}.reading-tools,body>header{display:none}}</style></head><body id="top"><header><nav aria-label="站点导航"><a href="../">YuHsin 首页</a><a href="./#deepinfer-token-trace">DeepInfer资料</a><a href="files/deepinfer-token-trace-20261029/四段mhc_post之间-逐算子读Trace.md" download>下载本文Markdown</a><a href="files/deepinfer-token-trace-20261029.zip" download>下载完整阅读包</a></nav></header><main><p class="eyebrow">DEEPINFER / TRACE STUDY · 2026-10-29</p><h1>四个mhc_post间区间：逐算子读懂一次主模型执行</h1><div class="reading-tools" aria-label="阅读入口"><a href="deepinfer-token-trace-20261029.html">返回主文</a></div><details class="toc-box"><summary>展开章节目录</summary><div class="toc">
+<ul>
+<li><a href="#就选截图附近这四段">就选截图附近这四段</a></li>
+<li><a href="#①-写回l00-attention再做l00-moe">① 写回L00 Attention，再做L00 MoE</a></li>
+<li><a href="#②-写回l00-moe再做l01-engramattention">② 写回L00 MoE，再做L01 Engram＋Attention</a></li>
+<li><a href="#③-写回l01-attention再做l01-moe">③ 写回L01 Attention，再做L01 MoE</a></li>
+<li><a href="#④-写回l01-moe再做l02压缩索引attention">④ 写回L01 MoE，再做L02压缩/索引＋Attention</a></li>
+<li><a href="#为什么同名算子附近的顺序不同">为什么同名算子附近的顺序不同</a></li>
+<li><a href="#只做一次小核对">只做一次小核对</a></li>
+</ul>
+</div>
+</details>
+<p>先纠正一个容易误读的地方：<strong>相邻两次 <code>mhc_post_fwd_asc_kernel</code> 之间，通常只推进一个子层，不是完整一层。</strong> 每层有Attention和MoE两个子层，所以post间区间会交替出现两种骨架；Engram、KV压缩和稀疏索引又会让部分Attention区间变长或多出算子。</p>
+<h2 id="就选截图附近这四段">就选截图附近这四段</h2>
+<p>下面以DP0第一条post为起点： <strong>Stream169 / Model ID 58 / Task ID 33165 / 2.825 μs</strong>，下面选择以它为起点的四个连续区间。核对时同时匹配这四项；查看器的光标读数不一定是事件起点。</p>
+<p>这段属于71次清单里的 <strong>#01 / Z01：<code>deepinfer:launch_forward_N1_B1</code></strong>，是占位主模型执行。可以学习主模型路径和层间差异，但其单行占位负载的耗时不能代表真实双请求decode。</p>
+<p>打开 <code>continuous-dp0.json</code>，CPU线程698287，NPU进程715046336。在Stream169定位Task33165；其起点为 <strong>DP0 scope +6.174221 ms</strong>。下表+ms仍以 <code>capture:real_requests_prefill_through_completion</code> 起点为零；如果查看器原点不同，先用Task、Stream和Duration找到它，再把这个post的起点当作局部t=0。不要根据光标时间倒推统一偏移。</p>
+<p><a href="files/deepinfer-token-trace-20261029/guide-assets/mhc-four-segments.png" target="_blank" rel="noopener"><img alt="四段post间区间的实测顺序和宽度" src="files/deepinfer-token-trace-20261029/guide-assets/mhc-four-segments.png" / loading="lazy" decoding="async"></a><span class="image-caption">点图查看原图</span></p>
+<p>每段都包含左边的post，不包含右边下一条post。左边post写回的是<strong>上一子层</strong>，接着才准备、运行<strong>当前子层</strong>：</p>
+<pre><code class="language-text">post写回L00 Attention → L00 MoE
+post写回L00 MoE      → L01 Engram + Attention
+post写回L01 Attention → L01 MoE
+post写回L01 MoE      → L02 KV压缩/索引 + Attention
+</code></pre>
+<p>因此，下面四段合计是两次MoE、两次Attention，跨L00～L02，不是四次完整模型推理，也不是四个完整层。</p>
+<div class="table-scroll" role="region" aria-label="可横向滑动的数据表" tabindex="0"><table>
+<thead>
+<tr>
+<th>段</th>
+<th>+起止时间 ms</th>
+<th>局部t范围 μs</th>
+<th style="text-align: right;">区间长度 μs</th>
+<th style="text-align: right;">kernel条数</th>
+<th style="text-align: right;">kernel累计 μs</th>
+<th style="text-align: right;">空隙 μs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>6.174221～6.242602</td>
+<td>0.000～68.381</td>
+<td style="text-align: right;">68.381</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">67.683</td>
+<td style="text-align: right;">0.698</td>
+</tr>
+<tr>
+<td>2</td>
+<td>6.242602～6.409839</td>
+<td>68.381～235.618</td>
+<td style="text-align: right;">167.237</td>
+<td style="text-align: right;">21</td>
+<td style="text-align: right;">166.775</td>
+<td style="text-align: right;">0.462</td>
+</tr>
+<tr>
+<td>3</td>
+<td>6.409839～6.480348</td>
+<td>235.618～306.127</td>
+<td style="text-align: right;">70.509</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">69.811</td>
+<td style="text-align: right;">0.698</td>
+</tr>
+<tr>
+<td>4</td>
+<td>6.480348～6.636268</td>
+<td>306.127～462.047</td>
+<td style="text-align: right;">155.920</td>
+<td style="text-align: right;">32</td>
+<td style="text-align: right;">155.215</td>
+<td style="text-align: right;">0.705</td>
+</tr>
+</tbody>
+</table></div>
+<p>空隙=区间长度−本Stream所列kernel的Duration之和；只描述这里的时间覆盖，不将空隙归因为某种等待。以下表格逐行按实际执行顺序排列，完整符号可复制搜索，所有事件都在Stream169。</p>
+<h2 id="①-写回l00-attention再做l00-moe">① 写回L00 Attention，再做L00 MoE</h2>
+<p>先把L00的Attention输出写回四路主干，再读出一路，算MoE所需混合系数和输入Norm；Gate投影到384个逻辑专家并选Top6，MegaMoE执行专家计算。下一条post才负责写回这个MoE输出。</p>
+<p>起点post Task <strong>33165</strong>，终点是下一条post Task <strong>33176</strong> 的开始；后者不计入本表。</p>
+<div class="table-scroll" role="region" aria-label="可横向滑动的数据表" tabindex="0"><table>
+<thead>
+<tr>
+<th style="text-align: right;">Task ID</th>
+<th>完整算子名</th>
+<th>+起止时间 ms</th>
+<th style="text-align: right;">耗时 μs</th>
+<th>在做什么</th>
+</tr>
+</thead>
+<tbody>
+<tr id="task-33165">
+<td style="text-align: right;">33165</td>
+<td><code>mhc_post_fwd_asc_kernel</code></td>
+<td>6.174221～6.177046</td>
+<td style="text-align: right;">2.825</td>
+<td>将L00 Attention的输出写回四路主干；开启本次观察的第一段</td>
+</tr>
+<tr id="task-33166">
+<td style="text-align: right;">33166</td>
+<td><code>mhc_pre_apply_mix_fwd_asc_kernel</code></td>
+<td>6.177068～6.179545</td>
+<td style="text-align: right;">2.477</td>
+<td>用传入的混合系数，把四路主干读成一路[1,5120]，供当前子层使用</td>
+</tr>
+<tr id="task-33167">
+<td style="text-align: right;">33167</td>
+<td><code>tf32_hc_prenorm_gemm_kernel_kernel</code></td>
+<td>6.179567～6.187862</td>
+<td style="text-align: right;">8.295</td>
+<td>从四路主干计算混合系数的中间结果；不是Attention投影</td>
+</tr>
+<tr id="task-33168">
+<td style="text-align: right;">33168</td>
+<td><code>mhc_reduce_partials_and_rmsnorm_fwd_asc_kernel</code></td>
+<td>6.187884～6.190268</td>
+<td style="text-align: right;">2.384</td>
+<td>合并系数计算的分块结果，并结合RMS归一化</td>
+</tr>
+<tr id="task-33169">
+<td style="text-align: right;">33169</td>
+<td><code>mhc_pre_split_mixes_fwd_simd_mhc4_asc_kernel</code></td>
+<td>6.190290～6.192865</td>
+<td style="text-align: right;">2.575</td>
+<td>拆出读出、写回、残差路间混合等系数，并应用对应参数</td>
+</tr>
+<tr id="task-33170">
+<td style="text-align: right;">33170</td>
+<td><code>mhc_sinkhorn_fwd_asc_kernel</code></td>
+<td>6.192887～6.196694</td>
+<td style="text-align: right;">3.807</td>
+<td>迭代归一化4×4残差混合矩阵，约束四路之间的混合</td>
+</tr>
+<tr id="task-33171">
+<td style="text-align: right;">33171</td>
+<td><code>_norm_kernel</code></td>
+<td>6.196716～6.200749</td>
+<td style="text-align: right;">4.033</td>
+<td>对子层的一路输入做RMSNorm，按配置准备后续计算的数据格式</td>
+</tr>
+<tr id="task-33172">
+<td style="text-align: right;">33172</td>
+<td><code>_ZN9deep_gemm14bf16_gemm_implILNS_5MajorE0ELS1_0ELj0ELj384ELj5120ELj16ELj16ELj2048ELj16ELj16ELj1024ELj5ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0EfNS_8epilogue9operators8IdentityELj256ELb1ELb1ELb0EEEvNS_6gm_ptrIu6__bf16XT_EEENS8_Iu6__bf16XT0_EEENS8_IT19_LS1_0EEEjjjPijNS5_4ArgsE</code></td>
+<td>6.200772～6.204837</td>
+<td style="text-align: right;">4.065</td>
+<td>Gate GEMM：[1,5120]投影到[1,384]，计算逻辑专家分数</td>
+</tr>
+<tr id="task-33173">
+<td style="text-align: right;">33173</td>
+<td><code>moe_topk_gate_forward_kernel_asc_kernel</code></td>
+<td>6.204859～6.208617</td>
+<td style="text-align: right;">3.758</td>
+<td>从384个逻辑专家中选Top6，得到专家ID与权重；不是选词表token</td>
+</tr>
+<tr id="task-33175">
+<td style="text-align: right;">33175</td>
+<td><code>_ZN9deep_gemm8mega_moe13mega_moe_implILj16ELj416ELj1ELj512ELj6ELj5120ELj2304EEEvPu6__bf16PiPKhPKsS5_S7_S5_S7_S5_S7_jfNS_6layout9SymBufferILj256EEE</code></td>
+<td>6.209116～6.242580</td>
+<td style="text-align: right;">33.464</td>
+<td>MegaMoE：Top6路由的分发、两次专家GEMM、中间激活、汇聚及共享专家路径</td>
+</tr>
+</tbody>
+</table></div>
+<p>这一段只有10条kernel。耗时较长的是MegaMoE的33.464 μs；最开头的post只占2.825 μs，它本身并不执行专家计算。</p>
+<h2 id="②-写回l00-moe再做l01-engramattention">② 写回L00 MoE，再做L01 Engram＋Attention</h2>
+<p>先写回L00 MoE。进入L01时额外消费已预取的Engram特征：先投影，再门控注入主干，然后才做mHC读出、Attention投影、核心计算及输出投影。本段没有再做一次Engram hash/fetch。</p>
+<p>起点post Task <strong>33176</strong>，终点是下一条post Task <strong>33197</strong> 的开始；后者不计入本表。</p>
+<div class="table-scroll" role="region" aria-label="可横向滑动的数据表" tabindex="0"><table>
+<thead>
+<tr>
+<th style="text-align: right;">Task ID</th>
+<th>完整算子名</th>
+<th>+起止时间 ms</th>
+<th style="text-align: right;">耗时 μs</th>
+<th>在做什么</th>
+</tr>
+</thead>
+<tbody>
+<tr id="task-33176">
+<td style="text-align: right;">33176</td>
+<td><code>mhc_post_fwd_asc_kernel</code></td>
+<td>6.242602～6.245393</td>
+<td style="text-align: right;">2.791</td>
+<td>将L00 MoE的输出写回四路主干</td>
+</tr>
+<tr id="task-33177">
+<td style="text-align: right;">33177</td>
+<td><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj25600ELj6144ELj16ELj416ELj256ELj16ELj208ELj128ELj4ELj2ELj11ELj2ELj4ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb0ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></td>
+<td>6.245415～6.299982</td>
+<td style="text-align: right;">54.567</td>
+<td>Engram投影：6144维表项特征投影到25600=5×5120维，再交给gate注入</td>
+</tr>
+<tr id="task-33178">
+<td style="text-align: right;">33178</td>
+<td><code>engram_gate_fwd_kernel_asc_kernel</code></td>
+<td>6.300004～6.303682</td>
+<td style="text-align: right;">3.678</td>
+<td>根据门控把Engram投影特征注入四路主干</td>
+</tr>
+<tr id="task-33179">
+<td style="text-align: right;">33179</td>
+<td><code>mhc_pre_apply_mix_fwd_asc_kernel</code></td>
+<td>6.303704～6.306390</td>
+<td style="text-align: right;">2.686</td>
+<td>用传入的混合系数，把四路主干读成一路[1,5120]，供当前子层使用</td>
+</tr>
+<tr id="task-33180">
+<td style="text-align: right;">33180</td>
+<td><code>tf32_hc_prenorm_gemm_kernel_kernel</code></td>
+<td>6.306412～6.315102</td>
+<td style="text-align: right;">8.690</td>
+<td>从四路主干计算混合系数的中间结果；不是Attention投影</td>
+</tr>
+<tr id="task-33181">
+<td style="text-align: right;">33181</td>
+<td><code>mhc_reduce_partials_and_rmsnorm_fwd_asc_kernel</code></td>
+<td>6.315124～6.317237</td>
+<td style="text-align: right;">2.113</td>
+<td>合并系数计算的分块结果，并结合RMS归一化</td>
+</tr>
+<tr id="task-33182">
+<td style="text-align: right;">33182</td>
+<td><code>mhc_pre_split_mixes_fwd_simd_mhc4_asc_kernel</code></td>
+<td>6.317259～6.319885</td>
+<td style="text-align: right;">2.626</td>
+<td>拆出读出、写回、残差路间混合等系数，并应用对应参数</td>
+</tr>
+<tr id="task-33183">
+<td style="text-align: right;">33183</td>
+<td><code>mhc_sinkhorn_fwd_asc_kernel</code></td>
+<td>6.319907～6.323747</td>
+<td style="text-align: right;">3.840</td>
+<td>迭代归一化4×4残差混合矩阵，约束四路之间的混合</td>
+</tr>
+<tr id="task-33184">
+<td style="text-align: right;">33184</td>
+<td><code>_norm_kernel</code></td>
+<td>6.323769～6.327655</td>
+<td style="text-align: right;">3.886</td>
+<td>对子层的一路输入做RMSNorm，按配置准备后续计算的数据格式</td>
+</tr>
+<tr id="task-33185">
+<td style="text-align: right;">33185</td>
+<td><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj1792ELj5120ELj16ELj64ELj512ELj16ELj64ELj256ELj4ELj2ELj10ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></td>
+<td>6.327677～6.333602</td>
+<td style="text-align: right;">5.925</td>
+<td>联合投影：5120维输入得到1280维低秩Q＋512维滑动窗口KV，共1792维</td>
+</tr>
+<tr id="task-33186">
+<td style="text-align: right;">33186</td>
+<td><code>_fused_norm_rope_hadamard_cast_store_kvcache_kernel</code></td>
+<td>6.333624～6.336690</td>
+<td style="text-align: right;">3.066</td>
+<td>处理滑动窗口KV：按配置做Norm、RoPE、格式转换及缓存写入</td>
+</tr>
+<tr id="task-33187">
+<td style="text-align: right;">33187</td>
+<td><code>_norm_kernel</code></td>
+<td>6.336712～6.339582</td>
+<td style="text-align: right;">2.870</td>
+<td>归一化1280维低秩Q，供Q_b投影使用</td>
+</tr>
+<tr id="task-33188">
+<td style="text-align: right;">33188</td>
+<td><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj32768ELj1280ELj16ELj512ELj256ELj16ELj256ELj128ELj3ELj2ELj5ELj2ELj4ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></td>
+<td>6.339604～6.357536</td>
+<td style="text-align: right;">17.932</td>
+<td>Q_b投影：1280维低秩Q展开为64×512=32768维主Attention Query</td>
+</tr>
+<tr id="task-33189">
+<td style="text-align: right;">33189</td>
+<td><code>_fused_norm_rope_hadamard_cast_store_kvcache_kernel</code></td>
+<td>6.357558～6.360238</td>
+<td style="text-align: right;">2.680</td>
+<td>处理主Attention的Q：按配置做Q归一化、RoPE及格式转换</td>
+</tr>
+<tr id="task-33190">
+<td style="text-align: right;">33190</td>
+<td><code>_ZN6ascend7prefill10sparse_fwd22sparse_attn_fwd_kernelINS1_6KernelIXtlNS1_6ConfigEL17SparseAttnFwdMode1ELj64ELj640ELb1EEEEEEEvNT_6ParamsENS7_9AuxParamsE</code></td>
+<td>6.360260～6.366420</td>
+<td style="text-align: right;">6.160</td>
+<td>L01 Attention核心：用Query读取允许访问的上下文，并对Value加权汇聚</td>
+</tr>
+<tr id="task-33191">
+<td style="text-align: right;">33191</td>
+<td><code>_rope_kernel_kernel</code></td>
+<td>6.366442～6.369088</td>
+<td style="text-align: right;">2.646</td>
+<td>对Attention输出的旋转维做逆向RoPE，随后进入输出投影</td>
+</tr>
+<tr id="task-33192">
+<td style="text-align: right;">33192</td>
+<td><code>per_token_cast_kernel_kernel</code></td>
+<td>6.369110～6.373030</td>
+<td style="text-align: right;">3.920</td>
+<td>把Attention上下文逐token转换为FP8及缩放因子，供分组输出投影使用</td>
+</tr>
+<tr id="task-33193">
+<td style="text-align: right;">33193</td>
+<td><code>_ZN9deep_gemm12transform_sfILb0ELNS_5MajorE0ELj128ELj128ELNS_8GemmTypeE3ELj64ELj256ELj1EL22asc_load_l2_cache_mode4EL23asc_store_l2_cache_mode0EEEvNS_6gm_ptrINSt11conditionalIXT_EjtE4typeEXT0_EEEPtPijjjjjj</code></td>
+<td>6.373052～6.375078</td>
+<td style="text-align: right;">2.026</td>
+<td>把FP8缩放因子SF重排为分组GEMM需要的布局；不做一次新的特征投影</td>
+</tr>
+<tr id="task-33194">
+<td style="text-align: right;">33194</td>
+<td><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj1024ELj4096ELj16ELj256ELj512ELj16ELj256ELj128ELj3ELj2ELj8ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE3Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb0ELb0EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></td>
+<td>6.375100～6.389007</td>
+<td style="text-align: right;">13.907</td>
+<td>分组输出投影Wv：每组4096维上下文投影到1024维，8组共8192维</td>
+</tr>
+<tr id="task-33195">
+<td style="text-align: right;">33195</td>
+<td><code>per_token_cast_kernel_kernel</code></td>
+<td>6.389029～6.392598</td>
+<td style="text-align: right;">3.569</td>
+<td>把分组输出投影结果转换为最终输出投影需要的FP8格式</td>
+</tr>
+<tr id="task-33196">
+<td style="text-align: right;">33196</td>
+<td><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj5120ELj8192ELj16ELj160ELj256ELj16ELj160ELj128ELj4ELj2ELj32ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></td>
+<td>6.392620～6.409817</td>
+<td style="text-align: right;">17.197</td>
+<td>最终输出投影Wo：8192维合并投影回5120维主干宽度</td>
+</tr>
+</tbody>
+</table></div>
+<p>这一段有21条kernel。Engram投影单独用了54.567 μs，随后才进入Attention路径；Q_b、Wv和Wo又是不同的GEMM。不要把所有名字含 <code>deep_gemm</code> 的条都认成MegaMoE。</p>
+<h2 id="③-写回l01-attention再做l01-moe">③ 写回L01 Attention，再做L01 MoE</h2>
+<p>与第一段属于同一类MoE子层路径，作用相同，参数和输入内容属于L01；这次各kernel的Duration与L00略有不同。</p>
+<p>起点post Task <strong>33197</strong>，终点是下一条post Task <strong>33208</strong> 的开始；后者不计入本表。</p>
+<div class="table-scroll" role="region" aria-label="可横向滑动的数据表" tabindex="0"><table>
+<thead>
+<tr>
+<th style="text-align: right;">Task ID</th>
+<th>完整算子名</th>
+<th>+起止时间 ms</th>
+<th style="text-align: right;">耗时 μs</th>
+<th>在做什么</th>
+</tr>
+</thead>
+<tbody>
+<tr id="task-33197">
+<td style="text-align: right;">33197</td>
+<td><code>mhc_post_fwd_asc_kernel</code></td>
+<td>6.409839～6.412795</td>
+<td style="text-align: right;">2.956</td>
+<td>将L01 Attention的输出写回四路主干</td>
+</tr>
+<tr id="task-33198">
+<td style="text-align: right;">33198</td>
+<td><code>mhc_pre_apply_mix_fwd_asc_kernel</code></td>
+<td>6.412817～6.415383</td>
+<td style="text-align: right;">2.566</td>
+<td>用传入的混合系数，把四路主干读成一路[1,5120]，供当前子层使用</td>
+</tr>
+<tr id="task-33199">
+<td style="text-align: right;">33199</td>
+<td><code>tf32_hc_prenorm_gemm_kernel_kernel</code></td>
+<td>6.415405～6.423868</td>
+<td style="text-align: right;">8.463</td>
+<td>从四路主干计算混合系数的中间结果；不是Attention投影</td>
+</tr>
+<tr id="task-33200">
+<td style="text-align: right;">33200</td>
+<td><code>mhc_reduce_partials_and_rmsnorm_fwd_asc_kernel</code></td>
+<td>6.423890～6.426476</td>
+<td style="text-align: right;">2.586</td>
+<td>合并系数计算的分块结果，并结合RMS归一化</td>
+</tr>
+<tr id="task-33201">
+<td style="text-align: right;">33201</td>
+<td><code>mhc_pre_split_mixes_fwd_simd_mhc4_asc_kernel</code></td>
+<td>6.426498～6.429205</td>
+<td style="text-align: right;">2.707</td>
+<td>拆出读出、写回、残差路间混合等系数，并应用对应参数</td>
+</tr>
+<tr id="task-33202">
+<td style="text-align: right;">33202</td>
+<td><code>mhc_sinkhorn_fwd_asc_kernel</code></td>
+<td>6.429227～6.432533</td>
+<td style="text-align: right;">3.306</td>
+<td>迭代归一化4×4残差混合矩阵，约束四路之间的混合</td>
+</tr>
+<tr id="task-33203">
+<td style="text-align: right;">33203</td>
+<td><code>_norm_kernel</code></td>
+<td>6.432555～6.435679</td>
+<td style="text-align: right;">3.124</td>
+<td>对子层的一路输入做RMSNorm，按配置准备后续计算的数据格式</td>
+</tr>
+<tr id="task-33204">
+<td style="text-align: right;">33204</td>
+<td><code>_ZN9deep_gemm14bf16_gemm_implILNS_5MajorE0ELS1_0ELj0ELj384ELj5120ELj16ELj16ELj2048ELj16ELj16ELj1024ELj5ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0EfNS_8epilogue9operators8IdentityELj256ELb1ELb1ELb0EEEvNS_6gm_ptrIu6__bf16XT_EEENS8_Iu6__bf16XT0_EEENS8_IT19_LS1_0EEEjjjPijNS5_4ArgsE</code></td>
+<td>6.435701～6.439533</td>
+<td style="text-align: right;">3.832</td>
+<td>Gate GEMM：[1,5120]投影到[1,384]，计算逻辑专家分数</td>
+</tr>
+<tr id="task-33205">
+<td style="text-align: right;">33205</td>
+<td><code>moe_topk_gate_forward_kernel_asc_kernel</code></td>
+<td>6.439555～6.443125</td>
+<td style="text-align: right;">3.570</td>
+<td>从384个逻辑专家中选Top6，得到专家ID与权重；不是选词表token</td>
+</tr>
+<tr id="task-33207">
+<td style="text-align: right;">33207</td>
+<td><code>_ZN9deep_gemm8mega_moe13mega_moe_implILj16ELj416ELj1ELj512ELj6ELj5120ELj2304EEEvPu6__bf16PiPKhPKsS5_S7_S5_S7_S5_S7_jfNS_6layout9SymBufferILj256EEE</code></td>
+<td>6.443625～6.480326</td>
+<td style="text-align: right;">36.701</td>
+<td>MegaMoE：Top6路由的分发、两次专家GEMM、中间激活、汇聚及共享专家路径</td>
+</tr>
+</tbody>
+</table></div>
+<p>这一段同样10条kernel，顺序与第一段一致；MegaMoE为36.701 μs。两次时长差异是测量事实，但这份普通kernel trace不能继续定位其内部Dispatch/GEMM/Combine各贡献多少。</p>
+<h2 id="④-写回l01-moe再做l02压缩索引attention">④ 写回L01 MoE，再做L02压缩/索引＋Attention</h2>
+<p>本层Attention除滑动窗口路径，还生成、压缩主KV，并通过索引器为历史位置评分、做TopK和地址转换，再执行Attention核心。这里的TopK选历史位置，第二、四段的Attention不是相同配置的机械重复。</p>
+<p>起点post Task <strong>33208</strong>，终点是下一条post Task <strong>33240</strong> 的开始；后者不计入本表。</p>
+<div class="table-scroll" role="region" aria-label="可横向滑动的数据表" tabindex="0"><table>
+<thead>
+<tr>
+<th style="text-align: right;">Task ID</th>
+<th>完整算子名</th>
+<th>+起止时间 ms</th>
+<th style="text-align: right;">耗时 μs</th>
+<th>在做什么</th>
+</tr>
+</thead>
+<tbody>
+<tr id="task-33208">
+<td style="text-align: right;">33208</td>
+<td><code>mhc_post_fwd_asc_kernel</code></td>
+<td>6.480348～6.483255</td>
+<td style="text-align: right;">2.907</td>
+<td>将L01 MoE的输出写回四路主干</td>
+</tr>
+<tr id="task-33209">
+<td style="text-align: right;">33209</td>
+<td><code>mhc_pre_apply_mix_fwd_asc_kernel</code></td>
+<td>6.483277～6.485466</td>
+<td style="text-align: right;">2.189</td>
+<td>用传入的混合系数，把四路主干读成一路[1,5120]，供当前子层使用</td>
+</tr>
+<tr id="task-33210">
+<td style="text-align: right;">33210</td>
+<td><code>tf32_hc_prenorm_gemm_kernel_kernel</code></td>
+<td>6.485488～6.493942</td>
+<td style="text-align: right;">8.454</td>
+<td>从四路主干计算混合系数的中间结果；不是Attention投影</td>
+</tr>
+<tr id="task-33211">
+<td style="text-align: right;">33211</td>
+<td><code>mhc_reduce_partials_and_rmsnorm_fwd_asc_kernel</code></td>
+<td>6.493964～6.495914</td>
+<td style="text-align: right;">1.950</td>
+<td>合并系数计算的分块结果，并结合RMS归一化</td>
+</tr>
+<tr id="task-33212">
+<td style="text-align: right;">33212</td>
+<td><code>mhc_pre_split_mixes_fwd_simd_mhc4_asc_kernel</code></td>
+<td>6.495936～6.498525</td>
+<td style="text-align: right;">2.589</td>
+<td>拆出读出、写回、残差路间混合等系数，并应用对应参数</td>
+</tr>
+<tr id="task-33213">
+<td style="text-align: right;">33213</td>
+<td><code>mhc_sinkhorn_fwd_asc_kernel</code></td>
+<td>6.498547～6.502099</td>
+<td style="text-align: right;">3.552</td>
+<td>迭代归一化4×4残差混合矩阵，约束四路之间的混合</td>
+</tr>
+<tr id="task-33214">
+<td style="text-align: right;">33214</td>
+<td><code>_norm_kernel</code></td>
+<td>6.502121～6.506369</td>
+<td style="text-align: right;">4.248</td>
+<td>对子层的一路输入做RMSNorm，按配置准备后续计算的数据格式</td>
+</tr>
+<tr id="task-33215">
+<td style="text-align: right;">33215</td>
+<td><code>_ZN9deep_gemm14bf16_gemm_implILNS_5MajorE0ELS1_0ELj0ELj1056ELj5120ELj16ELj48ELj256ELj16ELj48ELj128ELj8ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0EfNS_8epilogue9operators8IdentityELj256ELb1ELb1ELb0EEEvNS_6gm_ptrIu6__bf16XT_EEENS8_Iu6__bf16XT0_EEENS8_IT19_LS1_0EEEjjjPijNS5_4ArgsE</code></td>
+<td>6.506391～6.512656</td>
+<td style="text-align: right;">6.265</td>
+<td>从当前输入联合投影主KV压缩所需分量与索引头权重，共1056维</td>
+</tr>
+<tr id="task-33216">
+<td style="text-align: right;">33216</td>
+<td><code>aclnnInplaceCopy_CastAiCore_Cast</code></td>
+<td>6.512678～6.514267</td>
+<td style="text-align: right;">1.589</td>
+<td>将索引头权重分量转换为BF16，供后续索引评分使用</td>
+</tr>
+<tr id="task-33217">
+<td style="text-align: right;">33217</td>
+<td><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj1792ELj5120ELj16ELj64ELj512ELj16ELj64ELj256ELj4ELj2ELj10ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></td>
+<td>6.514289～6.520260</td>
+<td style="text-align: right;">5.971</td>
+<td>联合投影：5120维输入得到1280维低秩Q＋512维滑动窗口KV，共1792维</td>
+</tr>
+<tr id="task-33218">
+<td style="text-align: right;">33218</td>
+<td><code>_fused_norm_rope_hadamard_cast_store_kvcache_kernel</code></td>
+<td>6.520282～6.523016</td>
+<td style="text-align: right;">2.734</td>
+<td>处理滑动窗口KV：按配置做Norm、RoPE、格式转换及缓存写入</td>
+</tr>
+<tr id="task-33219">
+<td style="text-align: right;">33219</td>
+<td><code>_norm_kernel</code></td>
+<td>6.523038～6.525853</td>
+<td style="text-align: right;">2.815</td>
+<td>归一化1280维低秩Q，供主Attention与索引Query联合投影使用</td>
+</tr>
+<tr id="task-33220">
+<td style="text-align: right;">33220</td>
+<td><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj36864ELj1280ELj16ELj384ELj256ELj16ELj192ELj128ELj4ELj2ELj5ELj2ELj6ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></td>
+<td>6.525875～6.543205</td>
+<td style="text-align: right;">17.330</td>
+<td>联合Q_b投影：主Attention Query 32768维＋索引Query 4096维，共36864维</td>
+</tr>
+<tr id="task-33221">
+<td style="text-align: right;">33221</td>
+<td><code>_fused_norm_rope_hadamard_cast_store_kvcache_kernel</code></td>
+<td>6.543228～6.545813</td>
+<td style="text-align: right;">2.585</td>
+<td>处理主Attention的Q：按配置做Q归一化、RoPE及格式转换</td>
+</tr>
+<tr id="task-33222">
+<td style="text-align: right;">33222</td>
+<td><code>_compress_and_update_state_decode_kernel</code></td>
+<td>6.545835～6.549662</td>
+<td style="text-align: right;">3.827</td>
+<td>压缩本轮主KV并更新跨步压缩状态，第一段kernel</td>
+</tr>
+<tr id="task-33223">
+<td style="text-align: right;">33223</td>
+<td><code>_compress_and_update_state_decode_kernel_1</code></td>
+<td>6.549684～6.552081</td>
+<td style="text-align: right;">2.397</td>
+<td>同一次KV压缩/状态更新的后续kernel，不是第二次完整Attention</td>
+</tr>
+<tr id="task-33224">
+<td style="text-align: right;">33224</td>
+<td><code>_fused_norm_rope_hadamard_cast_store_kvcache_kernel</code></td>
+<td>6.552103～6.555595</td>
+<td style="text-align: right;">3.492</td>
+<td>对压缩主KV做Norm、RoPE和缓存格式转换/写入，并保留索引器需要的pre-RoPE值</td>
+</tr>
+<tr id="task-33225">
+<td style="text-align: right;">33225</td>
+<td><code>_fused_norm_rope_hadamard_cast_store_kvcache_kernel</code></td>
+<td>6.555617～6.562066</td>
+<td style="text-align: right;">6.449</td>
+<td>对索引器Query做RoPE及低比特格式转换，为历史评分准备Query</td>
+</tr>
+<tr id="task-33226">
+<td style="text-align: right;">33226</td>
+<td><code>_ZN9deep_gemm14bf16_gemm_implILNS_5MajorE0ELS1_0ELj0ELj128ELj512ELj16ELj16ELj512ELj16ELj16ELj256ELj8ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1ELb0EEEvNS_6gm_ptrIu6__bf16XT_EEENS8_Iu6__bf16XT0_EEENS8_IT19_LS1_0EEEjjjPijNS5_4ArgsE</code></td>
+<td>6.562088～6.564314</td>
+<td style="text-align: right;">2.226</td>
+<td>索引Key投影KProject：主压缩KV的512维pre-RoPE特征投影到128维索引Key</td>
+</tr>
+<tr id="task-33227">
+<td style="text-align: right;">33227</td>
+<td><code>_fused_norm_rope_hadamard_cast_store_kvcache_kernel</code></td>
+<td>6.564336～6.567880</td>
+<td style="text-align: right;">3.544</td>
+<td>对投影后的索引Key做Norm、RoPE、量化并写入索引缓存</td>
+</tr>
+<tr id="task-33228">
+<td style="text-align: right;">33228</td>
+<td><code>_ZN9deep_gemm35paged_mqa_logits_metadata_simt_implILj512ELj2ELj32EEEvjPjS1_S1_</code></td>
+<td>6.567902～6.571390</td>
+<td style="text-align: right;">3.488</td>
+<td>准备分页MQA索引评分的调度元数据；不是Attention结果</td>
+</tr>
+<tr id="task-33229">
+<td style="text-align: right;">33229</td>
+<td><code>aclnnInplaceCopy_TransposeAiCore_Transpose</code></td>
+<td>6.571412～6.574093</td>
+<td style="text-align: right;">2.681</td>
+<td>为分页索引评分调整输入布局；不是新的数学投影</td>
+</tr>
+<tr id="task-33230">
+<td style="text-align: right;">33230</td>
+<td><code>_ZN9deep_gemm21paged_mqa_logits_implILb1ELj32ELj128ELj64ELj512ELj64ELj2ELj2ELj4ELj3ELj3ELb0EEEvjjmNS_6gm_ptrIhLNS_5MajorE0EEEPsS3_NS1_Iu6__bf16LS2_0EEES5_PjS6_S6_S6_</code></td>
+<td>6.574115～6.577595</td>
+<td style="text-align: right;">3.480</td>
+<td>索引器分页MQA评分：计算当前Query对历史压缩位置的相关性分数</td>
+</tr>
+<tr id="task-33231">
+<td style="text-align: right;">33231</td>
+<td><code>_ZN18topk_select_ascend18topk_select_kernelIXtlNS_6ConfigELj512ELb1ELb1EEEEEv14TopkSelectArgs</code></td>
+<td>6.577617～6.579138</td>
+<td style="text-align: right;">1.521</td>
+<td>索引TopK：选择要交给主Attention的历史位置；不是MoE专家Top6</td>
+</tr>
+<tr id="task-33232">
+<td style="text-align: right;">33232</td>
+<td><code>_convert_kv_index_kernel</code></td>
+<td>6.579160～6.581944</td>
+<td style="text-align: right;">2.784</td>
+<td>把选中的历史位置转换为主Attention可使用的KV索引/缓存地址</td>
+</tr>
+<tr id="task-33233">
+<td style="text-align: right;">33233</td>
+<td><code>_ZN6ascend7prefill10sparse_fwd22sparse_attn_fwd_kernelINS1_6KernelIXtlNS1_6ConfigEL17SparseAttnFwdMode1ELj64ELj640ELb1EL9ModelType0ELS6_1EEEEEEEvNT_6ParamsENS8_9AuxParamsE</code></td>
+<td>6.581966～6.593330</td>
+<td style="text-align: right;">11.364</td>
+<td>L02 Attention核心：结合滑动窗口及压缩/筛选的历史KV，生成上下文</td>
+</tr>
+<tr id="task-33234">
+<td style="text-align: right;">33234</td>
+<td><code>_rope_kernel_kernel</code></td>
+<td>6.593352～6.595609</td>
+<td style="text-align: right;">2.257</td>
+<td>对Attention输出的旋转维做逆向RoPE，随后进入输出投影</td>
+</tr>
+<tr id="task-33235">
+<td style="text-align: right;">33235</td>
+<td><code>per_token_cast_kernel_kernel</code></td>
+<td>6.595631～6.599527</td>
+<td style="text-align: right;">3.896</td>
+<td>把Attention上下文逐token转换为FP8及缩放因子，供分组输出投影使用</td>
+</tr>
+<tr id="task-33236">
+<td style="text-align: right;">33236</td>
+<td><code>_ZN9deep_gemm12transform_sfILb0ELNS_5MajorE0ELj128ELj128ELNS_8GemmTypeE3ELj64ELj256ELj1EL22asc_load_l2_cache_mode4EL23asc_store_l2_cache_mode0EEEvNS_6gm_ptrINSt11conditionalIXT_EjtE4typeEXT0_EEEPtPijjjjjj</code></td>
+<td>6.599549～6.601411</td>
+<td style="text-align: right;">1.862</td>
+<td>把FP8缩放因子SF重排为分组GEMM需要的布局；不做一次新的特征投影</td>
+</tr>
+<tr id="task-33237">
+<td style="text-align: right;">33237</td>
+<td><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj1024ELj4096ELj16ELj256ELj512ELj16ELj256ELj128ELj3ELj2ELj8ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE3Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb0ELb0EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></td>
+<td>6.601433～6.615242</td>
+<td style="text-align: right;">13.809</td>
+<td>分组输出投影Wv：每组4096维上下文投影到1024维，8组共8192维</td>
+</tr>
+<tr id="task-33238">
+<td style="text-align: right;">33238</td>
+<td><code>per_token_cast_kernel_kernel</code></td>
+<td>6.615264～6.618821</td>
+<td style="text-align: right;">3.557</td>
+<td>把分组输出投影结果转换为最终输出投影需要的FP8格式</td>
+</tr>
+<tr id="task-33239">
+<td style="text-align: right;">33239</td>
+<td><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj5120ELj8192ELj16ELj160ELj256ELj16ELj160ELj128ELj4ELj2ELj32ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></td>
+<td>6.618843～6.636246</td>
+<td style="text-align: right;">17.403</td>
+<td>最终输出投影Wo：8192维合并投影回5120维主干宽度</td>
+</tr>
+</tbody>
+</table></div>
+<p>这一段有32条kernel，比第二段多，但总区间155.920 μs反而小于第二段167.237 μs，因为它没有那次54.567 μs的Engram投影。这里索引TopK选的是历史位置，MoE Top6选的是专家，二者不能混淆。</p>
+<h2 id="为什么同名算子附近的顺序不同">为什么同名算子附近的顺序不同</h2>
+<ol>
+<li><strong>post是边界，不是层号。</strong> 它将上一子层的一路输出和残差按混合系数写回四路主干；下一段可能准备MoE，也可能准备下一层Attention。</li>
+<li><strong>mHC部分系数跨子层传递。</strong> 本版本shifted路径先应用传入的读出系数，再计算要保存的系数。因此pre-apply出现在系数GEMM之前，并不表示数据依赖反了。</li>
+<li><strong>层的功能不同。</strong> L01额外插入Engram；L02额外压缩KV、准备索引Query/Key、评分、选历史位置。只有属于同一类子层、相同配置的区间才适合直接比较顺序。</li>
+<li><strong>kernel名称可能是通用实现名。</strong> 同名融合kernel在不同Task中分别处理SWA KV、主Q、压缩KV、索引Q/K，启用的Norm、RoPE、量化、写缓存选项也可能不同。表中的角色依据固定源码调用顺序推导；trace没有逐张量标签。Attention符号里含<code>prefill</code>的命名空间，也不代表这段实际在做prefill。</li>
+</ol>
+<h2 id="只做一次小核对">只做一次小核对</h2>
+<p>在Stream169搜索全名 <code>mhc_post_fwd_asc_kernel</code>，核对Task33165的Duration为2.825 μs。再依次找Task33176、33197、33208、33240：五个post框出四段，起点间距依次约 <strong>68.381、167.237、70.509、155.920 μs</strong>。</p>
+<p>先认出第一、三段末尾的MegaMoE，再认出第二段的Engram、第四段的索引TopK。能指出这四个区别，再按表逐行看其他kernel即可。</p>
+<p><a href="deepinfer-token-trace-20261029.html">返回七步主手册</a>；<a href="files/deepinfer-token-trace-20261029/data/mhc-four-segments-shapes.csv">73个算子的完整CSV</a>包含局部偏移、精确时间和解释；右侧终止post Task33240只作边界，不计入73条。</p>
+<p>来源为DP0的Z01主模型片段，层号由固定源码与执行顺序对应；事件与时长直接来自trace。源码重点是<code>hc.py</code>的<code>_hc_fused_post_pre</code>/<code>_hc_pre</code>、<code>decoder_layer.py</code>的Engram钩子、<code>attn.py</code>的投影与压缩路径、<code>index_attn.py</code>的索引Q/K准备和TopK。版本553741557a57df44a46fb3ab72b6aafeaf945337；无新增NPU实验。</p></main><footer><p>耗时来自固定采集，shape按源码推导。原始trace及分析环境保留在本地。</p><nav><a href="#top">回到顶部</a><a href="../">返回首页</a><a href="./#deepinfer-token-trace">下载与资料</a></nav></footer></body></html>

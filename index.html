@@ -30,12 +30,14 @@
         <a href="#experiments"><span>04</span><strong>性能实验</strong><small>结果 · 项目状态 · 方法</small></a>
         <a href="#downloads"><span>05</span><strong>下载归档</strong><small>Markdown · 配图 · 离线版</small></a>
       </nav>
-      <div class="recent-links"><span>最近更新</span><a href="downloads/deepinfer-trace-analysis-20261028.html">DeepInfer 时延拆解 ↗</a><a href="downloads/deepinfer-megamoe-workload-20261028.html">MegaMoE 负载分析 ↗</a></div>
+      <div class="recent-links"><span>最近更新</span><a href="downloads/deepinfer-token-trace-20261029.html">Token到Token图解教程 ↗</a><a href="downloads/deepinfer-trace-analysis-20261028.html">DeepInfer 时延拆解 ↗</a><a href="downloads/deepinfer-megamoe-workload-20261028.html">MegaMoE 负载分析 ↗</a></div>
     </section>
 
     <section class="directory-section" id="deepinfer-notes" aria-labelledby="inference-title">
-      <div class="directory-heading"><div><p class="eyebrow">01 / 推理框架</p><h2 id="inference-title">理解一次推理在做什么</h2></div><p>先看执行流程，再看实际负载。两篇均可在手机直接阅读。</p></div>
+      <div class="directory-heading"><div><p class="eyebrow">01 / 推理框架</p><h2 id="inference-title">理解一次推理在做什么</h2></div><p>从入门图解到时延与负载分析，按需要深入；均可在手机直接阅读。</p></div>
       <div class="entry-grid">
+        <article class="entry-card" id="deepinfer-token-trace-entry"><span class="entry-type">图解教程 · Trace逐步对照</span><h3><a href="downloads/deepinfer-token-trace-20261029.html">从Token到Token：一步步看懂DeepInfer</a></h3><p>从71次主模型调用看全局，再看首token、主模型验证与草稿配合；四段流程图展开73个kernel，标注shape、耗时与Task ID。</p><div class="entry-footer"><a class="text-link" href="downloads/deepinfer-token-trace-20261029.html">开始阅读 ↗</a><a class="quiet-link" href="downloads/#deepinfer-token-trace">下载Markdown与配图</a></div></article>
+
         <article class="entry-card"><span class="entry-type">在线文章 · DeepInfer</span><h3><a href="downloads/deepinfer-trace-analysis-20261028.html">算子全景与时延拆解</a></h3><p>从请求、prefill / decode、主模型与草稿，逐级拆到 stream、算子耗时和同步配合；每段附 Trace 定位线索。</p><div class="entry-footer"><a class="text-link" href="downloads/deepinfer-trace-analysis-20261028.html">阅读文章 ↗</a><a class="quiet-link" href="downloads/#deepinfer-reading">下载原文与配图</a></div></article>
         <article class="entry-card"><span class="entry-type">在线文章 · MegaMoE 负载</span><h3><a href="downloads/deepinfer-megamoe-workload-20261028.html">实际 Shape 与生产负载分析</a></h3><p>核对真实输入输出、主模型与草稿的激活形状、占位执行和专家负载边界，并对照公开请求样本与官方部署方案。</p><div class="entry-footer"><a class="text-link" href="downloads/deepinfer-megamoe-workload-20261028.html">阅读文章 ↗</a><a class="quiet-link" href="downloads/#deepinfer-reading">下载原文与配图</a></div></article>
       </div>
@@ -82,6 +84,8 @@
     <section class="directory-section" id="downloads" aria-labelledby="downloads-title">
       <div class="directory-heading"><div><p class="eyebrow">05 / 下载归档</p><h2 id="downloads-title">带走原文与配图</h2></div><a class="text-link" href="downloads/">打开完整文件页 ↗</a></div>
       <div class="archive-list">
+        <div class="archive-item"><div><h3>DeepInfer：从Token到Token</h3><p>3篇Markdown、6张PNG、2份定位表；含四段逐算子流程图。</p></div><a class="archive-download" href="downloads/files/deepinfer-token-trace-20261029.zip" download>下载阅读包 ↓</a></div>
+
         <div class="archive-item"><div><h3>DeepInfer 时延拆解与负载分析</h3><p>两篇 Markdown + 7 张 PNG，适合离线对照阅读。</p></div><a class="archive-download" href="downloads/files/deepinfer-trace-and-workload-notes-20261028.zip" download>下载 ZIP ↓</a></div>
         <div class="archive-item"><div><h3>MegaMoE 20 项优化对照</h3><p>优化机制、历史收益、适用条件与方案状态。</p></div><a class="archive-download" href="downloads/files/megamoe-optimization-table-20261026.zip" download>下载 ZIP ↓</a></div>
         <div class="archive-item"><div><h3>UB bank 冲突与交错双槽</h3><p>Markdown + 4 张 PNG，含地址公式与消融记录。</p></div><a class="archive-download" href="downloads/files/megamoe-ub-bank-notes-20261023.zip" download>下载 ZIP ↓</a></div>
