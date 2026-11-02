@@ -1,0 +1,660 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>附录B-71次主模型调用</title><style>*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:20px}body{margin:0;background:#fafbf8;color:#24352d;font:17px/1.9 system-ui,"Microsoft YaHei",sans-serif}header,main,footer{max-width:1100px;margin:auto;padding:24px}header{border-bottom:1px solid #dce3db}nav{display:flex;flex-wrap:wrap;gap:18px}a{color:#08766b;text-underline-offset:3px}h1{font-size:clamp(28px,4vw,40px);line-height:1.4}h2{font-size:26px;line-height:1.5;margin-top:50px;border-top:1px solid #dce3db;padding-top:18px}h3{font-size:21px;margin-top:32px}p,li{overflow-wrap:anywhere}main>p{max-width:82ch}code{font:.88em/1.7 Consolas,monospace;overflow-wrap:anywhere}pre{padding:16px;background:#edf2ee;overflow:auto;border-radius:7px}pre code{white-space:pre-wrap;overflow-wrap:anywhere}.table-scroll{max-width:100%;overflow:auto;margin:20px 0}table{border-collapse:collapse;font-size:14px;width:100%}th,td{padding:10px;border-bottom:1px solid #dce3db;vertical-align:top;text-align:left;min-width:80px}th{background:#edf3ed}img{display:block;max-width:100%;height:auto;margin:25px auto}summary{cursor:pointer;font-weight:600}details{padding:14px 18px;background:#edf3ed;border-radius:7px;margin:20px 0}.math-display{overflow:auto;padding:8px 0}mjx-container{max-width:100%}.symbol{background:#f0f4ef}.symbol pre{background:transparent}tr:target{background:#fff0ce}.flow-nodes{list-style:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;padding:0}.flow-nodes>li{padding:14px;border:1px solid #d6e0d8;border-radius:7px;background:#edf3ed}.flow-nodes h4{margin:0;font-size:18px}.flow-nodes p{font-size:14px;line-height:1.7}.flow-nodes code{font-size:14px}.flow-nodes details{padding:0;font-size:13px;background:transparent}.flow-nodes li::before{content:attr(data-order);font-size:13px;color:#526b5d}.image-note{font-size:13px;color:#526b5d}footer{font-size:14px;border-top:1px solid #dce3db;margin-top:35px}@media(max-width:800px){.flow-nodes{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:600px){header,main,footer{padding:18px}.flow-nodes{grid-template-columns:minmax(0,1fr)}h2{font-size:23px}h3{font-size:20px}th,td{padding:8px}table{min-width:560px}}</style><script>window.MathJax={"tex": {"displayMath": [["\\[", "\\]"]]}, "svg": {"fontCache": "global"}, "options": {"skipHtmlTags": ["script", "noscript", "style", "textarea", "pre", "code"]}}</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script></head><body id="top"><header><nav><a href="../">YuHsin首页</a><a href="./#deepinfer-inference-guide-20261102">下载与资料</a><a href="deepinfer-inference-guide-20261102.html">正文</a><a href="deepinfer-inference-guide-20261102-operators.html">逐算子附录</a><a href="deepinfer-inference-guide-20261102-forwards.html">71次调用</a><a href="files/deepinfer-inference-guide-20261102/附录B-71次主模型调用.md" download>下载Markdown</a><a href="files/deepinfer-inference-guide-20261102.zip" download>完整阅读包</a></nav></header><main><details><summary>展开章节目录</summary><div class="toc">
+<ul></ul>
+</div>
+</details><h1 id="附录b71次主模型调用清单">附录B：71次主模型调用清单</h1>
+<p>每行是DP0的一次主模型CPU提交，线程698287。+ms为DP0 scope相对时间，设备窗口不含后续词表/验证/草稿。Z、P、D为阅读编号，不是trace事件名。prefill设备范围是重建的eager包围范围，其他为设备图窗口。</p>
+<p><a href="deepinfer-inference-guide-20261102.html">返回正文</a>。</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th style="text-align: right;">序号</th>
+<th>编号/阶段</th>
+<th>完整CPU事件名</th>
+<th>CPU +起止ms</th>
+<th style="text-align: right;">CPU耗时μs</th>
+<th>主模型设备 +起止ms</th>
+<th>Stream/Model</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">1</td>
+<td>Z01 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>3.405110～4.849330</td>
+<td style="text-align: right;">1444.220</td>
+<td>4.740830～13.767393</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">2</td>
+<td>Z02 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>13.648130～13.783570</td>
+<td style="text-align: right;">135.440</td>
+<td>16.224775～24.992633</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">3</td>
+<td>Z03 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>21.994500～22.146660</td>
+<td style="text-align: right;">152.160</td>
+<td>27.484964～36.228497</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">4</td>
+<td>Z04 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>32.779350～32.925520</td>
+<td style="text-align: right;">146.170</td>
+<td>38.722429～47.501558</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">5</td>
+<td>Z05 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>44.025550～44.162130</td>
+<td style="text-align: right;">136.580</td>
+<td>49.941530～58.746360</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">6</td>
+<td>Z06 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>54.866430～55.008310</td>
+<td style="text-align: right;">141.880</td>
+<td>61.217611～70.130455</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">7</td>
+<td>Z07 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>66.105210～66.235530</td>
+<td style="text-align: right;">130.320</td>
+<td>72.593079～81.373057</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">8</td>
+<td>Z08 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>77.445040～77.582750</td>
+<td style="text-align: right;">137.710</td>
+<td>83.801900～92.569120</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">9</td>
+<td>Z09 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>88.690200～88.829950</td>
+<td style="text-align: right;">139.750</td>
+<td>94.996658～103.798490</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">10</td>
+<td>Z10 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>99.787250～99.914480</td>
+<td style="text-align: right;">127.230</td>
+<td>106.221663～115.038143</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">11</td>
+<td>Z11 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>111.125350～111.253360</td>
+<td style="text-align: right;">128.010</td>
+<td>117.473092～126.251188</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">12</td>
+<td>Z12 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>122.400470～122.528610</td>
+<td style="text-align: right;">128.140</td>
+<td>128.676261～137.448094</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">13</td>
+<td>Z13 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>134.596890～134.730060</td>
+<td style="text-align: right;">133.170</td>
+<td>139.877407～148.654220</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">14</td>
+<td>Z14 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>144.785860～144.930150</td>
+<td style="text-align: right;">144.290</td>
+<td>151.079923～159.863563</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">15</td>
+<td>Z15 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>156.289250～156.420110</td>
+<td style="text-align: right;">130.860</td>
+<td>162.287881～171.128925</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">16</td>
+<td>Z16 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>167.130560～167.262780</td>
+<td style="text-align: right;">132.220</td>
+<td>173.560450～182.353146</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">17</td>
+<td>Z17 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>178.294540～178.420780</td>
+<td style="text-align: right;">126.240</td>
+<td>184.774889～193.614246</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">18</td>
+<td>Z18 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>189.615750～189.742490</td>
+<td style="text-align: right;">126.740</td>
+<td>196.040927～204.819980</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">19</td>
+<td>Z19 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>200.920110～201.055790</td>
+<td style="text-align: right;">135.680</td>
+<td>207.248831～216.076164</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">20</td>
+<td>Z20 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>212.171180～212.302060</td>
+<td style="text-align: right;">130.880</td>
+<td>218.507807～227.287242</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">21</td>
+<td>Z21 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>223.456140～223.586630</td>
+<td style="text-align: right;">130.490</td>
+<td>229.713079～238.495974</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">22</td>
+<td>Z22 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>234.622990～234.750780</td>
+<td style="text-align: right;">127.790</td>
+<td>240.921108～249.702710</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">23</td>
+<td>Z23 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>246.438610～246.594820</td>
+<td style="text-align: right;">156.210</td>
+<td>252.133888～260.905410</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">24</td>
+<td>Z24 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>257.316710～257.468170</td>
+<td style="text-align: right;">151.460</td>
+<td>263.343830～272.204816</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">25</td>
+<td>Z25 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>268.631220～268.768410</td>
+<td style="text-align: right;">137.190</td>
+<td>274.623796～283.402174</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">26</td>
+<td>Z26 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>279.614610～279.748640</td>
+<td style="text-align: right;">134.030</td>
+<td>285.826104～294.647762</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">27</td>
+<td>Z27 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>290.874700～291.006750</td>
+<td style="text-align: right;">132.050</td>
+<td>297.080033～305.867137</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">28</td>
+<td>Z28 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>1200.863340～1201.027370</td>
+<td style="text-align: right;">164.030</td>
+<td>1200.968289～1210.123309</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">29</td>
+<td>Z29 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>1206.560880～1206.712170</td>
+<td style="text-align: right;">151.290</td>
+<td>1212.590879～1221.437175</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">30</td>
+<td>Z30 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>1217.598850～1217.741000</td>
+<td style="text-align: right;">142.150</td>
+<td>1223.928644～1232.707348</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">31</td>
+<td>Z31 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>1228.924220～1229.052240</td>
+<td style="text-align: right;">128.020</td>
+<td>1235.125359～1243.914116</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">32</td>
+<td>Z32 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>1240.167010～1240.297690</td>
+<td style="text-align: right;">130.680</td>
+<td>1246.332801～1255.159460</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">33</td>
+<td>Z33 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>1251.732910～1251.857650</td>
+<td style="text-align: right;">124.740</td>
+<td>1257.609248～1266.400446</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">34</td>
+<td>Z34 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>1262.703960～1262.841450</td>
+<td style="text-align: right;">137.490</td>
+<td>1268.815475～1277.603181</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">35</td>
+<td>Z35 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>1274.363920～1274.509860</td>
+<td style="text-align: right;">145.940</td>
+<td>1280.015739～1288.796743</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">36</td>
+<td>Z36 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>1285.094240～1285.230330</td>
+<td style="text-align: right;">136.090</td>
+<td>1291.214924～1299.992325</td>
+<td>169/58</td>
+</tr>
+<tr>
+<td style="text-align: right;">37</td>
+<td>P01 / prefill</td>
+<td><code>deepinfer:launch_forward_N2_B50</code></td>
+<td>1302.471390～1455.843050</td>
+<td style="text-align: right;">153371.660</td>
+<td>1302.492350～1458.229510</td>
+<td>61/eager</td>
+</tr>
+<tr>
+<td style="text-align: right;">38</td>
+<td>D01 / decode</td>
+<td><code>deepinfer:launch_forward_N2_B12</code></td>
+<td>1461.740360～1462.736090</td>
+<td style="text-align: right;">995.730</td>
+<td>1462.653178～1477.437781</td>
+<td>181/62</td>
+</tr>
+<tr>
+<td style="text-align: right;">39</td>
+<td>D02 / decode</td>
+<td><code>deepinfer:launch_forward_N2_B12</code></td>
+<td>2349.943770～2350.119020</td>
+<td style="text-align: right;">175.250</td>
+<td>2350.062110～2364.579766</td>
+<td>181/62</td>
+</tr>
+<tr>
+<td style="text-align: right;">40</td>
+<td>D03 / decode</td>
+<td><code>deepinfer:launch_forward_N2_B12</code></td>
+<td>2356.151060～2356.339850</td>
+<td style="text-align: right;">188.790</td>
+<td>2367.689620～2381.952338</td>
+<td>181/62</td>
+</tr>
+<tr>
+<td style="text-align: right;">41</td>
+<td>D04 / decode</td>
+<td><code>deepinfer:launch_forward_N2_B12</code></td>
+<td>2373.177370～2373.317580</td>
+<td style="text-align: right;">140.210</td>
+<td>2384.999113～2399.508982</td>
+<td>181/62</td>
+</tr>
+<tr>
+<td style="text-align: right;">42</td>
+<td>D05 / decode</td>
+<td><code>deepinfer:launch_forward_N2_B12</code></td>
+<td>2390.871490～2391.024940</td>
+<td style="text-align: right;">153.450</td>
+<td>2402.572718～2417.136769</td>
+<td>181/62</td>
+</tr>
+<tr>
+<td style="text-align: right;">43</td>
+<td>D06 / decode</td>
+<td><code>deepinfer:launch_forward_N2_B12</code></td>
+<td>2407.858740～2407.992840</td>
+<td style="text-align: right;">134.100</td>
+<td>2420.210187～2434.613686</td>
+<td>181/62</td>
+</tr>
+<tr>
+<td style="text-align: right;">44</td>
+<td>D07 / decode</td>
+<td><code>deepinfer:launch_forward_N2_B12</code></td>
+<td>2425.748520～2425.880910</td>
+<td style="text-align: right;">132.390</td>
+<td>2437.704889～2452.130767</td>
+<td>181/62</td>
+</tr>
+<tr>
+<td style="text-align: right;">45</td>
+<td>D08 / decode</td>
+<td><code>deepinfer:launch_forward_N2_B12</code></td>
+<td>2443.323360～2443.468480</td>
+<td style="text-align: right;">145.120</td>
+<td>2455.224917～2470.020501</td>
+<td>181/62</td>
+</tr>
+<tr>
+<td style="text-align: right;">46</td>
+<td>D09 / decode</td>
+<td><code>deepinfer:launch_forward_N2_B12</code></td>
+<td>2461.241610～2461.402680</td>
+<td style="text-align: right;">161.070</td>
+<td>2473.150409～2487.712471</td>
+<td>181/62</td>
+</tr>
+<tr>
+<td style="text-align: right;">47</td>
+<td>D10 / decode</td>
+<td><code>deepinfer:launch_forward_N2_B12</code></td>
+<td>2478.364260～2478.494450</td>
+<td style="text-align: right;">130.190</td>
+<td>2490.784874～2505.311131</td>
+<td>181/62</td>
+</tr>
+<tr>
+<td style="text-align: right;">48</td>
+<td>D11 / decode</td>
+<td><code>deepinfer:launch_forward_N2_B12</code></td>
+<td>2495.928820～2496.061180</td>
+<td style="text-align: right;">132.360</td>
+<td>2508.414486～2522.884463</td>
+<td>181/62</td>
+</tr>
+<tr>
+<td style="text-align: right;">49</td>
+<td>D12 / decode</td>
+<td><code>deepinfer:launch_forward_N2_B12</code></td>
+<td>2514.273950～2514.410480</td>
+<td style="text-align: right;">136.530</td>
+<td>2525.992347～2540.492711</td>
+<td>181/62</td>
+</tr>
+<tr>
+<td style="text-align: right;">50</td>
+<td>D13 / decode</td>
+<td><code>deepinfer:launch_forward_N2_B12</code></td>
+<td>2531.164850～2531.314420</td>
+<td style="text-align: right;">149.570</td>
+<td>2543.571699～2558.082879</td>
+<td>181/62</td>
+</tr>
+<tr>
+<td style="text-align: right;">51</td>
+<td>D14 / decode</td>
+<td><code>deepinfer:launch_forward_N2_B12</code></td>
+<td>2548.614060～2548.754950</td>
+<td style="text-align: right;">140.890</td>
+<td>2561.134135～2575.575722</td>
+<td>181/62</td>
+</tr>
+<tr>
+<td style="text-align: right;">52</td>
+<td>D15 / decode</td>
+<td><code>deepinfer:launch_forward_N2_B12</code></td>
+<td>2566.718990～2566.881350</td>
+<td style="text-align: right;">162.360</td>
+<td>2578.648539～2593.136067</td>
+<td>181/62</td>
+</tr>
+<tr>
+<td style="text-align: right;">53</td>
+<td>D16 / decode</td>
+<td><code>deepinfer:launch_forward_N2_B12</code></td>
+<td>2583.730840～2583.882480</td>
+<td style="text-align: right;">151.640</td>
+<td>2596.182530～2610.781168</td>
+<td>181/62</td>
+</tr>
+<tr>
+<td style="text-align: right;">54</td>
+<td>D17 / decode</td>
+<td><code>deepinfer:launch_forward_N2_B12</code></td>
+<td>2601.335280～2601.489490</td>
+<td style="text-align: right;">154.210</td>
+<td>2613.826644～2628.262078</td>
+<td>181/62</td>
+</tr>
+<tr>
+<td style="text-align: right;">55</td>
+<td>D18 / decode</td>
+<td><code>deepinfer:launch_forward_N2_B12</code></td>
+<td>2619.283960～2619.421740</td>
+<td style="text-align: right;">137.780</td>
+<td>2631.358285～2645.948031</td>
+<td>181/62</td>
+</tr>
+<tr>
+<td style="text-align: right;">56</td>
+<td>D19 / decode</td>
+<td><code>deepinfer:launch_forward_N2_B12</code></td>
+<td>2636.474210～2636.616630</td>
+<td style="text-align: right;">142.420</td>
+<td>2648.988245～2663.639156</td>
+<td>181/62</td>
+</tr>
+<tr>
+<td style="text-align: right;">57</td>
+<td>D20 / decode</td>
+<td><code>deepinfer:launch_forward_N2_B12</code></td>
+<td>2654.149910～2654.284020</td>
+<td style="text-align: right;">134.110</td>
+<td>2666.719965～2681.242581</td>
+<td>181/62</td>
+</tr>
+<tr>
+<td style="text-align: right;">58</td>
+<td>D21 / decode</td>
+<td><code>deepinfer:launch_forward_N2_B12</code></td>
+<td>2671.973100～2672.131100</td>
+<td style="text-align: right;">158.000</td>
+<td>2684.342032～2699.059012</td>
+<td>181/62</td>
+</tr>
+<tr>
+<td style="text-align: right;">59</td>
+<td>D22 / decode</td>
+<td><code>deepinfer:launch_forward_N2_B12</code></td>
+<td>2690.277580～2690.415370</td>
+<td style="text-align: right;">137.790</td>
+<td>2702.121255～2716.700112</td>
+<td>181/62</td>
+</tr>
+<tr>
+<td style="text-align: right;">60</td>
+<td>D23 / decode</td>
+<td><code>deepinfer:launch_forward_N1_B6</code></td>
+<td>2707.427110～2708.301400</td>
+<td style="text-align: right;">874.290</td>
+<td>2719.819631～2733.295121</td>
+<td>178/61</td>
+</tr>
+<tr>
+<td style="text-align: right;">61</td>
+<td>D24 / decode</td>
+<td><code>deepinfer:launch_forward_N1_B6</code></td>
+<td>2725.142730～2725.291300</td>
+<td style="text-align: right;">148.570</td>
+<td>2735.945154～2749.426347</td>
+<td>178/61</td>
+</tr>
+<tr>
+<td style="text-align: right;">62</td>
+<td>D25 / decode</td>
+<td><code>deepinfer:launch_forward_N1_B6</code></td>
+<td>2741.077980～2741.230480</td>
+<td style="text-align: right;">152.500</td>
+<td>2752.046214～2765.480313</td>
+<td>178/61</td>
+</tr>
+<tr>
+<td style="text-align: right;">63</td>
+<td>D26 / decode</td>
+<td><code>deepinfer:launch_forward_N1_B6</code></td>
+<td>2757.414850～2757.543840</td>
+<td style="text-align: right;">128.990</td>
+<td>2768.093367～2781.598811</td>
+<td>178/61</td>
+</tr>
+<tr>
+<td style="text-align: right;">64</td>
+<td>D27 / decode</td>
+<td><code>deepinfer:launch_forward_N1_B6</code></td>
+<td>2773.249300～2773.396080</td>
+<td style="text-align: right;">146.780</td>
+<td>2784.207841～2797.571254</td>
+<td>178/61</td>
+</tr>
+<tr>
+<td style="text-align: right;">65</td>
+<td>D28 / decode</td>
+<td><code>deepinfer:launch_forward_N1_B6</code></td>
+<td>2789.664570～2789.793240</td>
+<td style="text-align: right;">128.670</td>
+<td>2800.209251～2813.575607</td>
+<td>178/61</td>
+</tr>
+<tr>
+<td style="text-align: right;">66</td>
+<td>D29 / decode</td>
+<td><code>deepinfer:launch_forward_N1_B6</code></td>
+<td>2805.281040～2805.444870</td>
+<td style="text-align: right;">163.830</td>
+<td>2816.194519～2829.682654</td>
+<td>178/61</td>
+</tr>
+<tr>
+<td style="text-align: right;">67</td>
+<td>D30 / decode</td>
+<td><code>deepinfer:launch_forward_N1_B6</code></td>
+<td>2821.297350～2821.461750</td>
+<td style="text-align: right;">164.400</td>
+<td>2832.346402～2845.864973</td>
+<td>178/61</td>
+</tr>
+<tr>
+<td style="text-align: right;">68</td>
+<td>D31 / decode</td>
+<td><code>deepinfer:launch_forward_N1_B6</code></td>
+<td>2837.830590～2837.982380</td>
+<td style="text-align: right;">151.790</td>
+<td>2848.489226～2862.063405</td>
+<td>178/61</td>
+</tr>
+<tr>
+<td style="text-align: right;">69</td>
+<td>D32 / decode</td>
+<td><code>deepinfer:launch_forward_N1_B6</code></td>
+<td>3615.216650～3615.384030</td>
+<td style="text-align: right;">167.380</td>
+<td>3615.337642～3629.393798</td>
+<td>178/61</td>
+</tr>
+<tr>
+<td style="text-align: right;">70</td>
+<td>D33 / decode</td>
+<td><code>deepinfer:launch_forward_N1_B6</code></td>
+<td>3621.970160～3622.111840</td>
+<td style="text-align: right;">141.680</td>
+<td>3632.063031～3645.614086</td>
+<td>178/61</td>
+</tr>
+<tr>
+<td style="text-align: right;">71</td>
+<td>Z37 / placeholder</td>
+<td><code>deepinfer:launch_forward_N1_B1</code></td>
+<td>3637.900130～3638.068530</td>
+<td style="text-align: right;">168.400</td>
+<td>3648.207305～3657.070424</td>
+<td>169/58</td>
+</tr>
+</tbody>
+</table></div></main><footer>采集2026-10-27，编写2026-10-31；shape为固定源码推导，耗时为采集事件。阅读版公式需联网加载MathJax；离线可用支持LaTeX的Markdown阅读器。<p><a href="#top">回到顶部</a></p></footer></body></html>

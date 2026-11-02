@@ -1,0 +1,652 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>附录A-D02四段逐算子对照</title><style>*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:20px}body{margin:0;background:#fafbf8;color:#24352d;font:17px/1.9 system-ui,"Microsoft YaHei",sans-serif}header,main,footer{max-width:1100px;margin:auto;padding:24px}header{border-bottom:1px solid #dce3db}nav{display:flex;flex-wrap:wrap;gap:18px}a{color:#08766b;text-underline-offset:3px}h1{font-size:clamp(28px,4vw,40px);line-height:1.4}h2{font-size:26px;line-height:1.5;margin-top:50px;border-top:1px solid #dce3db;padding-top:18px}h3{font-size:21px;margin-top:32px}p,li{overflow-wrap:anywhere}main>p{max-width:82ch}code{font:.88em/1.7 Consolas,monospace;overflow-wrap:anywhere}pre{padding:16px;background:#edf2ee;overflow:auto;border-radius:7px}pre code{white-space:pre-wrap;overflow-wrap:anywhere}.table-scroll{max-width:100%;overflow:auto;margin:20px 0}table{border-collapse:collapse;font-size:14px;width:100%}th,td{padding:10px;border-bottom:1px solid #dce3db;vertical-align:top;text-align:left;min-width:80px}th{background:#edf3ed}img{display:block;max-width:100%;height:auto;margin:25px auto}summary{cursor:pointer;font-weight:600}details{padding:14px 18px;background:#edf3ed;border-radius:7px;margin:20px 0}.math-display{overflow:auto;padding:8px 0}mjx-container{max-width:100%}.symbol{background:#f0f4ef}.symbol pre{background:transparent}tr:target{background:#fff0ce}.flow-nodes{list-style:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;padding:0}.flow-nodes>li{padding:14px;border:1px solid #d6e0d8;border-radius:7px;background:#edf3ed}.flow-nodes h4{margin:0;font-size:18px}.flow-nodes p{font-size:14px;line-height:1.7}.flow-nodes code{font-size:14px}.flow-nodes details{padding:0;font-size:13px;background:transparent}.flow-nodes li::before{content:attr(data-order);font-size:13px;color:#526b5d}.image-note{font-size:13px;color:#526b5d}footer{font-size:14px;border-top:1px solid #dce3db;margin-top:35px}@media(max-width:800px){.flow-nodes{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:600px){header,main,footer{padding:18px}.flow-nodes{grid-template-columns:minmax(0,1fr)}h2{font-size:23px}h3{font-size:20px}th,td{padding:8px}table{min-width:560px}}</style><script>window.MathJax={"tex": {"displayMath": [["\\[", "\\]"]]}, "svg": {"fontCache": "global"}, "options": {"skipHtmlTags": ["script", "noscript", "style", "textarea", "pre", "code"]}}</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script></head><body id="top"><header><nav><a href="../">YuHsin首页</a><a href="./#deepinfer-inference-guide-20261102">下载与资料</a><a href="deepinfer-inference-guide-20261102.html">正文</a><a href="deepinfer-inference-guide-20261102-operators.html">逐算子附录</a><a href="deepinfer-inference-guide-20261102-forwards.html">71次调用</a><a href="files/deepinfer-inference-guide-20261102/附录A-D02四段逐算子对照.md" download>下载Markdown</a><a href="files/deepinfer-inference-guide-20261102.zip" download>完整阅读包</a></nav></header><main><details><summary>展开章节目录</summary><div class="toc">
+<ul>
+<li><a href="#①-l00-attention写回-l00-moe">① L00 Attention写回 → L00 MoE</a></li>
+<li><a href="#②-l00-moe写回-l01-engramattention">② L00 MoE写回 → L01 Engram＋Attention</a></li>
+<li><a href="#③-l01-attention写回-l01-moe">③ L01 Attention写回 → L01 MoE</a></li>
+<li><a href="#④-l01-moe写回-l02压缩索引attention">④ L01 MoE写回 → L02压缩/索引＋Attention</a></li>
+</ul>
+</div>
+</details><h1 id="附录ad02四段逐算子对照">附录A：D02四段逐算子对照</h1>
+<p>本表使用continuous-dp0.json的Stream181 / Model ID62，所有时间为DP0 scope相对+ms。四段包含左post，不含右post；共72个kernel，主模型设备图M=16，含padding。</p>
+<p>每条完整名称都可复制搜索，但必须同时核对时间、Stream和Task。shape为固定源码推导的逻辑接口，不是逐张量实测；权重常量未逐项列出。</p>
+<p><a href="deepinfer-inference-guide-20261102.html">返回正文</a>；<a href="files/deepinfer-inference-guide-20261102/data/d02-four-segments.csv">完整CSV</a>。</p>
+<h2 id="①-l00-attention写回-l00-moe">① L00 Attention写回 → L00 MoE</h2>
+<p>+2351.496606～2351.766216 ms，区间269.610 μs；kernel累计268.116 μs，间隙1.494 μs。右边界post Task21688不计入本段。</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th style="text-align: right;">Task</th>
+<th>完整kernel名</th>
+<th>+起止ms</th>
+<th style="text-align: right;">耗时μs</th>
+<th>主要输入→输出</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr id="task-21677">
+<td style="text-align: right;">21677</td>
+<td><code>mhc_post_fwd_asc_kernel</code></td>
+<td>2351.496606～2351.501348</td>
+<td style="text-align: right;">4.742</td>
+<td><code>x[16,5120] + R[16,4,5120]；post[16,4,1] + mix[16,4,4] → R′[16,4,5120]</code></td>
+<td>写回四路主干</td>
+</tr>
+<tr id="task-21678">
+<td style="text-align: right;">21678</td>
+<td><code>mhc_pre_apply_mix_fwd_asc_kernel</code></td>
+<td>2351.501370～2351.504242</td>
+<td style="text-align: right;">2.872</td>
+<td><code>R[16,4,5120] + pre[16,4,1] → x[16,5120]</code></td>
+<td>四路读成一路</td>
+</tr>
+<tr id="task-21679">
+<td style="text-align: right;">21679</td>
+<td><code>tf32_hc_prenorm_gemm_kernel_kernel</code></td>
+<td>2351.504264～2351.513825</td>
+<td style="text-align: right;">9.561</td>
+<td><code>R[16,4,5120] → 展平[16,20480] → 系数中间量[16,24] + 平方和[16]</code></td>
+<td>计算混合系数</td>
+</tr>
+<tr id="task-21680">
+<td style="text-align: right;">21680</td>
+<td><code>mhc_reduce_partials_and_rmsnorm_fwd_asc_kernel</code></td>
+<td>2351.513847～2351.516416</td>
+<td style="text-align: right;">2.569</td>
+<td><code>系数中间量[16,24] + 平方和[16] → mixes[16,24]</code></td>
+<td>归一化系数</td>
+</tr>
+<tr id="task-21681">
+<td style="text-align: right;">21681</td>
+<td><code>mhc_pre_split_mixes_fwd_simd_mhc4_asc_kernel</code></td>
+<td>2351.516438～2351.519003</td>
+<td style="text-align: right;">2.565</td>
+<td><code>mixes[16,24] → pre/post各[16,4,1]；残差mix[16,4,4]</code></td>
+<td>拆出混合系数</td>
+</tr>
+<tr id="task-21682">
+<td style="text-align: right;">21682</td>
+<td><code>mhc_sinkhorn_fwd_asc_kernel</code></td>
+<td>2351.519025～2351.523196</td>
+<td style="text-align: right;">4.171</td>
+<td><code>残差mix[16,4,4] → 归一化mix[16,4,4]</code></td>
+<td>Sinkhorn归一化</td>
+</tr>
+<tr id="task-21683">
+<td style="text-align: right;">21683</td>
+<td><code>_norm_kernel</code></td>
+<td>2351.523218～2351.528980</td>
+<td style="text-align: right;">5.762</td>
+<td><code>x[16,5120] → x_norm[16,5120]（含所需格式）</code></td>
+<td>子层输入RMSNorm</td>
+</tr>
+<tr id="task-21684">
+<td style="text-align: right;">21684</td>
+<td><code>_ZN9deep_gemm14bf16_gemm_implILNS_5MajorE0ELS1_0ELj0ELj384ELj5120ELj16ELj16ELj2048ELj16ELj16ELj1024ELj5ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0EfNS_8epilogue9operators8IdentityELj256ELb1ELb1ELb0EEEvNS_6gm_ptrIu6__bf16XT_EEENS8_Iu6__bf16XT0_EEENS8_IT19_LS1_0EEEjjjPijNS5_4ArgsE</code></td>
+<td>2351.529002～2351.534926</td>
+<td style="text-align: right;">5.924</td>
+<td><code>x[16,5120] → 专家分数[16,384]</code></td>
+<td>专家Gate投影</td>
+</tr>
+<tr id="task-21685">
+<td style="text-align: right;">21685</td>
+<td><code>moe_topk_gate_forward_kernel_asc_kernel</code></td>
+<td>2351.534948～2351.541170</td>
+<td style="text-align: right;">6.222</td>
+<td><code>专家分数[16,384] → 专家ID[16,6] + 权重[16,6]</code></td>
+<td>选择Top6专家</td>
+</tr>
+<tr id="task-21687">
+<td style="text-align: right;">21687</td>
+<td><code>_ZN9deep_gemm8mega_moe13mega_moe_implILj16ELj416ELj1ELj512ELj6ELj5120ELj2304EEEvPu6__bf16PiPKhPKsS5_S7_S5_S7_S5_S7_jfNS_6layout9SymBufferILj256EEE</code></td>
+<td>2351.542466～2351.766194</td>
+<td style="text-align: right;">223.728</td>
+<td><code>x[16,5120] + ID/权重[16,6] → MoE输出[16,5120]</code></td>
+<td>专家计算与汇聚</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="②-l00-moe写回-l01-engramattention">② L00 MoE写回 → L01 Engram＋Attention</h2>
+<p>+2351.766216～2351.958305 ms，区间192.089 μs；kernel累计191.649 μs，间隙0.440 μs。右边界post Task21708不计入本段。</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th style="text-align: right;">Task</th>
+<th>完整kernel名</th>
+<th>+起止ms</th>
+<th style="text-align: right;">耗时μs</th>
+<th>主要输入→输出</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr id="task-21688">
+<td style="text-align: right;">21688</td>
+<td><code>mhc_post_fwd_asc_kernel</code></td>
+<td>2351.766216～2351.769596</td>
+<td style="text-align: right;">3.380</td>
+<td><code>x[16,5120] + R[16,4,5120]；post[16,4,1] + mix[16,4,4] → R′[16,4,5120]</code></td>
+<td>写回四路主干</td>
+</tr>
+<tr id="task-21689">
+<td style="text-align: right;">21689</td>
+<td><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj25600ELj6144ELj16ELj416ELj256ELj16ELj208ELj128ELj4ELj2ELj11ELj2ELj4ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb0ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></td>
+<td>2351.769618～2351.827613</td>
+<td style="text-align: right;">57.995</td>
+<td><code>预取表项[16,6144] → 特征[16,25600] → view[16,5,5120]</code></td>
+<td>Engram特征投影</td>
+</tr>
+<tr id="task-21690">
+<td style="text-align: right;">21690</td>
+<td><code>engram_gate_fwd_kernel_asc_kernel</code></td>
+<td>2351.827635～2351.832634</td>
+<td style="text-align: right;">4.999</td>
+<td><code>R[16,4,5120] + 特征[16,5,5120] → 更新后的R[16,4,5120]</code></td>
+<td>门控注入主干</td>
+</tr>
+<tr id="task-21691">
+<td style="text-align: right;">21691</td>
+<td><code>mhc_pre_apply_mix_fwd_asc_kernel</code></td>
+<td>2351.832656～2351.835723</td>
+<td style="text-align: right;">3.067</td>
+<td><code>R[16,4,5120] + pre[16,4,1] → x[16,5120]</code></td>
+<td>四路读成一路</td>
+</tr>
+<tr id="task-21692">
+<td style="text-align: right;">21692</td>
+<td><code>tf32_hc_prenorm_gemm_kernel_kernel</code></td>
+<td>2351.835745～2351.845715</td>
+<td style="text-align: right;">9.970</td>
+<td><code>R[16,4,5120] → 展平[16,20480] → 系数中间量[16,24] + 平方和[16]</code></td>
+<td>计算混合系数</td>
+</tr>
+<tr id="task-21693">
+<td style="text-align: right;">21693</td>
+<td><code>mhc_reduce_partials_and_rmsnorm_fwd_asc_kernel</code></td>
+<td>2351.845737～2351.848228</td>
+<td style="text-align: right;">2.491</td>
+<td><code>系数中间量[16,24] + 平方和[16] → mixes[16,24]</code></td>
+<td>归一化系数</td>
+</tr>
+<tr id="task-21694">
+<td style="text-align: right;">21694</td>
+<td><code>mhc_pre_split_mixes_fwd_simd_mhc4_asc_kernel</code></td>
+<td>2351.848250～2351.851042</td>
+<td style="text-align: right;">2.792</td>
+<td><code>mixes[16,24] → pre/post各[16,4,1]；残差mix[16,4,4]</code></td>
+<td>拆出混合系数</td>
+</tr>
+<tr id="task-21695">
+<td style="text-align: right;">21695</td>
+<td><code>mhc_sinkhorn_fwd_asc_kernel</code></td>
+<td>2351.851064～2351.855235</td>
+<td style="text-align: right;">4.171</td>
+<td><code>残差mix[16,4,4] → 归一化mix[16,4,4]</code></td>
+<td>Sinkhorn归一化</td>
+</tr>
+<tr id="task-21696">
+<td style="text-align: right;">21696</td>
+<td><code>_norm_kernel</code></td>
+<td>2351.855257～2351.865415</td>
+<td style="text-align: right;">10.158</td>
+<td><code>x[16,5120] → x_norm[16,5120]（含所需格式）</code></td>
+<td>子层输入RMSNorm</td>
+</tr>
+<tr id="task-21697">
+<td style="text-align: right;">21697</td>
+<td><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj1792ELj5120ELj16ELj64ELj512ELj16ELj64ELj256ELj4ELj2ELj10ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></td>
+<td>2351.865437～2351.871922</td>
+<td style="text-align: right;">6.485</td>
+<td><code>x[16,5120] → [16,1792] → Q_a[16,1280]；及SWA KV[16,1,512]</code></td>
+<td>联合投影Q_a与SWA KV</td>
+</tr>
+<tr id="task-21698">
+<td style="text-align: right;">21698</td>
+<td><code>_fused_norm_rope_hadamard_cast_store_kvcache_kernel</code></td>
+<td>2351.871944～2351.875354</td>
+<td style="text-align: right;">3.410</td>
+<td><code>SWA KV[16,1,512] + position[16] → 逻辑KV[16,1,512]（缓存格式）；及SWA缓存更新</code></td>
+<td>处理并写入SWA KV</td>
+</tr>
+<tr id="task-21699">
+<td style="text-align: right;">21699</td>
+<td><code>_norm_kernel</code></td>
+<td>2351.875376～2351.880129</td>
+<td style="text-align: right;">4.753</td>
+<td><code>Q_a[16,1280] → Q_a_norm[16,1280]</code></td>
+<td>低秩Q归一化</td>
+</tr>
+<tr id="task-21700">
+<td style="text-align: right;">21700</td>
+<td><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj32768ELj1280ELj16ELj512ELj256ELj16ELj256ELj128ELj3ELj2ELj5ELj2ELj4ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></td>
+<td>2351.880151～2351.899033</td>
+<td style="text-align: right;">18.882</td>
+<td><code>Q_a[16,1280] → [16,32768] → view Q[16,64,512]</code></td>
+<td>展开主Attention Q</td>
+</tr>
+<tr id="task-21701">
+<td style="text-align: right;">21701</td>
+<td><code>_fused_norm_rope_hadamard_cast_store_kvcache_kernel</code></td>
+<td>2351.899055～2351.902683</td>
+<td style="text-align: right;">3.628</td>
+<td><code>主Q[16,64,512] + position[16] → 主Q[16,64,512]（所需计算格式）</code></td>
+<td>归一化/旋转主Q</td>
+</tr>
+<tr id="task-21702">
+<td style="text-align: right;">21702</td>
+<td><code>_ZN6ascend7prefill10sparse_fwd22sparse_attn_fwd_kernelINS1_6KernelIXtlNS1_6ConfigEL17SparseAttnFwdMode1ELj64ELj640ELb1EEEEEEEvNT_6ParamsENS7_9AuxParamsE</code></td>
+<td>2351.902706～2351.910992</td>
+<td style="text-align: right;">8.286</td>
+<td><code>Q[16,64,512] + SWA历史KV → context[16,64,512]</code></td>
+<td>L01上下文汇聚</td>
+</tr>
+<tr id="task-21703">
+<td style="text-align: right;">21703</td>
+<td><code>_rope_kernel_kernel</code></td>
+<td>2351.911014～2351.915810</td>
+<td style="text-align: right;">4.796</td>
+<td><code>context[16,64,512] → 旋转后的context[16,64,512]</code></td>
+<td>输出逆向RoPE</td>
+</tr>
+<tr id="task-21704">
+<td style="text-align: right;">21704</td>
+<td><code>per_token_cast_kernel_kernel</code></td>
+<td>2351.915832～2351.919940</td>
+<td style="text-align: right;">4.108</td>
+<td><code>context[16,32768]（view） → FP8[16,32768] + SF</code></td>
+<td>上下文转FP8</td>
+</tr>
+<tr id="task-21705">
+<td style="text-align: right;">21705</td>
+<td><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj1024ELj4096ELj16ELj256ELj512ELj16ELj256ELj128ELj3ELj2ELj8ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE3Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb0ELb0EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></td>
+<td>2351.919962～2351.934917</td>
+<td style="text-align: right;">14.955</td>
+<td><code>FP8[16,8,4096] + SF（view） → Wv结果[16,8,1024]</code></td>
+<td>分组输出投影Wv</td>
+</tr>
+<tr id="task-21706">
+<td style="text-align: right;">21706</td>
+<td><code>per_token_cast_kernel_kernel</code></td>
+<td>2351.934939～2351.938676</td>
+<td style="text-align: right;">3.737</td>
+<td><code>Wv结果[16,8192]（view） → FP8[16,8192] + SF</code></td>
+<td>Wv结果转FP8</td>
+</tr>
+<tr id="task-21707">
+<td style="text-align: right;">21707</td>
+<td><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj5120ELj8192ELj16ELj160ELj256ELj16ELj160ELj128ELj4ELj2ELj32ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></td>
+<td>2351.938698～2351.958283</td>
+<td style="text-align: right;">19.585</td>
+<td><code>FP8[16,8192] + SF（view） → 子层输出[16,5120]</code></td>
+<td>合并输出投影Wo</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="③-l01-attention写回-l01-moe">③ L01 Attention写回 → L01 MoE</h2>
+<p>+2351.958305～2352.139854 ms，区间181.549 μs；kernel累计180.849 μs，间隙0.700 μs。右边界post Task21719不计入本段。</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th style="text-align: right;">Task</th>
+<th>完整kernel名</th>
+<th>+起止ms</th>
+<th style="text-align: right;">耗时μs</th>
+<th>主要输入→输出</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr id="task-21708">
+<td style="text-align: right;">21708</td>
+<td><code>mhc_post_fwd_asc_kernel</code></td>
+<td>2351.958305～2351.961813</td>
+<td style="text-align: right;">3.508</td>
+<td><code>x[16,5120] + R[16,4,5120]；post[16,4,1] + mix[16,4,4] → R′[16,4,5120]</code></td>
+<td>写回四路主干</td>
+</tr>
+<tr id="task-21709">
+<td style="text-align: right;">21709</td>
+<td><code>mhc_pre_apply_mix_fwd_asc_kernel</code></td>
+<td>2351.961835～2351.964756</td>
+<td style="text-align: right;">2.921</td>
+<td><code>R[16,4,5120] + pre[16,4,1] → x[16,5120]</code></td>
+<td>四路读成一路</td>
+</tr>
+<tr id="task-21710">
+<td style="text-align: right;">21710</td>
+<td><code>tf32_hc_prenorm_gemm_kernel_kernel</code></td>
+<td>2351.964778～2351.974129</td>
+<td style="text-align: right;">9.351</td>
+<td><code>R[16,4,5120] → 展平[16,20480] → 系数中间量[16,24] + 平方和[16]</code></td>
+<td>计算混合系数</td>
+</tr>
+<tr id="task-21711">
+<td style="text-align: right;">21711</td>
+<td><code>mhc_reduce_partials_and_rmsnorm_fwd_asc_kernel</code></td>
+<td>2351.974151～2351.976794</td>
+<td style="text-align: right;">2.643</td>
+<td><code>系数中间量[16,24] + 平方和[16] → mixes[16,24]</code></td>
+<td>归一化系数</td>
+</tr>
+<tr id="task-21712">
+<td style="text-align: right;">21712</td>
+<td><code>mhc_pre_split_mixes_fwd_simd_mhc4_asc_kernel</code></td>
+<td>2351.976816～2351.979405</td>
+<td style="text-align: right;">2.589</td>
+<td><code>mixes[16,24] → pre/post各[16,4,1]；残差mix[16,4,4]</code></td>
+<td>拆出混合系数</td>
+</tr>
+<tr id="task-21713">
+<td style="text-align: right;">21713</td>
+<td><code>mhc_sinkhorn_fwd_asc_kernel</code></td>
+<td>2351.979427～2351.983747</td>
+<td style="text-align: right;">4.320</td>
+<td><code>残差mix[16,4,4] → 归一化mix[16,4,4]</code></td>
+<td>Sinkhorn归一化</td>
+</tr>
+<tr id="task-21714">
+<td style="text-align: right;">21714</td>
+<td><code>_norm_kernel</code></td>
+<td>2351.983769～2351.988097</td>
+<td style="text-align: right;">4.328</td>
+<td><code>x[16,5120] → x_norm[16,5120]（含所需格式）</code></td>
+<td>子层输入RMSNorm</td>
+</tr>
+<tr id="task-21715">
+<td style="text-align: right;">21715</td>
+<td><code>_ZN9deep_gemm14bf16_gemm_implILNS_5MajorE0ELS1_0ELj0ELj384ELj5120ELj16ELj16ELj2048ELj16ELj16ELj1024ELj5ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0EfNS_8epilogue9operators8IdentityELj256ELb1ELb1ELb0EEEvNS_6gm_ptrIu6__bf16XT_EEENS8_Iu6__bf16XT0_EEENS8_IT19_LS1_0EEEjjjPijNS5_4ArgsE</code></td>
+<td>2351.988119～2351.993828</td>
+<td style="text-align: right;">5.709</td>
+<td><code>x[16,5120] → 专家分数[16,384]</code></td>
+<td>专家Gate投影</td>
+</tr>
+<tr id="task-21716">
+<td style="text-align: right;">21716</td>
+<td><code>moe_topk_gate_forward_kernel_asc_kernel</code></td>
+<td>2351.993850～2351.998888</td>
+<td style="text-align: right;">5.038</td>
+<td><code>专家分数[16,384] → 专家ID[16,6] + 权重[16,6]</code></td>
+<td>选择Top6专家</td>
+</tr>
+<tr id="task-21718">
+<td style="text-align: right;">21718</td>
+<td><code>_ZN9deep_gemm8mega_moe13mega_moe_implILj16ELj416ELj1ELj512ELj6ELj5120ELj2304EEEvPu6__bf16PiPKhPKsS5_S7_S5_S7_S5_S7_jfNS_6layout9SymBufferILj256EEE</code></td>
+<td>2351.999391～2352.139832</td>
+<td style="text-align: right;">140.441</td>
+<td><code>x[16,5120] + ID/权重[16,6] → MoE输出[16,5120]</code></td>
+<td>专家计算与汇聚</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="④-l01-moe写回-l02压缩索引attention">④ L01 MoE写回 → L02压缩/索引＋Attention</h2>
+<p>+2352.139854～2352.334194 ms，区间194.340 μs；kernel累计193.636 μs，间隙0.704 μs。右边界post Task21751不计入本段。</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th style="text-align: right;">Task</th>
+<th>完整kernel名</th>
+<th>+起止ms</th>
+<th style="text-align: right;">耗时μs</th>
+<th>主要输入→输出</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr id="task-21719">
+<td style="text-align: right;">21719</td>
+<td><code>mhc_post_fwd_asc_kernel</code></td>
+<td>2352.139854～2352.142927</td>
+<td style="text-align: right;">3.073</td>
+<td><code>x[16,5120] + R[16,4,5120]；post[16,4,1] + mix[16,4,4] → R′[16,4,5120]</code></td>
+<td>写回四路主干</td>
+</tr>
+<tr id="task-21720">
+<td style="text-align: right;">21720</td>
+<td><code>mhc_pre_apply_mix_fwd_asc_kernel</code></td>
+<td>2352.142949～2352.145956</td>
+<td style="text-align: right;">3.007</td>
+<td><code>R[16,4,5120] + pre[16,4,1] → x[16,5120]</code></td>
+<td>四路读成一路</td>
+</tr>
+<tr id="task-21721">
+<td style="text-align: right;">21721</td>
+<td><code>tf32_hc_prenorm_gemm_kernel_kernel</code></td>
+<td>2352.145978～2352.155869</td>
+<td style="text-align: right;">9.891</td>
+<td><code>R[16,4,5120] → 展平[16,20480] → 系数中间量[16,24] + 平方和[16]</code></td>
+<td>计算混合系数</td>
+</tr>
+<tr id="task-21722">
+<td style="text-align: right;">21722</td>
+<td><code>mhc_reduce_partials_and_rmsnorm_fwd_asc_kernel</code></td>
+<td>2352.155891～2352.158580</td>
+<td style="text-align: right;">2.689</td>
+<td><code>系数中间量[16,24] + 平方和[16] → mixes[16,24]</code></td>
+<td>归一化系数</td>
+</tr>
+<tr id="task-21723">
+<td style="text-align: right;">21723</td>
+<td><code>mhc_pre_split_mixes_fwd_simd_mhc4_asc_kernel</code></td>
+<td>2352.158602～2352.161229</td>
+<td style="text-align: right;">2.627</td>
+<td><code>mixes[16,24] → pre/post各[16,4,1]；残差mix[16,4,4]</code></td>
+<td>拆出混合系数</td>
+</tr>
+<tr id="task-21724">
+<td style="text-align: right;">21724</td>
+<td><code>mhc_sinkhorn_fwd_asc_kernel</code></td>
+<td>2352.161251～2352.165862</td>
+<td style="text-align: right;">4.611</td>
+<td><code>残差mix[16,4,4] → 归一化mix[16,4,4]</code></td>
+<td>Sinkhorn归一化</td>
+</tr>
+<tr id="task-21725">
+<td style="text-align: right;">21725</td>
+<td><code>_norm_kernel</code></td>
+<td>2352.165884～2352.176445</td>
+<td style="text-align: right;">10.561</td>
+<td><code>x[16,5120] → x_norm[16,5120]（含所需格式）</code></td>
+<td>子层输入RMSNorm</td>
+</tr>
+<tr id="task-21726">
+<td style="text-align: right;">21726</td>
+<td><code>_ZN9deep_gemm14bf16_gemm_implILNS_5MajorE0ELS1_0ELj0ELj1056ELj5120ELj16ELj48ELj256ELj16ELj48ELj128ELj8ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0EfNS_8epilogue9operators8IdentityELj256ELb1ELb1ELb0EEEvNS_6gm_ptrIu6__bf16XT_EEENS8_Iu6__bf16XT0_EEENS8_IT19_LS1_0EEEjjjPijNS5_4ArgsE</code></td>
+<td>2352.176467～2352.184674</td>
+<td style="text-align: right;">8.207</td>
+<td><code>x[16,5120] → [16,1056] → score/latent各[16,512]；及索引头权重[16,32]</code></td>
+<td>投影压缩KV和索引权重</td>
+</tr>
+<tr id="task-21727">
+<td style="text-align: right;">21727</td>
+<td><code>aclnnInplaceCopy_SliceAiCore_Slice</code></td>
+<td>2352.184696～2352.187666</td>
+<td style="text-align: right;">2.970</td>
+<td><code>联合投影分量视图T[?] → 独立分量缓冲T′[?]</code></td>
+<td>拷贝投影分量</td>
+</tr>
+<tr id="task-21728">
+<td style="text-align: right;">21728</td>
+<td><code>aclnnInplaceCopy_CastAiCore_Cast</code></td>
+<td>2352.187688～2352.189270</td>
+<td style="text-align: right;">1.582</td>
+<td><code>权重[16,32]，FP32 → 权重[16,32]，BF16</code></td>
+<td>索引权重转BF16</td>
+</tr>
+<tr id="task-21729">
+<td style="text-align: right;">21729</td>
+<td><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj1792ELj5120ELj16ELj64ELj512ELj16ELj64ELj256ELj4ELj2ELj10ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></td>
+<td>2352.189292～2352.195631</td>
+<td style="text-align: right;">6.339</td>
+<td><code>x[16,5120] → [16,1792] → Q_a[16,1280]；及SWA KV[16,1,512]</code></td>
+<td>联合投影Q_a与SWA KV</td>
+</tr>
+<tr id="task-21730">
+<td style="text-align: right;">21730</td>
+<td><code>_fused_norm_rope_hadamard_cast_store_kvcache_kernel</code></td>
+<td>2352.195653～2352.199005</td>
+<td style="text-align: right;">3.352</td>
+<td><code>SWA KV[16,1,512] + position[16] → 逻辑KV[16,1,512]（缓存格式）；及SWA缓存更新</code></td>
+<td>处理并写入SWA KV</td>
+</tr>
+<tr id="task-21731">
+<td style="text-align: right;">21731</td>
+<td><code>_norm_kernel</code></td>
+<td>2352.199027～2352.203732</td>
+<td style="text-align: right;">4.705</td>
+<td><code>Q_a[16,1280] → Q_a_norm[16,1280]</code></td>
+<td>低秩Q归一化</td>
+</tr>
+<tr id="task-21732">
+<td style="text-align: right;">21732</td>
+<td><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj36864ELj1280ELj16ELj384ELj256ELj16ELj192ELj128ELj4ELj2ELj5ELj2ELj6ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></td>
+<td>2352.203754～2352.222261</td>
+<td style="text-align: right;">18.507</td>
+<td><code>Q_a[16,1280] → [16,36864] → 主Q[16,64,512]；及索引Q[16,32,128]</code></td>
+<td>联合展开主Q和索引Q</td>
+</tr>
+<tr id="task-21733">
+<td style="text-align: right;">21733</td>
+<td><code>_fused_norm_rope_hadamard_cast_store_kvcache_kernel</code></td>
+<td>2352.222283～2352.226990</td>
+<td style="text-align: right;">4.707</td>
+<td><code>主Q[16,64,512] + position[16] → 主Q[16,64,512]（所需计算格式）</code></td>
+<td>归一化/旋转主Q</td>
+</tr>
+<tr id="task-21734">
+<td style="text-align: right;">21734</td>
+<td><code>_compress_and_update_state_decode_kernel</code></td>
+<td>2352.227012～2352.233021</td>
+<td style="text-align: right;">6.009</td>
+<td><code>score/latent各[16,512]；context_len[16] + state[S,R,2,512] → 更新state；输出缓冲[16,512]</code></td>
+<td>写入KV压缩状态</td>
+</tr>
+<tr id="task-21735">
+<td style="text-align: right;">21735</td>
+<td><code>_compress_and_update_state_decode_kernel_1</code></td>
+<td>2352.233043～2352.236154</td>
+<td style="text-align: right;">3.111</td>
+<td><code>更新的state[S,R,2,512] → 压缩KV[16,512]；是否有有效行由压缩组进度决定</code></td>
+<td>完成当前组KV压缩</td>
+</tr>
+<tr id="task-21736">
+<td style="text-align: right;">21736</td>
+<td><code>_fused_norm_rope_hadamard_cast_store_kvcache_kernel</code></td>
+<td>2352.236176～2352.239821</td>
+<td style="text-align: right;">3.645</td>
+<td><code>压缩KV[16,1,512] + position_c[16] → pre-RoPE KV[16,512]；及主压缩KV缓存更新</code></td>
+<td>处理并写入压缩KV</td>
+</tr>
+<tr id="task-21737">
+<td style="text-align: right;">21737</td>
+<td><code>_fused_norm_rope_hadamard_cast_store_kvcache_kernel</code></td>
+<td>2352.239844～2352.246280</td>
+<td style="text-align: right;">6.436</td>
+<td><code>索引Q[16,32,128] → FP4逻辑Q[16,32,128] + SF</code></td>
+<td>旋转/量化索引Q</td>
+</tr>
+<tr id="task-21738">
+<td style="text-align: right;">21738</td>
+<td><code>_ZN9deep_gemm14bf16_gemm_implILNS_5MajorE0ELS1_0ELj0ELj128ELj512ELj16ELj16ELj512ELj16ELj16ELj256ELj8ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1ELb0EEEvNS_6gm_ptrIu6__bf16XT_EEENS8_Iu6__bf16XT0_EEENS8_IT19_LS1_0EEEjjjPijNS5_4ArgsE</code></td>
+<td>2352.246302～2352.249840</td>
+<td style="text-align: right;">3.538</td>
+<td><code>主KV pre-RoPE[16,512] → 索引K[16,128]</code></td>
+<td>投影索引Key</td>
+</tr>
+<tr id="task-21739">
+<td style="text-align: right;">21739</td>
+<td><code>_fused_norm_rope_hadamard_cast_store_kvcache_kernel</code></td>
+<td>2352.249862～2352.253148</td>
+<td style="text-align: right;">3.286</td>
+<td><code>索引K[16,128] + position_c[16] → FP4逻辑K[16,128] + SF；及索引K缓存更新</code></td>
+<td>处理并写入索引K</td>
+</tr>
+<tr id="task-21740">
+<td style="text-align: right;">21740</td>
+<td><code>_ZN9deep_gemm35paged_mqa_logits_metadata_simt_implILj512ELj2ELj32EEEvjPjS1_S1_</code></td>
+<td>2352.253170～2352.257097</td>
+<td style="text-align: right;">3.927</td>
+<td><code>klen[16] + query_index[16]；及后端分页参数 → 调度metadata（后端布局）</code></td>
+<td>准备分页评分metadata</td>
+</tr>
+<tr id="task-21741">
+<td style="text-align: right;">21741</td>
+<td><code>aclnnInplaceCopy_TransposeAiCore_Transpose</code></td>
+<td>2352.257119～2352.260544</td>
+<td style="text-align: right;">3.425</td>
+<td><code>待转置视图T[?]（维度未记录） → 布局调整后的T′[?]</code></td>
+<td>调整评分输入布局</td>
+</tr>
+<tr id="task-21742">
+<td style="text-align: right;">21742</td>
+<td><code>_ZN9deep_gemm21paged_mqa_logits_implILb1ELj32ELj128ELj64ELj512ELj64ELj2ELj2ELj4ELj3ELj3ELb0EEEvjjmNS_6gm_ptrIhLNS_5MajorE0EEEPsS3_NS1_Iu6__bf16LS2_0EEES5_PjS6_S6_S6_</code></td>
+<td>2352.260566～2352.265436</td>
+<td style="text-align: right;">4.870</td>
+<td><code>索引Q[16,32,128] + 索引K缓存；权重[16,32] + 分页metadata → 历史分数p_sum[16,Lmax]</code></td>
+<td>给历史位置打分</td>
+</tr>
+<tr id="task-21743">
+<td style="text-align: right;">21743</td>
+<td><code>_ZN18topk_select_ascend18topk_select_kernelIXtlNS_6ConfigELj512ELb1ELb1EEEEEv14TopkSelectArgs</code></td>
+<td>2352.265458～2352.268425</td>
+<td style="text-align: right;">2.967</td>
+<td><code>p_sum[16,Lmax] + 有效长度[16] → 逻辑历史位置[16,Kidx]</code></td>
+<td>选择历史位置</td>
+</tr>
+<tr id="task-21744">
+<td style="text-align: right;">21744</td>
+<td><code>_convert_kv_index_kernel</code></td>
+<td>2352.268447～2352.272682</td>
+<td style="text-align: right;">4.235</td>
+<td><code>位置[16,Kidx] + block_table → 缓存物理slot[16,Kidx]（原地）</code></td>
+<td>转换KV物理索引</td>
+</tr>
+<tr id="task-21745">
+<td style="text-align: right;">21745</td>
+<td><code>_ZN6ascend7prefill10sparse_fwd22sparse_attn_fwd_kernelINS1_6KernelIXtlNS1_6ConfigEL17SparseAttnFwdMode1ELj64ELj640ELb1EL9ModelType0ELS6_1EEEEEEEvNT_6ParamsENS8_9AuxParamsE</code></td>
+<td>2352.272704～2352.287891</td>
+<td style="text-align: right;">15.187</td>
+<td><code>Q[16,64,512] + SWA/压缩KV；及选中历史索引[16,Kidx] → context[16,64,512]</code></td>
+<td>L02上下文汇聚</td>
+</tr>
+<tr id="task-21746">
+<td style="text-align: right;">21746</td>
+<td><code>_rope_kernel_kernel</code></td>
+<td>2352.287913～2352.292180</td>
+<td style="text-align: right;">4.267</td>
+<td><code>context[16,64,512] → 旋转后的context[16,64,512]</code></td>
+<td>输出逆向RoPE</td>
+</tr>
+<tr id="task-21747">
+<td style="text-align: right;">21747</td>
+<td><code>per_token_cast_kernel_kernel</code></td>
+<td>2352.292202～2352.296140</td>
+<td style="text-align: right;">3.938</td>
+<td><code>context[16,32768]（view） → FP8[16,32768] + SF</code></td>
+<td>上下文转FP8</td>
+</tr>
+<tr id="task-21748">
+<td style="text-align: right;">21748</td>
+<td><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj1024ELj4096ELj16ELj256ELj512ELj16ELj256ELj128ELj3ELj2ELj8ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE3Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb0ELb0EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></td>
+<td>2352.296162～2352.311368</td>
+<td style="text-align: right;">15.206</td>
+<td><code>FP8[16,8,4096] + SF（view） → Wv结果[16,8,1024]</code></td>
+<td>分组输出投影Wv</td>
+</tr>
+<tr id="task-21749">
+<td style="text-align: right;">21749</td>
+<td><code>per_token_cast_kernel_kernel</code></td>
+<td>2352.311390～2352.315180</td>
+<td style="text-align: right;">3.790</td>
+<td><code>Wv结果[16,8192]（view） → FP8[16,8192] + SF</code></td>
+<td>Wv结果转FP8</td>
+</tr>
+<tr id="task-21750">
+<td style="text-align: right;">21750</td>
+<td><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj5120ELj8192ELj16ELj160ELj256ELj16ELj160ELj128ELj4ELj2ELj32ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></td>
+<td>2352.315202～2352.334172</td>
+<td style="text-align: right;">18.970</td>
+<td><code>FP8[16,8192] + SF（view） → 子层输出[16,5120]</code></td>
+<td>合并输出投影Wo</td>
+</tr>
+</tbody>
+</table></div></main><footer>采集2026-10-27，编写2026-10-31；shape为固定源码推导，耗时为采集事件。阅读版公式需联网加载MathJax；离线可用支持LaTeX的Markdown阅读器。<p><a href="#top">回到顶部</a></p></footer></body></html>
