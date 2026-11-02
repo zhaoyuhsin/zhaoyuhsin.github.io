@@ -1,4 +1,4 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>从一句话到一句话：DeepInfer推理全流程与Trace图解</title><style>*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:20px}body{margin:0;background:#fafbf8;color:#24352d;font:17px/1.9 system-ui,"Microsoft YaHei",sans-serif}header,main,footer{max-width:1100px;margin:auto;padding:24px}header{border-bottom:1px solid #dce3db}nav{display:flex;flex-wrap:wrap;gap:18px}a{color:#08766b;text-underline-offset:3px}h1{font-size:clamp(28px,4vw,40px);line-height:1.4}h2{font-size:26px;line-height:1.5;margin-top:50px;border-top:1px solid #dce3db;padding-top:18px}h3{font-size:21px;margin-top:32px}p,li{overflow-wrap:anywhere}main>p{max-width:82ch}code{font:.88em/1.7 Consolas,monospace;overflow-wrap:anywhere}pre{padding:16px;background:#edf2ee;overflow:auto;border-radius:7px}pre code{white-space:pre-wrap;overflow-wrap:anywhere}.table-scroll{max-width:100%;overflow:auto;margin:20px 0}table{border-collapse:collapse;font-size:14px;width:100%}th,td{padding:10px;border-bottom:1px solid #dce3db;vertical-align:top;text-align:left;min-width:80px}th{background:#edf3ed}img{display:block;max-width:100%;height:auto;margin:25px auto}summary{cursor:pointer;font-weight:600}details{padding:14px 18px;background:#edf3ed;border-radius:7px;margin:20px 0}.math-display{overflow:auto;padding:8px 0}mjx-container{max-width:100%}.symbol{background:#f0f4ef}.symbol pre{background:transparent}tr:target{background:#fff0ce}.flow-nodes{list-style:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;padding:0}.flow-nodes>li{padding:14px;border:1px solid #d6e0d8;border-radius:7px;background:#edf3ed}.flow-nodes h4{margin:0;font-size:18px}.flow-nodes p{font-size:14px;line-height:1.7}.flow-nodes code{font-size:14px}.flow-nodes details{padding:0;font-size:13px;background:transparent}.flow-nodes li::before{content:attr(data-order);font-size:13px;color:#526b5d}.image-note{font-size:13px;color:#526b5d}footer{font-size:14px;border-top:1px solid #dce3db;margin-top:35px}@media(max-width:800px){.flow-nodes{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:600px){header,main,footer{padding:18px}.flow-nodes{grid-template-columns:minmax(0,1fr)}h2{font-size:23px}h3{font-size:20px}th,td{padding:8px}table{min-width:560px}}</style><script>window.MathJax={"tex": {"displayMath": [["\\[", "\\]"]]}, "svg": {"fontCache": "global"}, "options": {"skipHtmlTags": ["script", "noscript", "style", "textarea", "pre", "code"]}}</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script></head><body id="top"><header><nav><a href="../">YuHsin首页</a><a href="./#deepinfer-inference-guide-20261102">下载与资料</a><a href="deepinfer-inference-guide-20261102.html">正文</a><a href="deepinfer-inference-guide-20261102-operators.html">逐算子附录</a><a href="deepinfer-inference-guide-20261102-forwards.html">71次调用</a><a href="files/deepinfer-inference-guide-20261102/从一句话到一句话-DeepInfer推理全流程与Trace图解.md" download>下载Markdown</a><a href="files/deepinfer-inference-guide-20261102.zip" download>完整阅读包</a></nav></header><main><details><summary>展开章节目录</summary><div class="toc">
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>从一句话到一句话：DeepInfer推理全流程与Trace图解</title><style>*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:20px}body{margin:0;background:#fafbf8;color:#24352d;font:17px/1.9 system-ui,"Microsoft YaHei",sans-serif}header,main,footer{max-width:1100px;margin:auto;padding:24px}header{border-bottom:1px solid #dce3db}nav{display:flex;flex-wrap:wrap;gap:18px}a{color:#08766b;text-underline-offset:3px}h1{font-size:clamp(28px,4vw,40px);line-height:1.4}h2{font-size:26px;line-height:1.5;margin-top:50px;border-top:1px solid #dce3db;padding-top:18px}h3{font-size:21px;margin-top:32px}p,li{overflow-wrap:anywhere}main>p{max-width:82ch}code{font:.88em/1.7 Consolas,monospace;overflow-wrap:anywhere}pre{padding:16px;background:#edf2ee;overflow:auto;border-radius:7px}pre code{white-space:pre-wrap;overflow-wrap:anywhere}.table-scroll{max-width:100%;overflow:auto;margin:20px 0}table{border-collapse:collapse;font-size:14px;width:100%}th,td{padding:10px;border-bottom:1px solid #dce3db;vertical-align:top;text-align:left;min-width:80px}th{background:#edf3ed}img{display:block;max-width:100%;height:auto;margin:25px auto}summary{cursor:pointer;font-weight:600}details{padding:14px 18px;background:#edf3ed;border-radius:7px;margin:20px 0}.math-display{overflow:auto;padding:8px 0}mjx-container{max-width:100%}.symbol{background:#f0f4ef}.symbol pre{background:transparent}tr:target{background:#fff0ce}.flow-nodes{list-style:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;padding:0}.flow-nodes>li{padding:14px;border:1px solid #d6e0d8;border-radius:7px;background:#edf3ed}.flow-nodes h4{margin:0;font-size:18px}.flow-nodes p{font-size:14px;line-height:1.7}.flow-nodes code{font-size:14px}.flow-nodes details{padding:0;font-size:13px;background:transparent}.flow-nodes li::before{content:attr(data-order);font-size:13px;color:#526b5d}.image-note{font-size:13px;color:#526b5d}footer{font-size:14px;border-top:1px solid #dce3db;margin-top:35px}@media(max-width:800px){.flow-nodes{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:600px){header,main,footer{padding:18px}.flow-nodes{grid-template-columns:minmax(0,1fr)}h2{font-size:23px}h3{font-size:20px}th,td{padding:8px}table{min-width:560px}}</style><script>window.MathJax={"tex": {"displayMath": [["\\[", "\\]"]]}, "svg": {"fontCache": "global"}, "options": {"skipHtmlTags": ["script", "noscript", "style", "textarea", "pre", "code"]}}</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script></head><body id="top"><header><nav><a href="../">YuHsin首页</a><a href="./#deepinfer-inference-guide-20261102">下载与资料</a><a href="deepinfer-inference-guide-20261102.html">正文</a><a href="deepinfer-inference-guide-20261102-operators.html">逐算子附录</a><a href="deepinfer-inference-guide-20261102-forwards.html">71次调用</a><a href="files/deepinfer-inference-guide-20261102-v2/从一句话到一句话-DeepInfer推理全流程与Trace图解.md" download>下载Markdown</a><a href="files/deepinfer-inference-guide-20261102-v2.zip" download>完整阅读包</a></nav></header><main><details><summary>展开章节目录</summary><div class="toc">
 <ul>
 <li><a href="#第一章先看到全貌推理引擎怎样生成一句话">第一章：先看到全貌——推理引擎怎样生成一句话</a><ul>
 <li><a href="#11-一次生成从文字到文字">1.1 一次生成，从文字到文字</a></li>
@@ -6,52 +6,58 @@
 <li><a href="#13-贯穿全文的实验">1.3 贯穿全文的实验</a></li>
 </ul>
 </li>
-<li><a href="#第二章输入怎样进入模型tokenbatch与并行">第二章：输入怎样进入模型——token、batch与并行</a><ul>
-<li><a href="#21-分词与embedding编号变成向量">2.1 分词与Embedding：编号变成向量</a></li>
-<li><a href="#22-调度器决定这一轮算什么">2.2 调度器决定这一轮算什么</a></li>
-<li><a href="#23-cp和ep分别拆哪一部分工作">2.3 CP和EP：分别拆哪一部分工作</a></li>
+<li><a href="#第二章先补三个概念mhcn-gramengram与投机解码">第二章：先补三个概念——mHC、n-gram/Engram与投机解码</a><ul>
+<li><a href="#21-mhc为什么要把一条残差主干扩成四路">2.1 mHC：为什么要把一条残差主干扩成四路</a></li>
+<li><a href="#22-从n-gram到engram哪些局部信息可以先查表">2.2 从n-gram到Engram：哪些局部信息可以先查表</a></li>
+<li><a href="#23-投机解码为什么多算候选反而可能更快">2.3 投机解码：为什么多算候选，反而可能更快</a></li>
 </ul>
 </li>
-<li><a href="#第三章首token怎样产生一次prefill的完整路径">第三章：首token怎样产生——一次prefill的完整路径</a><ul>
-<li><a href="#31-输入上下文为什么要经过主模型">3.1 输入上下文为什么要经过主模型</a></li>
-<li><a href="#32-kv-cache保存上下文而不是保存答案">3.2 KV cache：保存上下文，而不是保存答案</a></li>
-<li><a href="#33-末端读出lm-head与采样">3.3 末端读出、LM Head与采样</a></li>
-<li><a href="#34-同时为草稿建立历史kv">3.4 同时为草稿建立历史KV</a></li>
+<li><a href="#第三章输入怎样进入模型tokenbatch与并行">第三章：输入怎样进入模型——token、batch与并行</a><ul>
+<li><a href="#31-分词与embedding编号变成向量">3.1 分词与Embedding：编号变成向量</a></li>
+<li><a href="#32-调度器决定这一轮算什么">3.2 调度器决定这一轮算什么</a></li>
+<li><a href="#33-cp和ep分别拆哪一部分工作">3.3 CP和EP：分别拆哪一部分工作</a></li>
 </ul>
 </li>
-<li><a href="#第四章放大一层attentionmhcengram与megamoe">第四章：放大一层——Attention、mHC、Engram与MegaMoE</a><ul>
-<li><a href="#41-mhc怎样读写四路主干">4.1 mHC怎样读写四路主干</a></li>
-<li><a href="#42-attention投影读取上下文投影回来">4.2 Attention：投影、读取上下文、投影回来</a></li>
-<li><a href="#43-压缩和索引不是每层都重新做一套">4.3 压缩和索引：不是每层都重新做一套</a></li>
-<li><a href="#44-gate与megamoe从模型特征到专家负载">4.4 Gate与MegaMoE：从模型特征到专家负载</a></li>
-<li><a href="#45-engram查局部token组合再注入四路主干">4.5 Engram：查局部token组合，再注入四路主干</a></li>
+<li><a href="#第四章首token怎样产生一次prefill的完整路径">第四章：首token怎样产生——一次prefill的完整路径</a><ul>
+<li><a href="#41-输入上下文为什么要经过主模型">4.1 输入上下文为什么要经过主模型</a></li>
+<li><a href="#42-kv-cache保存上下文而不是保存答案">4.2 KV cache：保存上下文，而不是保存答案</a></li>
+<li><a href="#43-末端读出lm-head与采样">4.3 末端读出、LM Head与采样</a></li>
+<li><a href="#44-同时为草稿建立历史kv">4.4 同时为草稿建立历史KV</a></li>
 </ul>
 </li>
-<li><a href="#第五章后续token怎样产生主模型与草稿如何合作">第五章：后续token怎样产生——主模型与草稿如何合作</a><ul>
-<li><a href="#51-先用普通decode建立参照">5.1 先用普通decode建立参照</a></li>
-<li><a href="#52-先启动再让草稿一次提出五个候选">5.2 先启动，再让草稿一次提出五个候选</a></li>
-<li><a href="#53-主模型怎样验证候选">5.3 主模型怎样验证候选</a></li>
-<li><a href="#54-将一轮接到下一轮">5.4 将一轮接到下一轮</a></li>
+<li><a href="#第五章放大一层attentionmhcengram与megamoe">第五章：放大一层——Attention、mHC、Engram与MegaMoE</a><ul>
+<li><a href="#51-mhc怎样读写四路主干">5.1 mHC怎样读写四路主干</a></li>
+<li><a href="#52-attention投影读取上下文投影回来">5.2 Attention：投影、读取上下文、投影回来</a></li>
+<li><a href="#53-压缩和索引不是每层都重新做一套">5.3 压缩和索引：不是每层都重新做一套</a></li>
+<li><a href="#54-gate与megamoe从模型特征到专家负载">5.4 Gate与MegaMoE：从模型特征到专家负载</a></li>
+<li><a href="#55-engram查局部token组合再注入四路主干">5.5 Engram：查局部token组合，再注入四路主干</a></li>
 </ul>
 </li>
-<li><a href="#第六章引擎怎样推动计算cpu调度与npu执行">第六章：引擎怎样推动计算——CPU调度与NPU执行</a><ul>
-<li><a href="#61-forwardsamplepost_process的职责">6.1 forward、sample、post_process的职责</a></li>
-<li><a href="#62-eager提交与图重放">6.2 eager提交与图重放</a></li>
-<li><a href="#63-zos本轮设备计算与上轮结果回收重叠">6.3 ZOS：本轮设备计算与上轮结果回收重叠</a></li>
+<li><a href="#第六章后续token怎样产生主模型与草稿如何合作">第六章：后续token怎样产生——主模型与草稿如何合作</a><ul>
+<li><a href="#61-先用普通decode建立参照">6.1 先用普通decode建立参照</a></li>
+<li><a href="#62-先启动再让草稿一次提出五个候选">6.2 先启动，再让草稿一次提出五个候选</a></li>
+<li><a href="#63-主模型怎样验证候选">6.3 主模型怎样验证候选</a></li>
+<li><a href="#64-将一轮接到下一轮">6.4 将一轮接到下一轮</a></li>
 </ul>
 </li>
-<li><a href="#第七章拿着流程读trace从整轮到逐算子">第七章：拿着流程读Trace——从整轮到逐算子</a><ul>
-<li><a href="#71-先统一坐标与定位方法">7.1 先统一坐标与定位方法</a></li>
-<li><a href="#72-先用71次主模型forward认出全局">7.2 先用71次主模型forward认出全局</a></li>
-<li><a href="#73-跟踪一轮真实decoded02">7.3 跟踪一轮真实decode：D02</a></li>
-<li><a href="#74-四个连续子层区间把局部算子认全">7.4 四个连续子层区间：把局部算子认全</a></li>
+<li><a href="#第七章引擎怎样推动计算cpu调度与npu执行">第七章：引擎怎样推动计算——CPU调度与NPU执行</a><ul>
+<li><a href="#71-forwardsamplepost_process的职责">7.1 forward、sample、post_process的职责</a></li>
+<li><a href="#72-eager提交与图重放">7.2 eager提交与图重放</a></li>
+<li><a href="#73-zos本轮设备计算与上轮结果回收重叠">7.3 ZOS：本轮设备计算与上轮结果回收重叠</a></li>
 </ul>
 </li>
-<li><a href="#第八章把整次推理算清楚调用次数与moe负载">第八章：把整次推理算清楚——调用次数与MoE负载</a><ul>
-<li><a href="#81-三本账答案模型设备">8.1 三本账：答案、模型、设备</a></li>
-<li><a href="#82-主模型和草稿到底跑了几次">8.2 主模型和草稿到底跑了几次</a></li>
-<li><a href="#83-从模型调用推导模块与kernel次数">8.3 从模型调用推导模块与kernel次数</a></li>
-<li><a href="#84-megamoe的真实负载入口m不等于每专家m_e">8.4 MegaMoE的真实负载：入口M不等于每专家M_e</a></li>
+<li><a href="#第八章拿着流程读trace从整轮到逐算子">第八章：拿着流程读Trace——从整轮到逐算子</a><ul>
+<li><a href="#81-先统一坐标与定位方法">8.1 先统一坐标与定位方法</a></li>
+<li><a href="#82-先用71次主模型forward认出全局">8.2 先用71次主模型forward认出全局</a></li>
+<li><a href="#83-跟踪一轮真实decoded02">8.3 跟踪一轮真实decode：D02</a></li>
+<li><a href="#84-四个连续子层区间把局部算子认全">8.4 四个连续子层区间：把局部算子认全</a></li>
+</ul>
+</li>
+<li><a href="#第九章把整次推理算清楚调用次数与moe负载">第九章：把整次推理算清楚——调用次数与MoE负载</a><ul>
+<li><a href="#91-三本账答案模型设备">9.1 三本账：答案、模型、设备</a></li>
+<li><a href="#92-主模型和草稿到底跑了几次">9.2 主模型和草稿到底跑了几次</a></li>
+<li><a href="#93-从模型调用推导模块与kernel次数">9.3 从模型调用推导模块与kernel次数</a></li>
+<li><a href="#94-megamoe的真实负载入口m不等于每专家m_e">9.4 MegaMoE的真实负载：入口M不等于每专家M_e</a></li>
 </ul>
 </li>
 <li><a href="#阅读后试着脱离图复述">阅读后，试着脱离图复述</a></li>
@@ -60,7 +66,7 @@
 </div>
 </details><h1 id="从一句话到一句话deepinfer-推理全流程与-trace-图解">从一句话到一句话：DeepInfer 推理全流程与 Trace 图解</h1>
 <p>面向熟悉 MegaMoE、但较少接触推理引擎的同事。我们从两条真实输入出发，先跟到首个输出 token，再跟一轮主模型与草稿的合作，最后放大到一层里的 kernel。读完后，应能沿着输入复述计算顺序，并在同一份 trace 中找到对应位置。</p>
-<p><strong>建议分两遍读。</strong> 第一遍沿着“输入 → 首 token → 模型层 → 后续 token → 引擎调度”读第1～6章，标为“选读”的推导可先跳过。第二遍用第7章做三个 trace 小核对，再用第8章核算次数和 MegaMoE 负载。完整 kernel 名称和逐事件时间放在附录，正文不用背编号。</p>
+<p><strong>建议分两遍读。</strong> 第一遍按第1～7章顺序：先看全貌、补三个概念，再沿着“输入 → 首 token → 模型层 → 后续 token → 引擎调度”读下去；标为“选读”的推导可先跳过。第二遍用第8章做三个 trace 小核对，再用第9章核算次数和 MegaMoE 负载。完整 kernel 名称和逐事件时间放在附录，正文不用背编号。</p>
 <p>本文固定讨论 <strong>2026-10-27采集的 DeepSeek V4 Flash 配置</strong>。耗时和 kernel 次数来自 trace，shape 由对应源码和执行图重建，未逐张量导出；版本与证据入口见文末。</p>
 <h2 id="第一章先看到全貌推理引擎怎样生成一句话">第一章：先看到全貌——推理引擎怎样生成一句话</h2>
 <h3 id="11-一次生成从文字到文字">1.1 一次生成，从文字到文字</h3>
@@ -74,7 +80,7 @@
 </code></pre>
 <p>prefill处理已有的整段输入，decode在此基础上继续生成。两者都运行模型，主要区别是本轮处理的位置和可复用的历史。模型预测下一个 token 的分布，整句话的概率可写成：</p>
 <div class="math-display">\[P(y_{1:T}\mid x)=\prod_{t=1}^{T}P(y_t\mid x,y_{&lt;t}).\]</div>
-<p>其中x是输入，y是输出，y_&lt;t是已经生成的前缀。投机生成允许一轮新增多个 token，但后面的候选只有在前面都被接受时才能保留。先记住这条规则，第5章再展开它怎样实现。</p>
+<p>其中x是输入，y是输出，y_&lt;t是已经生成的前缀。投机生成允许一轮新增多个 token，但后面的候选只有在前面都被接受时才能保留。先记住这条规则，第6章再展开它怎样实现。</p>
 <h3 id="12-请求模型调用kernel三个不同层次">1.2 请求、模型调用、kernel：三个不同层次</h3>
 <div class="table-scroll"><table>
 <thead>
@@ -159,17 +165,195 @@
 </tr>
 </tbody>
 </table></div>
-<p><a href="files/deepinfer-inference-guide-20261102/assets/01-parallel-overview.png" target="_blank" rel="noopener"><img alt="本次DP、CP与EP的关系" src="files/deepinfer-inference-guide-20261102/assets/01-parallel-overview.png" / loading="lazy"></a><span class="image-note">点图查看原图</span></p>
+<p><a href="files/deepinfer-inference-guide-20261102-v2/assets/01-parallel-overview.png" target="_blank" rel="noopener"><img alt="本次DP、CP与EP的关系" src="files/deepinfer-inference-guide-20261102-v2/assets/01-parallel-overview.png" / width="1200" height="1030" loading="lazy"></a><span class="image-note">点图查看原图</span></p>
 <p>它们复用同一批16卡，不能相乘计算卡数。rank是参与分布式执行的编号；下文主要观察 <strong>DP0的driver rank0</strong>，另一份采集来自DP1的driver rank8。其余rank没有单独采集。</p>
-<h2 id="第二章输入怎样进入模型tokenbatch与并行">第二章：输入怎样进入模型——token、batch与并行</h2>
-<h3 id="21-分词与embedding编号变成向量">2.1 分词与Embedding：编号变成向量</h3>
+<p><a id="concepts"></a></p>
+<h2 id="第二章先补三个概念mhcn-gramengram与投机解码">第二章：先补三个概念——mHC、n-gram/Engram与投机解码</h2>
+<p>上一章回答了引擎“整体在做什么”。这一章先解释三项技术为什么存在，再看它们如何改变计算。mHC管理模型内部的表示，Engram补充局部组合特征，投机解码组织多轮生成；三者处在不同层次。</p>
+<p>本章M表示本卡本轮处理的位置数，H＝5120，r＝4表示四路主干。图是运算关系示意，不表示真实时延；伪代码省略量化、分布式通信和图padding，具体执行以后续trace章节为准。</p>
+<h3 id="21-mhc为什么要把一条残差主干扩成四路">2.1 mHC：为什么要把一条残差主干扩成四路</h3>
+<h4 id="背景先保留残差的优点再增加信息交互">背景：先保留残差的优点，再增加信息交互</h4>
+<p>普通pre-norm Transformer的一个子层可简写为：</p>
+<div class="math-display">\[x^{+}=x+F(\operatorname{RMSNorm}(x)).\]</div>
+<p>旧表示沿残差支路直接传下去，Attention或MoE只贡献一次更新。Hyper-Connections（HC）进一步把这条主干扩成多路，学习怎样读、混合、写回，让表示之间有更丰富的交互。但如果每个子层都任意放大、缩小残差，很多层连乘后会破坏信号传播的稳定性。mHC（Manifold-Constrained Hyper-Connections）的关键是：在多路连接上加入约束，而不只增加分支。<a href="https://arxiv.org/html/2512.24880v2#S4">mHC论文</a></p>
+<h4 id="解决步骤读一路算一次写回四路">解决步骤：读一路、算一次、写回四路</h4>
+<ol>
+<li><strong>保留四路主干。</strong> 每个位置保存R，shape为<code>[M,4,H]</code>；模型入口先将Embedding复制成四路，之后各路会逐渐不同。</li>
+<li><strong>读出一路。</strong> 用4个系数将四路加权成<code>[M,H]</code>，归一化后交给子层。</li>
+<li><strong>生成连接系数。</strong> 从四路主干生成24个数：4个下一次读出系数、4个写回系数、16个旧主干混合分数。后16个组成4×4矩阵，经Sinkhorn处理。</li>
+<li><strong>执行一次子层。</strong> Attention或MoE只处理<code>[M,H]</code>，没有因为四路而执行四遍。</li>
+<li><strong>更新主干。</strong> 先混合四路旧表示，再把这次子层结果按比例写入各路，得到新的<code>[M,4,H]</code>。</li>
+</ol>
+<p><a href="files/deepinfer-inference-guide-20261102-v2/assets/11-mhc-concept.png" target="_blank" rel="noopener"><img alt="mHC的读出、系数生成、子层计算与写回" src="files/deepinfer-inference-guide-20261102-v2/assets/11-mhc-concept.png" / width="1200" height="860" loading="lazy"></a><span class="image-note">点图查看原图</span></p>
+<p>图对应本例的shifted HC：当前读出使用上一子层留下的a_prev，当前生成的a_next留给下一子层。图中的写回是逻辑步骤，实际可延迟到下一子层入口，所以trace经常从上一子层的<code>mhc_post</code>开始。</p>
+<h4 id="数学关系a负责读b负责写c负责旧表示混合">数学关系：a负责读，b负责写，C负责旧表示混合</h4>
+<p>省略位置下标，对单个位置写成：</p>
+<div class="math-display">\[u=F\!\left(\operatorname{RMSNorm}\!\left(\sum_{j=1}^{r}a^{prev}_jR_j\right)\right),\qquad
+R_i^{+}=\sum_{j=1}^{r}C_{ij}R_j+b_i u.\]</div>
+<p>这里C的行i对应输出路i，列j对应旧路j。mHC约束的重点是残差混合C：非负，行和、列和均接近1，即“双随机矩阵”。它让旧主干的混合有约束；不表示a、b也都必须归一化，更不表示整个含F的网络自动满足所有稳定性条件。</p>
+<div class="math-display">\[C_{ij}\ge0,\quad \sum_jC_{ij}\approx1,\quad \sum_iC_{ij}\approx1;\qquad
+C^{(k+1)}=\mathcal N_{col}(\mathcal N_{row}(C^{(k)})).\]</div>
+<p>Sinkhorn反复按行、列归一化正值矩阵，有限迭代及数值保护下只能近似满足约束。系数投影及其缩放、偏置见后面的mHC实现小节。<a href="https://github.com/deepseek-ai/DeepInfer/blob/553741557a57df44a46fb3ab72b6aafeaf945337/deepinfer/model_executor/models/v4_modules/hc.py">固定实现：HC读写</a>、<a href="https://github.com/deepseek-ai/DeepInfer/blob/553741557a57df44a46fb3ab72b6aafeaf945337/deepinfer/model_executor/models/v4_modules/mhc_ops.py">系数与Sinkhorn接口</a></p>
+<h4 id="伪代码一个shifted-mhc子层">伪代码：一个shifted mHC子层</h4>
+<pre><code class="language-python"># R: [M,4,H]；a_prev: [M,4]；F是一个Attention或MoE子层
+def mhc_sublayer(R, a_prev, F, params):
+    x = sum(a_prev[:, i, None] * R[:, i, :] for i in range(4))
+    flat = R.reshape(M, 4 * H)
+    z = linear(flat, params.Wmix) / rms(flat)[:, None]  # [M,24]
+    a_next, b, S = split_and_transform(z, params)       # 4 + 4 + 16
+    C = sinkhorn(S.reshape(M, 4, 4), params)          # 含正值变换与eps
+    u = F(rmsnorm(x, params.input_norm))               # 只调用一次F
+    mixed = einsum(&quot;mij,mjh-&gt;mih&quot;, C, R)
+    R_next = mixed + b[:, :, None] * u[:, None, :]    # 逻辑上完成post
+    return R_next, a_next
+
+# 模型入口：R = copy_to_four_paths(embedding)
+# 第一个子层a_prev为one-hot；中间由前一子层传入，最后还有末端读出。
+# 引擎实现可以延迟post或融合kernel，不能按伪代码行数统计kernel。
+</code></pre>
+<p><strong>接回本文：</strong> 每个主模型层有Attention、MoE两组mHC，40层共80组。第5章看物理kernel顺序，第8章看连续四段post边界；四路数不应乘到Attention或MegaMoE调用次数上。</p>
+<h3 id="22-从n-gram到engram哪些局部信息可以先查表">2.2 从n-gram到Engram：哪些局部信息可以先查表</h3>
+<h4 id="背景局部组合不一定都值得反复计算">背景：局部组合不一定都值得反复计算</h4>
+<p>n-gram就是连续n个token的组合。例如仅为解释概念，假设分词得到<code>[北京, 大学, 位于, 北京]</code>，在最后一个位置，2-gram为<code>[位于, 北京]</code>，3-gram为<code>[大学, 位于, 北京]</code>。实际切分仍以tokenizer为准。</p>
+<p>许多实体名、短语和固定组合会反复出现。Engram希望将部分局部模式交给可训练查表，让模型仍用Attention和MoE处理随上下文变化的计算。它借用n-gram作为地址线索，但不是传统“只看前n个词预测下一个词”的n-gram语言模型。<a href="https://arxiv.org/html/2601.07372v1#S2">Engram论文</a></p>
+<h4 id="解决步骤取后缀hash查表按上下文决定注入多少">解决步骤：取后缀、hash查表、按上下文决定注入多少</h4>
+<ol>
+<li><strong>规范化ID。</strong> 将原token ID映射到Engram专用的规范ID，取每个请求内的后缀窗口。这里的“压缩词表”不是Attention的KV压缩。</li>
+<li><strong>构造地址。</strong> 本例取2、3、4-gram，每种用8个hash head，共24个地址。组合空间太大，不能为所有可能组合都分配完整词表；hash将它们映射到有限大小的表，多头用于缓解冲突。</li>
+<li><strong>取向量。</strong> 查出24个256维可训练表项，拼成6144维。表项是训练学到的向量，不是保存原文的文本记录。</li>
+<li><strong>投影并门控。</strong> 6144维投影为四份5120维key和一份共享value；四路主干分别与key比较，决定各路注入多少value。</li>
+</ol>
+<p><a href="files/deepinfer-inference-guide-20261102-v2/assets/12-engram-concept.png" target="_blank" rel="noopener"><img alt="n-gram后缀、哈希表项与Engram门控注入" src="files/deepinfer-inference-guide-20261102-v2/assets/12-engram-concept.png" / width="1200" height="860" loading="lazy"></a><span class="image-note">点图查看原图</span></p>
+<p>为什么还要门控？同一个局部组合可能多义，hash也可能碰撞。查表只提供一份局部特征；当前hidden带有更大范围上下文，门控据此调节注入强度。多头hash不消除所有冲突，门控也不保证查到的特征总是正确。</p>
+<h4 id="数学关系id决定查什么hidden决定用多少">数学关系：ID决定查什么，hidden决定用多少</h4>
+<p>令c_t为规范化后的token ID，h为hash head，V_nh为该表大小：</p>
+<div class="math-display">\[g_{t,n}=(c_{t-n+1},\ldots,c_t),\quad
+z_{t,n,h}=\operatorname{hash}_{n,h}(g_{t,n})\bmod V_{n,h},\quad
+e_t=\operatorname{Concat}_{n\in\{2,3,4\},\,h=1\ldots8}E_{n,h}[z_{t,n,h}].\]</div>
+<p>本实现再做<code>[M,6144] → [M,25600] → [M,5,5120]</code>。四份key各对应一路主干，共用一份value。按本例门控主线：</p>
+<div class="math-display">\[s_{t,i}=\frac{\langle\operatorname{RMSNorm}_{w_R}(R_{t,i}),\operatorname{RMSNorm}_{w_k}(k_{t,i})\rangle}{\sqrt H},\quad
+\alpha_{t,i}=\sigma(\operatorname{signed\_sqrt}(s_{t,i})),\quad
+R_{t,i}^{+}=R_{t,i}+\alpha_{t,i}v_t.\]</div>
+<p>signed-sqrt保留符号，实际kernel还有clamp与数值保护。这里讲的是固定版本的查表、投影和注入路径，不将原论文其他组件直接算进这次trace。<a href="https://github.com/deepseek-ai/DeepInfer/blob/553741557a57df44a46fb3ab72b6aafeaf945337/deepinfer/model_executor/models/v4_modules/engram_metadata.py">固定实现：词表映射与hash元数据</a>、<a href="https://github.com/deepseek-ai/DeepInfer/blob/553741557a57df44a46fb3ab72b6aafeaf945337/deepinfer/model_executor/models/v4_modules/engram.py">Engram投影与门控</a></p>
+<h4 id="伪代码每个有效位置注入一次engram特征">伪代码：每个有效位置注入一次Engram特征</h4>
+<pre><code class="language-python"># ids包含当前有效位置；history只取同一请求已经有效的历史
+def engram(R, ids, history, tables, params):
+    window = canonical_suffix_windows(ids, history, width=4)  # [M,4]
+    entries = []
+    for n in (2, 3, 4):
+        for head in range(8):
+            slot = hash_ngram(window[:, -n:], n, head) % tables[n, head].size
+            entries.append(lookup(tables[n, head], slot))     # [M,256]
+    memory = concat(entries, axis=-1)                        # [M,6144]
+    kv = linear(memory, params.Wkv).reshape(M, 5, H)
+    keys, value = kv[:, :4, :], kv[:, 4, :]
+    score = normalized_dot(R, keys, params) / sqrt(H)         # [M,4]
+    gate = sigmoid(safe_signed_sqrt(score, params))
+    return R + gate[:, :, None] * value[:, None, :]          # [M,4,H]
+</code></pre>
+<p><strong>接回本文：</strong> Engram只在主模型L01、L14注入，草稿没有。由于地址由ID决定，可提前统一hash/fetch，到对应层才投影与门控；所以一次主模型forward看到1次hash、1次fetch、2次gate是合理的。它与KV cache的区别是：前者查训练得到的局部模式表，后者保存本次请求逐层算出的历史特征。</p>
+<h3 id="23-投机解码为什么多算候选反而可能更快">2.3 投机解码：为什么多算候选，反而可能更快</h3>
+<h4 id="背景普通decode的主模型调用串在一起">背景：普通decode的主模型调用串在一起</h4>
+<p>普通自回归生成有一个依赖：先生成当前token，才知道下一轮输入是什么。若每轮新增一个token，生成许多token就要串行调用许多次大模型。投机解码让便宜的草稿先提出候选，主模型一次并行验证，接受连续前缀，再继续生成。<a href="https://proceedings.mlr.press/v202/leviathan23a.html">投机解码原始论文</a></p>
+<p>它省的是每个有效输出摊到的主模型调用开销，不保证减少总算术量。草稿、额外验证位置和被拒绝候选都会增加工作；能否加速要看接受长度和实际耗时。</p>
+<h4 id="解决步骤提案可以提前算验证必须按前缀接受">解决步骤：提案可以提前算，验证必须按前缀接受</h4>
+<p>先设g为已经输出、但尚未作为本轮输入计算的基础token，d1～d5为草稿候选。稳定轮次中：</p>
+<ol>
+<li>主模型一次处理<code>[g,d1,d2,d3,d4,d5]</code>。处理g后的分布验证d1，处理d1后的分布验证d2，以此类推。因果mask阻止未来候选影响前面的验证。</li>
+<li>从d1开始连续接受，遇到首个拒绝就停，按拒绝采样规则得到替代token r；全部接受则可额外采样一个token。</li>
+<li>保留有效历史、返回新输出；用新的基础token和更新后的主模型特征准备下一批草稿。</li>
+<li>下一轮验证这批草稿。这里“主模型先、草稿后”是稳定循环的分界方式：本轮先验证上轮提案，再准备下一轮提案。</li>
+</ol>
+<p><a href="files/deepinfer-inference-guide-20261102-v2/assets/13-speculation-concept.png" target="_blank" rel="noopener"><img alt="投机解码稳定轮次的验证、缓存处理和下一轮提案" src="files/deepinfer-inference-guide-20261102-v2/assets/13-speculation-concept.png" / width="1200" height="860" loading="lazy"></a><span class="image-note">点图查看原图</span></p>
+<p>例如输入<code>g,a,b,c,d,e</code>，接受a、b，拒绝c并替换为r：新增输出是<code>a,b,r</code>；新增有效主模型KV对应<code>g,a,b</code>；r的主模型KV下一轮再算。一次处理6个位置与新增3个输出并不矛盾。</p>
+<h4 id="数学关系并行算分布顺序做接受判断">数学关系：并行算分布，顺序做接受判断</h4>
+<p>令h为g之前已建立缓存的前缀。主模型提供：</p>
+<div class="math-display">\[p_i(v)=P_{main}(v\mid h,g,d_{&lt;i}),\qquad
+A_i=\min\!\left(1,\frac{p_i(d_i)}{q_i(d_i)}\right),\qquad
+\tilde p_i(v)=\frac{\max(p_i(v)-q_i(v),0)}{\sum_u\max(p_i(u)-q_i(u),0)}.\]</div>
+<p>q_i是生成候选d_i时的草稿分布。用A_i决定是否接受；首次拒绝时从残余分布取替代token，全部接受则从最后一个主模型分布取额外token。在理想算法的前提下，这种校正维持主模型采样分布；这是分布性质，不表示同一随机种子会得到逐字相同的结果。<a href="https://proceedings.mlr.press/v202/leviathan23a/leviathan23a.pdf">原论文算法1</a></p>
+<p>本版DeepInfer还包含force-topk对齐、<code>max(p−αq,0)</code>残余权重及数值保护，其中α＝exp(−5×10⁻⁵)。下面伪代码解释理想验证规则；第6章再对照本实现，不能用它替代实际kernel的数值行为。</p>
+<h4 id="伪代码验证一批候选随后准备下一批">伪代码：验证一批候选，随后准备下一批</h4>
+<pre><code class="language-python"># d和Q来自上一轮；省略EOS、长度裁剪、批处理与启动D01的特殊初始化。
+# P[i]验证d[i]；P[K]是在所有候选被接受时使用的额外分布。
+def speculative_round(history, g, d, Q, caches):
+    hidden = main_forward([g] + d, caches)                    # 主模型1次；内部更新草稿KV
+    P = target_distributions(hidden)                          # K+1份分布
+    accepted = 0
+    for i in range(len(d)):
+        if uniform_0_1() &lt; min(1, P[i][d[i]] / Q[i][d[i]]):
+            accepted += 1
+        else:
+            r = sample(normalize(maximum(P[i] - Q[i], 0)))
+            break
+    else:
+        r = sample(P[len(d)])
+    emitted = d[:accepted] + [r]
+    history_next = history + [g] + d[:accepted]
+    set_valid_cache_prefix(caches, history_next)              # 不沿用拒绝位置
+    # 草稿历史由主模型forward内写入；这里按有效范围准备后续读取。
+    d_next, Q_next = dflash_propose_once(r, caches)
+    return emitted, history_next, r, d_next, Q_next
+</code></pre>
+<p>本例DFlash采用并行草稿：把主模型特征注入草稿历史KV，一次草稿forward生成多个位置的表示。它与逐token调用小模型的自回归草稿不同；名称相同也不表示本例使用原论文全部配置。<a href="https://arxiv.org/html/2602.06036v1#S4">DFlash论文</a>、<a href="https://github.com/deepseek-ai/DeepInfer/blob/553741557a57df44a46fb3ab72b6aafeaf945337/deepinfer/model_executor/models/mtp/dflash.py">本例草稿实现</a></p>
+<pre><code class="language-python">def dflash_propose_once(g, caches):
+    ids = [g, NOISE, NOISE, NOISE, NOISE]
+    hidden = draft_forward_three_layers(ids, caches)          # 完整草稿只跑1次
+    base_logits = lm_head(output_norm(hidden))                 # [5,V]
+    d, Q, previous = [], [], g
+    for i in range(5):                                        # 只有修正与采样
+        logits = base_logits[i] + markov_projection(previous)
+        q = sampling_distribution(logits)
+        token = sample(q)
+        d.append(token); Q.append(q); previous = token
+    return d, Q
+</code></pre>
+<p>本次主模型的特征已在main_forward内更新到草稿缓存，dflash_propose_once直接读取，不再单独运行一次草稿prefill。代码也省略了confidence head；本例关闭可变候选长度，仍固定准备5个候选。</p>
+<p>可用“每个有效输出摊到多少时间”理解收益：</p>
+<div class="math-display">\[t_{token}\approx\frac{T_{draft}+T_{main\_verify}+T_{sample/cache}}{\mathbb E[L_{accepted}]+1}.\]</div>
+<p>这是稳定阶段、未计停止裁剪的粗略摊销关系，三个时间项按不重复的口径计；不拿重叠窗口直接相加。分母变大有利，但草稿更慢、验证位置更多也会抬高分子。本次是否更快需要同负载的无投机对照，不能仅凭“开启投机”下结论。</p>
+<p><strong>接回本文：</strong> 本例完整草稿prefill为0，非占位decode阶段主模型和草稿各33次；五个候选不等于五次草稿forward。实际启动顺序、采样数值处理和请求收尾在第6、9章逐项核对。</p>
+<p>三项技术现在可以分开记：</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>技术</th>
+<th>主要处理什么问题</th>
+<th>新增哪类工作</th>
+<th>不应怎样理解</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>mHC</td>
+<td>扩展多路残差的信息交互，并约束混合</td>
+<td>读写主干、系数投影、Sinkhorn</td>
+<td>四路就运行四遍Attention/MoE</td>
+</tr>
+<tr>
+<td>n-gram / Engram</td>
+<td>将部分局部组合特征交给可训练查表</td>
+<td>hash、fetch、投影、门控</td>
+<td>只靠短窗口完成整句推理，或把它当KV cache</td>
+</tr>
+<tr>
+<td>投机解码</td>
+<td>摊薄串行生成中的主模型调用开销</td>
+<td>草稿、批量验证、接受与缓存管理</td>
+<td>提了5个候选就一定输出5个，或一定加速</td>
+</tr>
+</tbody>
+</table></div>
+<p>带着这三个概念回到真实请求：下一章从A、B的50个输入token开始，先走完首token路径。</p>
+<h2 id="第三章输入怎样进入模型tokenbatch与并行">第三章：输入怎样进入模型——token、batch与并行</h2>
+<h3 id="31-分词与embedding编号变成向量">3.1 分词与Embedding：编号变成向量</h3>
 <p>两条请求分词后保留各自边界，再按批次组织成50个输入位置。后文用H表示每个位置的特征宽度，本例H＝5120；<code>[M,H]</code>就是M个位置、每个位置5120个数。设词表大小V＝129280，Embedding表为E：</p>
 <div class="math-display">\[X_i=E[\mathrm{token\_id}_i],\qquad E\in\mathbb R^{V\times H}.\]</div>
 <pre><code class="language-text">A的28个ID + B的22个ID → ID[50] → X[50,5120]
 </code></pre>
 <p>这一步是查表，不是把ID当作数值送进GEMM。模型还需要每个位置在各自请求中的position、序列边界和mask；A不能通过普通因果Attention读到B的上下文。</p>
-<h3 id="22-调度器决定这一轮算什么">2.2 调度器决定这一轮算什么</h3>
-<p>调度器选择本轮参加的请求、准备缓存位置和元数据，worker再准备实际张量。这里的KV cache保存历史位置在各层产生的Key/Value，下一轮可以直接读取；第3章会说明为什么能复用。</p>
+<h3 id="32-调度器决定这一轮算什么">3.2 调度器决定这一轮算什么</h3>
+<p>调度器选择本轮参加的请求、准备缓存位置和元数据，worker再准备实际张量。这里的KV cache保存历史位置在各层产生的Key/Value，下一轮可以直接读取；第4章会说明为什么能复用。</p>
 <p>缓存按物理块组织时，<code>block_table</code>像一张地址表，把“某请求的第几个历史位置”映射到设备上的缓存slot。每条请求的历史不必连续存放。</p>
 <p>trace的CPU名称直接记录本轮的请求槽位数N和逻辑输入位置数B：</p>
 <div class="table-scroll"><table>
@@ -195,20 +379,20 @@
 </tbody>
 </table></div>
 <p>B是本轮输入的位置数，不是输出长度。为复用固定shape的设备图，12行逻辑输入会补成16行；多出的4行叫padding，不应贡献用户结果。<strong>后文shape中的M指本卡实际执行行数，因此此时M＝16，而B＝12。</strong> 名字本身不包含阶段标志，占位等判断还要结合调度记录。</p>
-<h3 id="23-cp和ep分别拆哪一部分工作">2.3 CP和EP：分别拆哪一部分工作</h3>
+<h3 id="33-cp和ep分别拆哪一部分工作">3.3 CP和EP：分别拆哪一部分工作</h3>
 <p>prefill先做Embedding，再按每条请求分别镜像切分。CP8将每条请求补齐到16个分块，每卡选前后对应两块。本例每条补成32个位置，两条共64个槽，每卡得到8行；rank0其中4行有效、4行padding。</p>
 <pre><code class="language-text">整批50个有效位置 → CP共64个槽 → 每卡X[8,5120]
 </code></pre>
 <p>镜像分块让靠前、靠后的query配对，缓和因果Attention的长度差异；不保证稀疏Attention和MoE的工作量严格均衡。每层所需的KV可在CP组内交换，MoE则通过EP16访问分散在各卡的专家。</p>
 <p>本版本镜像选行只用于prefill。decode的本卡主模型图仍是16行或8行，<strong>不能再除以CP8</strong>。按源码判断，同CP组存在复制的Attention工作；本次只采rank0、rank8，没有同组8卡全部输入和时间线，不能把复制程度当作已逐卡实测的结论。</p>
-<h2 id="第三章首token怎样产生一次prefill的完整路径">第三章：首token怎样产生——一次prefill的完整路径</h2>
-<h3 id="31-输入上下文为什么要经过主模型">3.1 输入上下文为什么要经过主模型</h3>
+<h2 id="第四章首token怎样产生一次prefill的完整路径">第四章：首token怎样产生——一次prefill的完整路径</h2>
+<h3 id="41-输入上下文为什么要经过主模型">4.1 输入上下文为什么要经过主模型</h3>
 <p>现在本卡已有<code>[8,5120]</code>输入。要预测首个答案token，主模型先让这些位置依次通过40层：每层结合已有上下文更新表示，并保存供后续读取的KV。模型一开始将每行向量复制成四路主干：</p>
 <div class="math-display">\[R_{t,i,:}=X_{t,:},\qquad i=0,1,2,3.\]</div>
 <p>本卡shape从 <code>[8,5120]</code> 变成 <code>[8,4,5120]</code>，再依次经过40层。每层读出一路进行Attention，再读出一路进行MoE，更新同一份四路主干。两处Engram和草稿历史缓存更新也在这条路径中，下一章会展开。</p>
-<p><a href="files/deepinfer-inference-guide-20261102/assets/02-prefill-shapes.png" target="_blank" rel="noopener"><img alt="Prefill从输入到首token的shape主线" src="files/deepinfer-inference-guide-20261102/assets/02-prefill-shapes.png" / loading="lazy"></a><span class="image-note">点图查看原图</span></p>
-<p>这里先把40层看成一个整体，第4章再打开其中一层。只在末尾选每请求最后一行做词表投影，是因为首个输出只需要这些位置的分布；前面的输入仍完整经过模型。</p>
-<h3 id="32-kv-cache保存上下文而不是保存答案">3.2 KV cache：保存上下文，而不是保存答案</h3>
+<p><a href="files/deepinfer-inference-guide-20261102-v2/assets/02-prefill-shapes.png" target="_blank" rel="noopener"><img alt="Prefill从输入到首token的shape主线" src="files/deepinfer-inference-guide-20261102-v2/assets/02-prefill-shapes.png" / width="1200" height="1430" loading="lazy"></a><span class="image-note">点图查看原图</span></p>
+<p>这里先把40层看成一个整体，第5章再打开其中一层。只在末尾选每请求最后一行做词表投影，是因为首个输出只需要这些位置的分布；前面的输入仍完整经过模型。</p>
+<h3 id="42-kv-cache保存上下文而不是保存答案">4.2 KV cache：保存上下文，而不是保存答案</h3>
 <p>Attention用当前位置的Query（Q）与可见位置的Key（K）比较，得到权重，再对Value（V）加权。直观上，Q决定“当前要读什么”，K决定“各位置怎样匹配”，V是被汇聚的信息。其计算主线是：</p>
 <div class="math-display">\[s_{t,h,j}=\gamma\langle q_{t,h},k_j\rangle,\qquad
 c_{t,h}=\sum_{j\in\mathcal S_t} a_{t,h,j}v_j.\]</div>
@@ -220,7 +404,7 @@ c_{t,h}=\sum_{j\in\mathcal S_t} a_{t,h,j}v_j.\]</div>
 <p>sink占据一部分归一化质量、但不贡献普通历史Value，所以历史位置的权重和可能小于1。这里只写运算含义，不表示实现分配完整稠密score矩阵。</p>
 </details>
 <p>prefill建立缓存；后续decode只为新输入位置计算表示，历史KV直接读取。被节省的是<strong>旧位置的重复投影和逐层计算</strong>，不是免去本轮Attention，也不是不再读取历史。模型允许跨层共享KV，压缩层与滑动窗口缓存又有不同布局，因此“KV cache”并不是只有一种 <code>[历史长度,head数,head_dim]</code> 张量。</p>
-<h3 id="33-末端读出lm-head与采样">3.3 末端读出、LM Head与采样</h3>
+<h3 id="43-末端读出lm-head与采样">4.3 末端读出、LM Head与采样</h3>
 <p>40层结束后，模型补齐最后一次写回，四路主干合并成一路、做输出RMSNorm（按均方根归一化特征），再通过CP汇聚和去padding恢复原50个有效位置。LM Head把最终特征投影到词表，为每个可能的下一个token给出分数，称为logits；采样再将分布变成一个ID：</p>
 <pre><code class="language-text">[8,4,5120] → [8,5120] → CP汇聚[64,5120] → 恢复[50,5120]
     → 选A/B最后位置[2,5120] → LM Head[2,129280] → token ID[2]
@@ -229,7 +413,7 @@ c_{t,h}=\sum_{j\in\mathcal S_t} a_{t,h,j}v_j.\]</div>
 <div class="math-display">\[Z=H_{\mathrm{last}}W_{\mathrm{vocab}},\qquad
 p(v)=\operatorname{softmax}(Z/\tau)_v.\]</div>
 <p>本例τ按近似贪心处理，选出的两个ID分别是A、B的首token。本配置force-topk保留4096个词表候选，但LM Head仍先产生129280维logits；“只保留4096项”不等于省去完整词表投影。采样还包含参数变换等任务。它们位于 <code>deepinfer:launch_sample</code> 路径中，CPU的 <code>launch_forward</code> 结束并不代表首token已经返回。</p>
-<h3 id="34-同时为草稿建立历史kv">3.4 同时为草稿建立历史KV</h3>
+<h3 id="44-同时为草稿建立历史kv">4.4 同时为草稿建立历史KV</h3>
 <p>主模型在L37、L38、L39（从0编号）的 <strong>Attention输入处</strong>，各提取四路主干的均值，得到三份5120维特征。注意不是这三层的最终输出。</p>
 <div class="math-display">\[f_\ell=\tfrac14\sum_{i=0}^{3}R_{\ell,i},\qquad
 F=[f_{37};f_{38};f_{39}],\qquad
@@ -238,11 +422,11 @@ U=\operatorname{RMSNorm}(FW_p),\quad K^{d}=UW_k.\]</div>
     → [M,1536] → view[M,3,512] → 三个草稿层的历史缓存
 </code></pre>
 <p>prefill的M是本卡8行，写缓存前还需恢复本组位置；双请求decode的M为16。<strong>这是主模型forward内的一条缓存准备路径，尚未完整运行草稿三层。</strong> 每次主模型decode也会更新它。</p>
-<p>到这里，A、B各有了一个首token，主模型缓存和草稿历史缓存也已建立。接下来先看这40层里到底算了什么，再回到第5章继续生成答案。</p>
-<h2 id="第四章放大一层attentionmhcengram与megamoe">第四章：放大一层——Attention、mHC、Engram与MegaMoE</h2>
-<h3 id="41-mhc怎样读写四路主干">4.1 mHC怎样读写四路主干</h3>
+<p>到这里，A、B各有了一个首token，主模型缓存和草稿历史缓存也已建立。接下来先看这40层里到底算了什么，再回到第6章继续生成答案。</p>
+<h2 id="第五章放大一层attentionmhcengram与megamoe">第五章：放大一层——Attention、mHC、Engram与MegaMoE</h2>
+<h3 id="51-mhc怎样读写四路主干">5.1 mHC怎样读写四路主干</h3>
 <p>本章用M表示本卡实际激活行数：prefill为8，双请求decode主模型图为16，单请求图为8。H＝5120，四路数r＝4。</p>
-<p><a href="files/deepinfer-inference-guide-20261102/assets/03-main-layer.png" target="_blank" rel="noopener"><img alt="一层主模型的主干与子层关系" src="files/deepinfer-inference-guide-20261102/assets/03-main-layer.png" / loading="lazy"></a><span class="image-note">点图查看原图</span></p>
+<p><a href="files/deepinfer-inference-guide-20261102-v2/assets/03-main-layer.png" target="_blank" rel="noopener"><img alt="一层主模型的主干与子层关系" src="files/deepinfer-inference-guide-20261102-v2/assets/03-main-layer.png" / width="1200" height="1430" loading="lazy"></a><span class="image-note">点图查看原图</span></p>
 <p>先看一层的主线：<strong>从四路读出一路 → Attention → 写回；再读出一路 → Gate/MegaMoE → 写回。</strong> L01、L14还会注入Engram特征。四路只是主干保存表示的方式，每个子层仍只执行一次。</p>
 <p>mHC负责读写四路。a控制读出时如何混合旧主干，b控制新结果写入各路的比例，C控制旧主干在四路之间如何混合。用F代表Attention或MoE：</p>
 <div class="math-display">\[x_t=\operatorname{RMSNorm}\!\left(\sum_i a^{\mathrm{prev}}_{t,i}R_{t,i}\right),\quad
@@ -262,7 +446,7 @@ R&#x27;_{t,i}=\sum_j C_{t,ij}R_{t,j}+b_{t,i}u_t.\]</div>
     → Attention或MoE
 </code></pre>
 <p>这解释了为什么pre-apply在系数GEMM前面、为什么post像反复出现的边界。每层Attention和MoE各有一组mHC，40层共80组，不乘四路数。</p>
-<h3 id="42-attention投影读取上下文投影回来">4.2 Attention：投影、读取上下文、投影回来</h3>
+<h3 id="52-attention投影读取上下文投影回来">5.2 Attention：投影、读取上下文、投影回来</h3>
 <p>本模型有64个query head，每head512维，KV特征共享512维，其中RoPE部分为64维。输入并不是一次直接投影出64份独立KV。</p>
 <div class="table-scroll"><table>
 <thead>
@@ -286,7 +470,7 @@ R&#x27;_{t,i}=\sum_j C_{t,ij}R_{t,j}+b_{t,i}u_t.\]</div>
 <tr>
 <td>Q_b展开</td>
 <td><code>[M,1280] → [M,64,512]</code></td>
-<td>部分层还联合生成索引Q，见4.3</td>
+<td>部分层还联合生成索引Q，见5.3</td>
 </tr>
 <tr>
 <td>Q/KV变换</td>
@@ -321,7 +505,7 @@ Q=\operatorname{reshape}(\operatorname{RMSNorm}(Q_a)W_{qb}),\qquad
 O_{t,g}=\operatorname{reshape}(\mathrm{context}_t)_{g}W_{v,g},\qquad
 Y=\operatorname{flatten}(O)W_o.\]</div>
 <p>RoPE将位置编码进旋转维度；量化改变数值表示，逻辑shape可以不变；SF布局重排则服务于GEMM读数。它们各有开销，但不能都算成一次新的Attention。</p>
-<h3 id="43-压缩和索引不是每层都重新做一套">4.3 压缩和索引：不是每层都重新做一套</h3>
+<h3 id="53-压缩和索引不是每层都重新做一套">5.3 压缩和索引：不是每层都重新做一套</h3>
 <p>上一节的Attention核心需要先知道“读哪些KV”。滑动窗口保留近期上下文；压缩路径把更早的信息写成较紧凑的历史；稀疏索引再从这些历史中挑选要读取的位置。<strong>选历史和真正读取历史，是两段计算。</strong></p>
 <p>本配置所有层从0编号。L00、L01主要走非压缩滑动窗口路径；L02～L19采用C2压缩分支，L20～L39采用C1分支。主KV源层为L02、L08、L14、L20，其他层可复用源层KV；索引共享另有分组。于是，源层比复用层多出投影、压缩或索引任务，同样叫Attention的区间也会长短不同。</p>
 <details>
@@ -341,7 +525,7 @@ Y=\operatorname{flatten}(O)W_o.\]</div>
 <p>式中省略实现的缩放、RoPE与量化细节；TopK考虑有效历史长度。输出逻辑索引 <code>[M,Kidx]</code> 经block_table变成缓存物理slot，再交给主Attention。</p>
 </details>
 <p>这里的TopK选的是历史位置；MoE的TopK选专家，采样路径的TopK选词表候选。读trace时先确认正在选择什么，再看kernel名称。</p>
-<h3 id="44-gate与megamoe从模型特征到专家负载">4.4 Gate与MegaMoE：从模型特征到专家负载</h3>
+<h3 id="54-gate与megamoe从模型特征到专家负载">5.4 Gate与MegaMoE：从模型特征到专家负载</h3>
 <p>现在Attention已写回主干，mHC再读出一路X交给MoE。Gate先为每个位置选择专家，MegaMoE再完成分发、专家计算与汇聚。当前源码的评分函数为sqrtsoftplus：</p>
 <div class="math-display">\[z=XW_g,\qquad s_e=\sqrt{\operatorname{softplus}(z_e)},\qquad
 \mathcal E_t=\operatorname{Top6}(s_t+\mathrm{bias}).\]</div>
@@ -355,10 +539,10 @@ y_t=F_{shared}(x_t)+\sum_{e\in\mathcal E_t}w_{t,e}F_e(x_t).\]</div>
     → 带模型clamp的SwiGLU[M_e,2304]
     → Down GEMM[M_e,5120] → 加权Combine
 </code></pre>
-<p>SwiGLU主线为 <code>SiLU(gate) ⊙ up</code>，实际还应用模型配置的clamp。MegaMoE把Dispatch、两次专家GEMM、激活、Combine及共享专家路径融合；trace中的一条MegaMoE不能自然拆出内部每段的独立耗时。第8章再把M和M_e分清。</p>
-<h3 id="45-engram查局部token组合再注入四路主干">4.5 Engram：查局部token组合，再注入四路主干</h3>
+<p>SwiGLU主线为 <code>SiLU(gate) ⊙ up</code>，实际还应用模型配置的clamp。MegaMoE把Dispatch、两次专家GEMM、激活、Combine及共享专家路径融合；trace中的一条MegaMoE不能自然拆出内部每段的独立耗时。第9章再把M和M_e分清。</p>
+<h3 id="55-engram查局部token组合再注入四路主干">5.5 Engram：查局部token组合，再注入四路主干</h3>
 <p>Engram为主干补入局部token组合特征，只在L01、L14应用，草稿层没有。它把当前和前几个token经专用ID映射组成窗口，再对连续2、3、4个token的组合查表。这套ID映射与前文的KV压缩是两件事。</p>
-<p><a href="files/deepinfer-inference-guide-20261102/assets/04-engram-shapes.png" target="_blank" rel="noopener"><img alt="Engram的hash、表项、投影与注入" src="files/deepinfer-inference-guide-20261102/assets/04-engram-shapes.png" / loading="lazy"></a><span class="image-note">点图查看原图</span></p>
+<p><a href="files/deepinfer-inference-guide-20261102-v2/assets/04-engram-shapes.png" target="_blank" rel="noopener"><img alt="Engram的hash、表项、投影与注入" src="files/deepinfer-inference-guide-20261102-v2/assets/04-engram-shapes.png" / width="1200" height="1160" loading="lazy"></a><span class="image-note">点图查看原图</span></p>
 <p>每个Engram层每位置有24个hash表项，每项256维：</p>
 <pre><code class="language-text">窗口[M,4] → hash → 表项[M,24,256]
     → [M,6144] → 投影[M,25600] → view[M,5,5120]
@@ -374,7 +558,7 @@ y_t=F_{shared}(x_t)+\sum_{e\in\mathcal E_t}w_{t,e}F_e(x_t).\]</div>
 g_i=\sigma(\operatorname{signed\_sqrt}(z_i)),\quad R&#x27;_i=R_i+g_iv.\]</div>
 </details>
 <p>本实现把两个层的hash和fetch提前统一发起，再到相应层投影、注入，所以一次主模型forward是1次hash、1次fetch、2次gate应用。</p>
-<p>至此，一层里的主要职责可以归为下表。第7章遇到陌生kernel时，先找它属于哪一类，再对shape和时间。</p>
+<p>至此，一层里的主要职责可以归为下表。第8章遇到陌生kernel时，先找它属于哪一类，再对shape和时间。</p>
 <div class="table-scroll"><table>
 <thead>
 <tr>
@@ -422,7 +606,7 @@ g_i=\sigma(\operatorname{signed\_sqrt}(z_i)),\quad R&#x27;_i=R_i+g_iv.\]</div>
 <tr>
 <td>路由与MegaMoE</td>
 <td>选专家、分发、专家计算、加权汇聚</td>
-<td>区分源行M和专家接收量M_e，见第8章</td>
+<td>区分源行M和专家接收量M_e，见第9章</td>
 </tr>
 <tr>
 <td>Engram</td>
@@ -436,15 +620,15 @@ g_i=\sigma(\operatorname{signed\_sqrt}(z_i)),\quad R&#x27;_i=R_i+g_iv.\]</div>
 </tr>
 </tbody>
 </table></div>
-<p>现在回到第3章末尾：首token已经产生。后续每次主模型forward仍走同样的40层，只是输入从整段prompt变为少量新增位置。</p>
-<h2 id="第五章后续token怎样产生主模型与草稿如何合作">第五章：后续token怎样产生——主模型与草稿如何合作</h2>
-<h3 id="51-先用普通decode建立参照">5.1 先用普通decode建立参照</h3>
+<p>现在回到第4章末尾：首token已经产生。后续每次主模型forward仍走同样的40层，只是输入从整段prompt变为少量新增位置。</p>
+<h2 id="第六章后续token怎样产生主模型与草稿如何合作">第六章：后续token怎样产生——主模型与草稿如何合作</h2>
+<h3 id="61-先用普通decode建立参照">6.1 先用普通decode建立参照</h3>
 <p>假设不用投机，一条请求有了首token g，下一轮将g送入主模型，读取prefill建立的历史KV，产生下一个token。主模型依然走40层；变化的是当前query位置少，而历史可以越来越长。</p>
 <pre><code class="language-text">历史KV + 输入g → 主模型40层 → logits → 新token r
 下一轮输入r，历史KV包含刚处理的g
 </code></pre>
 <p><strong>采样得到r的时刻，r自己的逐层主模型KV通常还没算。</strong> 它要作为下一轮输入，才建立自己的KV。这一点是理解投机验证和缓存保留的基础。</p>
-<h3 id="52-先启动再让草稿一次提出五个候选">5.2 先启动，再让草稿一次提出五个候选</h3>
+<h3 id="62-先启动再让草稿一次提出五个候选">6.2 先启动，再让草稿一次提出五个候选</h3>
 <p>先看这份实现的启动顺序，避免把稳定循环套到第一轮：</p>
 <pre><code class="language-text">P01：主模型prefill → 首token；同时准备草稿历史KV
 D01：主模型首次decode（候选尚未就绪）→ 验证/采样 → 草稿3层
@@ -467,7 +651,7 @@ z_i=z_i^{base}+m_iW_{markov},\quad d_i\sim\operatorname{Sample}(z_i).\]</div>
 <div class="math-display">\[c_i=\sigma\!\left(\frac{[h_i;m_i]w_c}{T_i}\right).\]</div>
 <p>confidence表示接受概率估计，不表示事实正确率。本例关闭可变候选长度（varlen），所以算出confidence不代表会据此缩短本轮主模型候选长度。</p>
 </details>
-<h3 id="53-主模型怎样验证候选">5.3 主模型怎样验证候选</h3>
+<h3 id="63-主模型怎样验证候选">6.3 主模型怎样验证候选</h3>
 <p>稳定轮次中，每请求输入主模型的是 <code>[g,d1,d2,d3,d4,d5]</code>。两请求共12个逻辑位置，放进16行图，依然只完整运行主模型一次。</p>
 <p>主模型处理g后的分布验证d1，处理d1后的分布验证d2，以此类推；最后一个位置还可产生额外token。使用因果约束时，后面的候选不会影响前面验证位置，因此可在一次forward里得到这些条件分布。</p>
 <p>验证按前缀连续进行：遇到第一个拒绝，就停止接受后面的提案，并按验证规则产生一个替代token；若全部接受，还可产生一个额外token。先看示意，假设接受a、b，首次拒绝c，替代token为r：</p>
@@ -504,9 +688,9 @@ z_i=z_i^{base}+m_iW_{markov},\quad d_i\sim\operatorname{Sample}(z_i).\]</div>
 <div class="math-display">\[A(d)=\min\left(1,\frac{p(d)}{q(d)}\right).\]</div>
 <p>本版本验证前还做采样参数变换、force-topk空间对齐；拒绝时从<code>max(p−αq,0)</code>的残余权重采样，α＝exp(−5×10⁻⁵)，含数值保护。因此该公式用于理解接受机制，不能据此断言实现与理想算法逐位完全等同。本例近似贪心，也仍执行真实的验证kernel。</p>
 </details>
-<h3 id="54-将一轮接到下一轮">5.4 将一轮接到下一轮</h3>
-<p><a href="files/deepinfer-inference-guide-20261102/assets/05-decode-cycle.png" target="_blank" rel="noopener"><img alt="主模型验证与草稿提案的数据依赖" src="files/deepinfer-inference-guide-20261102/assets/05-decode-cycle.png" / loading="lazy"></a><span class="image-note">点图查看原图</span></p>
-<p>把5.2和5.3接起来，稳定轮次的数据流是：</p>
+<h3 id="64-将一轮接到下一轮">6.4 将一轮接到下一轮</h3>
+<p><a href="files/deepinfer-inference-guide-20261102-v2/assets/05-decode-cycle.png" target="_blank" rel="noopener"><img alt="主模型验证与草稿提案的数据依赖" src="files/deepinfer-inference-guide-20261102-v2/assets/05-decode-cycle.png" / width="1200" height="1410" loading="lazy"></a><span class="image-note">点图查看原图</span></p>
+<p>把6.2和6.3接起来，稳定轮次的数据流是：</p>
 <pre><code class="language-text">本轮输入：基础token g + 上轮五个提案
     → 主模型40层一次：得到验证所需hidden，更新缓存
     → LM Head与验证：保留接受前缀，产生新的基础token r
@@ -514,10 +698,10 @@ z_i=z_i^{base}+m_iW_{markov},\quad d_i\sim\operatorname{Sample}(z_i).\]</div>
     → 草稿3层一次 + 五位置采样：提出下一轮五个候选
     → 下一轮输入：r + 本轮留下的五个提案
 </code></pre>
-<p>这里的一轮通常包含1次主模型forward和1次草稿forward；前者生成的hidden还要经过词表投影与验证，才能决定输出。若已满足停止条件，已有在途计算或末尾草稿可能不再贡献答案，第8章会将执行账与输出账分开。</p>
+<p>这里的一轮通常包含1次主模型forward和1次草稿forward；前者生成的hidden还要经过词表投影与验证，才能决定输出。若已满足停止条件，已有在途计算或末尾草稿可能不再贡献答案，第9章会将执行账与输出账分开。</p>
 <p>数学依赖的顺序已经明确。下一章看引擎如何把这些工作提交到CPU与NPU，以及为什么trace里的CPU事件看起来没有严格排成这一列。</p>
-<h2 id="第六章引擎怎样推动计算cpu调度与npu执行">第六章：引擎怎样推动计算——CPU调度与NPU执行</h2>
-<h3 id="61-forwardsamplepost_process的职责">6.1 forward、sample、post_process的职责</h3>
+<h2 id="第七章引擎怎样推动计算cpu调度与npu执行">第七章：引擎怎样推动计算——CPU调度与NPU执行</h2>
+<h3 id="71-forwardsamplepost_process的职责">7.1 forward、sample、post_process的职责</h3>
 <div class="table-scroll"><table>
 <thead>
 <tr>
@@ -550,7 +734,7 @@ z_i=z_i^{base}+m_iW_{markov},\quad d_i\sim\operatorname{Sample}(z_i).\]</div>
 </tbody>
 </table></div>
 <p>把一轮连起来看：<code>launch_forward</code>提交主模型，<code>launch_sample</code>接续词表投影、验证和草稿，<code>post_process</code>再将已完成结果交给请求。名称中的sample包含大量设备计算；post_process若在等设备完成，CPU条宽也就包含等待时间。</p>
-<h3 id="62-eager提交与图重放">6.2 eager提交与图重放</h3>
+<h3 id="72-eager提交与图重放">7.2 eager提交与图重放</h3>
 <p>这次prefill采用eager方式，即逐步调用模型算子；CPU的<code>deepinfer:launch_forward_N2_B50</code>区间为153.372 ms。decode则重放预录设备图，将一串任务整体提交，CPU通常只需约130～190 μs，NPU仍执行完整40层。</p>
 <div class="table-scroll"><table>
 <thead>
@@ -579,21 +763,21 @@ z_i=z_i^{base}+m_iW_{markov},\quad d_i\sim\operatorname{Sample}(z_i).\]</div>
 </tbody>
 </table></div>
 <p>三种量不同，不能用175 μs宣称40层算完，也不能把图窗口与kernel累计之差直接归因于通信。prefill和decode的行数、历史与执行方式也不同，这张表不是两种阶段性能优劣的对照实验。</p>
-<h3 id="63-zos本轮设备计算与上轮结果回收重叠">6.3 ZOS：本轮设备计算与上轮结果回收重叠</h3>
+<h3 id="73-zos本轮设备计算与上轮结果回收重叠">7.3 ZOS：本轮设备计算与上轮结果回收重叠</h3>
 <p>本版本的ZOS调度让CPU在NPU执行期间回收上一轮结果，尽量减少设备等主机的空隙。代码的基本顺序是：</p>
 <pre><code class="language-text">提交本轮主模型 → 回收上一轮结果 → 提交本轮sample
 prefill当场回收本轮；ZOS decode留到下一轮回收
 </code></pre>
-<p><a href="files/deepinfer-inference-guide-20261102/assets/06-d02-timeline.png" target="_blank" rel="noopener"><img alt="D02的CPU与设备执行窗口" src="files/deepinfer-inference-guide-20261102/assets/06-d02-timeline.png" / loading="lazy"></a><span class="image-note">点图查看原图</span></p>
+<p><a href="files/deepinfer-inference-guide-20261102-v2/assets/06-d02-timeline.png" target="_blank" rel="noopener"><img alt="D02的CPU与设备执行窗口" src="files/deepinfer-inference-guide-20261102-v2/assets/06-d02-timeline.png" / width="2040" height="714" loading="lazy"></a><span class="image-note">点图查看原图</span></p>
 <p>图中灰条包括本轮提交和上轮结果处理；蓝、黄、紫分别表示主模型、词表/验证、草稿图窗口。Stream是设备任务队列：同一队列按依赖执行，不同队列通过事件交接。多个Stream共同完成一轮，并不表示每个Stream各跑了一遍模型。</p>
 <p>例如D02的<code>deepinfer:build_request_outputs</code>在+2350.801730 ms开始，主模型要到+2364.579766 ms结束。结合ZOS源码和顺序，这次CPU是在构建D01输出。读trace时，先用设备依赖确认属于哪轮，再解释横向重叠。</p>
-<h2 id="第七章拿着流程读trace从整轮到逐算子">第七章：拿着流程读Trace——从整轮到逐算子</h2>
-<h3 id="71-先统一坐标与定位方法">7.1 先统一坐标与定位方法</h3>
-<p>这一章沿着同一路径缩放三次：先找整次prefill，再跟一轮decode，最后放大到连续子层。遇到kernel名称不熟，可回看第4章末的职责表。</p>
+<h2 id="第八章拿着流程读trace从整轮到逐算子">第八章：拿着流程读Trace——从整轮到逐算子</h2>
+<h3 id="81-先统一坐标与定位方法">8.1 先统一坐标与定位方法</h3>
+<p>这一章沿着同一路径缩放三次：先找整次prefill，再跟一轮decode，最后放大到连续子层。遇到kernel名称不熟，可回看第5章末的职责表。</p>
 <p>打开<code>continuous-dp0.json</code>，查看CPU线程698287、NPU进程715046336。下文+ms以<code>capture:real_requests_prefill_through_completion</code>起点为零；若查看器以文件最早事件归零，将本文坐标加10.275189 ms。</p>
 <p><strong>固定操作：</strong> 先按CPU事件全名找轮次，再按时间范围进入NPU Stream；最后同时核对Task ID与Duration。Model ID帮助区分图，Task ID在重放间可能复用，因此名字和编号都不能单独保证唯一定位。Stream编号只对这次采集有效。</p>
 <p>后文D02、L00等阅读编号并非原始trace里的层标签；层次归属由源码和顺序重建。kernel名字里出现<code>prefill</code>命名空间也不代表当前阶段一定是prefill。</p>
-<h3 id="72-先用71次主模型forward认出全局">7.2 先用71次主模型forward认出全局</h3>
+<h3 id="82-先用71次主模型forward认出全局">8.2 先用71次主模型forward认出全局</h3>
 <div class="table-scroll"><table>
 <thead>
 <tr>
@@ -666,7 +850,7 @@ prefill当场回收本轮；ZOS decode留到下一轮回收
 </tbody>
 </table></div>
 <p>两个微秒级kernel是153 ms范围的入口，不是prefill的全部。后面还会经过40层及缓存/输出恢复。该次关联主模型kernel累计14.546140 ms；CPU区间包含提交期间的其他耗时和任务间空隙，不把差额当作已经定位的单一瓶颈。</p>
-<h3 id="73-跟踪一轮真实decoded02">7.3 跟踪一轮真实decode：D02</h3>
+<h3 id="83-跟踪一轮真实decoded02">8.3 跟踪一轮真实decode：D02</h3>
 <p>CPU搜索 <code>deepinfer:launch_forward_N2_B12</code>，选+2349.943770～2350.119020 ms、175.250 μs这一条，不依赖搜索结果排序。</p>
 <div class="table-scroll"><table>
 <thead>
@@ -705,7 +889,7 @@ prefill当场回收本轮；ZOS decode留到下一轮回收
 <p><strong>小核对②：找到主模型到草稿的交接。</strong> Stream61中，主模型LM Head是Task239377，+2364.747249～2365.165064 ms，417.815 μs。随后词表TopK Task239380耗时400.991 μs；真正统计接受前缀的是 <code>_get_accept_result_kernel</code>，Task239385，+2365.598386～2365.601912 ms，3.526 μs。</p>
 <p>接着是 <code>_finalize_verification_kernel</code> Task239387、<code>_finalize_verification_kernel_1</code> Task239388，以及 <code>_copy_dflash_decode_input_kernel</code> Task239389。再转到Stream163：三次MegaMoE为Task35079、35108、35137，分别108.553、94.768、98.230 μs，对应草稿三层。</p>
 <p>主模型、词表/验证、草稿的窗口之间仍可能有间隔；草稿图还包含三层之外的LM Head和五位置采样，不能把整个1.991 ms都归给三次MegaMoE。</p>
-<h3 id="74-四个连续子层区间把局部算子认全">7.4 四个连续子层区间：把局部算子认全</h3>
+<h3 id="84-四个连续子层区间把局部算子认全">8.4 四个连续子层区间：把局部算子认全</h3>
 <p>仍留在D02真实请求中，选择Stream181 / Model62，从post Task21677开始，连续到post Task21751。<strong>每段包含左侧post，不包含右侧下一条post。</strong></p>
 <div class="table-scroll"><table>
 <thead>
@@ -754,22 +938,22 @@ prefill当场回收本轮；ZOS decode留到下一轮回收
 </tbody>
 </table></div>
 <p>四段共72个kernel。下面每框一条kernel，按执行顺序标Task、shape与耗时；主模型设备图为16行，包含padding。箭头表示执行顺序，不意味着前一步输出是下一步全部输入；权重和缓存等还可来自其他路径。</p>
-<details class="flow-block" open><summary>展开本段10个步骤：shape、耗时与完整名称</summary><p>按编号逐行阅读，手机自动单列；此处表示执行顺序，框宽不代表耗时。</p><ol class="flow-nodes"><li data-order="步骤 1"><h4>写回四路主干</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21677">Task 21677</a> · 4.742 μs</p><p>输入<br><code>x[16,5120] + R[16,4,5120]<br>post[16,4,1] + mix[16,4,4]</code></p><p>输出<br><code>R′[16,4,5120]</code></p><details><summary>完整kernel名称</summary><code>mhc_post_fwd_asc_kernel</code></details></li><li data-order="步骤 2"><h4>四路读成一路</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21678">Task 21678</a> · 2.872 μs</p><p>输入<br><code>R[16,4,5120] + pre[16,4,1]</code></p><p>输出<br><code>x[16,5120]</code></p><details><summary>完整kernel名称</summary><code>mhc_pre_apply_mix_fwd_asc_kernel</code></details></li><li data-order="步骤 3"><h4>计算混合系数</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21679">Task 21679</a> · 9.561 μs</p><p>输入<br><code>R[16,4,5120] → 展平[16,20480]</code></p><p>输出<br><code>系数中间量[16,24] + 平方和[16]</code></p><details><summary>完整kernel名称</summary><code>tf32_hc_prenorm_gemm_kernel_kernel</code></details></li><li data-order="步骤 4"><h4>归一化系数</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21680">Task 21680</a> · 2.569 μs</p><p>输入<br><code>系数中间量[16,24] + 平方和[16]</code></p><p>输出<br><code>mixes[16,24]</code></p><details><summary>完整kernel名称</summary><code>mhc_reduce_partials_and_rmsnorm_fwd_asc_kernel</code></details></li><li data-order="步骤 5"><h4>拆出混合系数</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21681">Task 21681</a> · 2.565 μs</p><p>输入<br><code>mixes[16,24]</code></p><p>输出<br><code>pre/post各[16,4,1]<br>残差mix[16,4,4]</code></p><details><summary>完整kernel名称</summary><code>mhc_pre_split_mixes_fwd_simd_mhc4_asc_kernel</code></details></li><li data-order="步骤 6"><h4>Sinkhorn归一化</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21682">Task 21682</a> · 4.171 μs</p><p>输入<br><code>残差mix[16,4,4]</code></p><p>输出<br><code>归一化mix[16,4,4]</code></p><details><summary>完整kernel名称</summary><code>mhc_sinkhorn_fwd_asc_kernel</code></details></li><li data-order="步骤 7"><h4>子层输入RMSNorm</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21683">Task 21683</a> · 5.762 μs</p><p>输入<br><code>x[16,5120]</code></p><p>输出<br><code>x_norm[16,5120]（含所需格式）</code></p><details><summary>完整kernel名称</summary><code>_norm_kernel</code></details></li><li data-order="步骤 8"><h4>专家Gate投影</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21684">Task 21684</a> · 5.924 μs</p><p>输入<br><code>x[16,5120]</code></p><p>输出<br><code>专家分数[16,384]</code></p><details><summary>完整kernel名称</summary><code>_ZN9deep_gemm14bf16_gemm_implILNS_5MajorE0ELS1_0ELj0ELj384ELj5120ELj16ELj16ELj2048ELj16ELj16ELj1024ELj5ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0EfNS_8epilogue9operators8IdentityELj256ELb1ELb1ELb0EEEvNS_6gm_ptrIu6__bf16XT_EEENS8_Iu6__bf16XT0_EEENS8_IT19_LS1_0EEEjjjPijNS5_4ArgsE</code></details></li><li data-order="步骤 9"><h4>选择Top6专家</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21685">Task 21685</a> · 6.222 μs</p><p>输入<br><code>专家分数[16,384]</code></p><p>输出<br><code>专家ID[16,6] + 权重[16,6]</code></p><details><summary>完整kernel名称</summary><code>moe_topk_gate_forward_kernel_asc_kernel</code></details></li><li data-order="步骤 10"><h4>专家计算与汇聚</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21687">Task 21687</a> · 223.728 μs</p><p>输入<br><code>x[16,5120] + ID/权重[16,6]</code></p><p>输出<br><code>MoE输出[16,5120]</code></p><details><summary>完整kernel名称</summary><code>_ZN9deep_gemm8mega_moe13mega_moe_implILj16ELj416ELj1ELj512ELj6ELj5120ELj2304EEEvPu6__bf16PiPKhPKsS5_S7_S5_S7_S5_S7_jfNS_6layout9SymBufferILj256EEE</code></details></li></ol><a href="files/deepinfer-inference-guide-20261102/assets/07-d02-flow-01.png" target="_blank" rel="noopener">打开静态整图 ↗</a></details>
+<details class="flow-block" open><summary>展开本段10个步骤：shape、耗时与完整名称</summary><p>按编号逐行阅读，手机自动单列；此处表示执行顺序，框宽不代表耗时。</p><ol class="flow-nodes"><li data-order="步骤 1"><h4>写回四路主干</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21677">Task 21677</a> · 4.742 μs</p><p>输入<br><code>x[16,5120] + R[16,4,5120]<br>post[16,4,1] + mix[16,4,4]</code></p><p>输出<br><code>R′[16,4,5120]</code></p><details><summary>完整kernel名称</summary><code>mhc_post_fwd_asc_kernel</code></details></li><li data-order="步骤 2"><h4>四路读成一路</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21678">Task 21678</a> · 2.872 μs</p><p>输入<br><code>R[16,4,5120] + pre[16,4,1]</code></p><p>输出<br><code>x[16,5120]</code></p><details><summary>完整kernel名称</summary><code>mhc_pre_apply_mix_fwd_asc_kernel</code></details></li><li data-order="步骤 3"><h4>计算混合系数</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21679">Task 21679</a> · 9.561 μs</p><p>输入<br><code>R[16,4,5120] → 展平[16,20480]</code></p><p>输出<br><code>系数中间量[16,24] + 平方和[16]</code></p><details><summary>完整kernel名称</summary><code>tf32_hc_prenorm_gemm_kernel_kernel</code></details></li><li data-order="步骤 4"><h4>归一化系数</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21680">Task 21680</a> · 2.569 μs</p><p>输入<br><code>系数中间量[16,24] + 平方和[16]</code></p><p>输出<br><code>mixes[16,24]</code></p><details><summary>完整kernel名称</summary><code>mhc_reduce_partials_and_rmsnorm_fwd_asc_kernel</code></details></li><li data-order="步骤 5"><h4>拆出混合系数</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21681">Task 21681</a> · 2.565 μs</p><p>输入<br><code>mixes[16,24]</code></p><p>输出<br><code>pre/post各[16,4,1]<br>残差mix[16,4,4]</code></p><details><summary>完整kernel名称</summary><code>mhc_pre_split_mixes_fwd_simd_mhc4_asc_kernel</code></details></li><li data-order="步骤 6"><h4>Sinkhorn归一化</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21682">Task 21682</a> · 4.171 μs</p><p>输入<br><code>残差mix[16,4,4]</code></p><p>输出<br><code>归一化mix[16,4,4]</code></p><details><summary>完整kernel名称</summary><code>mhc_sinkhorn_fwd_asc_kernel</code></details></li><li data-order="步骤 7"><h4>子层输入RMSNorm</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21683">Task 21683</a> · 5.762 μs</p><p>输入<br><code>x[16,5120]</code></p><p>输出<br><code>x_norm[16,5120]（含所需格式）</code></p><details><summary>完整kernel名称</summary><code>_norm_kernel</code></details></li><li data-order="步骤 8"><h4>专家Gate投影</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21684">Task 21684</a> · 5.924 μs</p><p>输入<br><code>x[16,5120]</code></p><p>输出<br><code>专家分数[16,384]</code></p><details><summary>完整kernel名称</summary><code>_ZN9deep_gemm14bf16_gemm_implILNS_5MajorE0ELS1_0ELj0ELj384ELj5120ELj16ELj16ELj2048ELj16ELj16ELj1024ELj5ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0EfNS_8epilogue9operators8IdentityELj256ELb1ELb1ELb0EEEvNS_6gm_ptrIu6__bf16XT_EEENS8_Iu6__bf16XT0_EEENS8_IT19_LS1_0EEEjjjPijNS5_4ArgsE</code></details></li><li data-order="步骤 9"><h4>选择Top6专家</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21685">Task 21685</a> · 6.222 μs</p><p>输入<br><code>专家分数[16,384]</code></p><p>输出<br><code>专家ID[16,6] + 权重[16,6]</code></p><details><summary>完整kernel名称</summary><code>moe_topk_gate_forward_kernel_asc_kernel</code></details></li><li data-order="步骤 10"><h4>专家计算与汇聚</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21687">Task 21687</a> · 223.728 μs</p><p>输入<br><code>x[16,5120] + ID/权重[16,6]</code></p><p>输出<br><code>MoE输出[16,5120]</code></p><details><summary>完整kernel名称</summary><code>_ZN9deep_gemm8mega_moe13mega_moe_implILj16ELj416ELj1ELj512ELj6ELj5120ELj2304EEEvPu6__bf16PiPKhPKsS5_S7_S5_S7_S5_S7_jfNS_6layout9SymBufferILj256EEE</code></details></li></ol><a href="files/deepinfer-inference-guide-20261102-v2/assets/07-d02-flow-01.png" target="_blank" rel="noopener">打开静态整图 ↗</a></details>
 <p>第一段10条kernel中，mHC的读写与系数准备之后是Gate投影、Top6和MegaMoE。MegaMoE Task21687为223.728 μs；开头post Task21677只有4.742 μs，不要把二者合称为mHC耗时。</p>
-<details class="flow-block"><summary>展开本段20个步骤：shape、耗时与完整名称</summary><p>按编号逐行阅读，手机自动单列；此处表示执行顺序，框宽不代表耗时。</p><ol class="flow-nodes"><li data-order="步骤 1"><h4>写回四路主干</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21688">Task 21688</a> · 3.380 μs</p><p>输入<br><code>x[16,5120] + R[16,4,5120]<br>post[16,4,1] + mix[16,4,4]</code></p><p>输出<br><code>R′[16,4,5120]</code></p><details><summary>完整kernel名称</summary><code>mhc_post_fwd_asc_kernel</code></details></li><li data-order="步骤 2"><h4>Engram特征投影</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21689">Task 21689</a> · 57.995 μs</p><p>输入<br><code>预取表项[16,6144]</code></p><p>输出<br><code>特征[16,25600] → view[16,5,5120]</code></p><details><summary>完整kernel名称</summary><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj25600ELj6144ELj16ELj416ELj256ELj16ELj208ELj128ELj4ELj2ELj11ELj2ELj4ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb0ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></details></li><li data-order="步骤 3"><h4>门控注入主干</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21690">Task 21690</a> · 4.999 μs</p><p>输入<br><code>R[16,4,5120] + 特征[16,5,5120]</code></p><p>输出<br><code>更新后的R[16,4,5120]</code></p><details><summary>完整kernel名称</summary><code>engram_gate_fwd_kernel_asc_kernel</code></details></li><li data-order="步骤 4"><h4>四路读成一路</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21691">Task 21691</a> · 3.067 μs</p><p>输入<br><code>R[16,4,5120] + pre[16,4,1]</code></p><p>输出<br><code>x[16,5120]</code></p><details><summary>完整kernel名称</summary><code>mhc_pre_apply_mix_fwd_asc_kernel</code></details></li><li data-order="步骤 5"><h4>计算混合系数</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21692">Task 21692</a> · 9.970 μs</p><p>输入<br><code>R[16,4,5120] → 展平[16,20480]</code></p><p>输出<br><code>系数中间量[16,24] + 平方和[16]</code></p><details><summary>完整kernel名称</summary><code>tf32_hc_prenorm_gemm_kernel_kernel</code></details></li><li data-order="步骤 6"><h4>归一化系数</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21693">Task 21693</a> · 2.491 μs</p><p>输入<br><code>系数中间量[16,24] + 平方和[16]</code></p><p>输出<br><code>mixes[16,24]</code></p><details><summary>完整kernel名称</summary><code>mhc_reduce_partials_and_rmsnorm_fwd_asc_kernel</code></details></li><li data-order="步骤 7"><h4>拆出混合系数</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21694">Task 21694</a> · 2.792 μs</p><p>输入<br><code>mixes[16,24]</code></p><p>输出<br><code>pre/post各[16,4,1]<br>残差mix[16,4,4]</code></p><details><summary>完整kernel名称</summary><code>mhc_pre_split_mixes_fwd_simd_mhc4_asc_kernel</code></details></li><li data-order="步骤 8"><h4>Sinkhorn归一化</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21695">Task 21695</a> · 4.171 μs</p><p>输入<br><code>残差mix[16,4,4]</code></p><p>输出<br><code>归一化mix[16,4,4]</code></p><details><summary>完整kernel名称</summary><code>mhc_sinkhorn_fwd_asc_kernel</code></details></li><li data-order="步骤 9"><h4>子层输入RMSNorm</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21696">Task 21696</a> · 10.158 μs</p><p>输入<br><code>x[16,5120]</code></p><p>输出<br><code>x_norm[16,5120]（含所需格式）</code></p><details><summary>完整kernel名称</summary><code>_norm_kernel</code></details></li><li data-order="步骤 10"><h4>联合投影Q_a与SWA KV</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21697">Task 21697</a> · 6.485 μs</p><p>输入<br><code>x[16,5120]</code></p><p>输出<br><code>[16,1792] → Q_a[16,1280]<br>及SWA KV[16,1,512]</code></p><details><summary>完整kernel名称</summary><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj1792ELj5120ELj16ELj64ELj512ELj16ELj64ELj256ELj4ELj2ELj10ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></details></li><li data-order="步骤 11"><h4>处理并写入SWA KV</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21698">Task 21698</a> · 3.410 μs</p><p>输入<br><code>SWA KV[16,1,512] + position[16]</code></p><p>输出<br><code>逻辑KV[16,1,512]（缓存格式）<br>及SWA缓存更新</code></p><details><summary>完整kernel名称</summary><code>_fused_norm_rope_hadamard_cast_store_kvcache_kernel</code></details></li><li data-order="步骤 12"><h4>低秩Q归一化</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21699">Task 21699</a> · 4.753 μs</p><p>输入<br><code>Q_a[16,1280]</code></p><p>输出<br><code>Q_a_norm[16,1280]</code></p><details><summary>完整kernel名称</summary><code>_norm_kernel</code></details></li><li data-order="步骤 13"><h4>展开主Attention Q</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21700">Task 21700</a> · 18.882 μs</p><p>输入<br><code>Q_a[16,1280]</code></p><p>输出<br><code>[16,32768] → view Q[16,64,512]</code></p><details><summary>完整kernel名称</summary><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj32768ELj1280ELj16ELj512ELj256ELj16ELj256ELj128ELj3ELj2ELj5ELj2ELj4ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></details></li><li data-order="步骤 14"><h4>归一化/旋转主Q</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21701">Task 21701</a> · 3.628 μs</p><p>输入<br><code>主Q[16,64,512] + position[16]</code></p><p>输出<br><code>主Q[16,64,512]（所需计算格式）</code></p><details><summary>完整kernel名称</summary><code>_fused_norm_rope_hadamard_cast_store_kvcache_kernel</code></details></li><li data-order="步骤 15"><h4>L01上下文汇聚</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21702">Task 21702</a> · 8.286 μs</p><p>输入<br><code>Q[16,64,512] + SWA历史KV</code></p><p>输出<br><code>context[16,64,512]</code></p><details><summary>完整kernel名称</summary><code>_ZN6ascend7prefill10sparse_fwd22sparse_attn_fwd_kernelINS1_6KernelIXtlNS1_6ConfigEL17SparseAttnFwdMode1ELj64ELj640ELb1EEEEEEEvNT_6ParamsENS7_9AuxParamsE</code></details></li><li data-order="步骤 16"><h4>输出逆向RoPE</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21703">Task 21703</a> · 4.796 μs</p><p>输入<br><code>context[16,64,512]</code></p><p>输出<br><code>旋转后的context[16,64,512]</code></p><details><summary>完整kernel名称</summary><code>_rope_kernel_kernel</code></details></li><li data-order="步骤 17"><h4>上下文转FP8</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21704">Task 21704</a> · 4.108 μs</p><p>输入<br><code>context[16,32768]（view）</code></p><p>输出<br><code>FP8[16,32768] + SF</code></p><details><summary>完整kernel名称</summary><code>per_token_cast_kernel_kernel</code></details></li><li data-order="步骤 18"><h4>分组输出投影Wv</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21705">Task 21705</a> · 14.955 μs</p><p>输入<br><code>FP8[16,8,4096] + SF（view）</code></p><p>输出<br><code>Wv结果[16,8,1024]</code></p><details><summary>完整kernel名称</summary><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj1024ELj4096ELj16ELj256ELj512ELj16ELj256ELj128ELj3ELj2ELj8ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE3Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb0ELb0EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></details></li><li data-order="步骤 19"><h4>Wv结果转FP8</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21706">Task 21706</a> · 3.737 μs</p><p>输入<br><code>Wv结果[16,8192]（view）</code></p><p>输出<br><code>FP8[16,8192] + SF</code></p><details><summary>完整kernel名称</summary><code>per_token_cast_kernel_kernel</code></details></li><li data-order="步骤 20"><h4>合并输出投影Wo</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21707">Task 21707</a> · 19.585 μs</p><p>输入<br><code>FP8[16,8192] + SF（view）</code></p><p>输出<br><code>子层输出[16,5120]</code></p><details><summary>完整kernel名称</summary><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj5120ELj8192ELj16ELj160ELj256ELj16ELj160ELj128ELj4ELj2ELj32ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></details></li></ol><a href="files/deepinfer-inference-guide-20261102/assets/08-d02-flow-02.png" target="_blank" rel="noopener">打开静态整图 ↗</a></details>
+<details class="flow-block"><summary>展开本段20个步骤：shape、耗时与完整名称</summary><p>按编号逐行阅读，手机自动单列；此处表示执行顺序，框宽不代表耗时。</p><ol class="flow-nodes"><li data-order="步骤 1"><h4>写回四路主干</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21688">Task 21688</a> · 3.380 μs</p><p>输入<br><code>x[16,5120] + R[16,4,5120]<br>post[16,4,1] + mix[16,4,4]</code></p><p>输出<br><code>R′[16,4,5120]</code></p><details><summary>完整kernel名称</summary><code>mhc_post_fwd_asc_kernel</code></details></li><li data-order="步骤 2"><h4>Engram特征投影</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21689">Task 21689</a> · 57.995 μs</p><p>输入<br><code>预取表项[16,6144]</code></p><p>输出<br><code>特征[16,25600] → view[16,5,5120]</code></p><details><summary>完整kernel名称</summary><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj25600ELj6144ELj16ELj416ELj256ELj16ELj208ELj128ELj4ELj2ELj11ELj2ELj4ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb0ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></details></li><li data-order="步骤 3"><h4>门控注入主干</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21690">Task 21690</a> · 4.999 μs</p><p>输入<br><code>R[16,4,5120] + 特征[16,5,5120]</code></p><p>输出<br><code>更新后的R[16,4,5120]</code></p><details><summary>完整kernel名称</summary><code>engram_gate_fwd_kernel_asc_kernel</code></details></li><li data-order="步骤 4"><h4>四路读成一路</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21691">Task 21691</a> · 3.067 μs</p><p>输入<br><code>R[16,4,5120] + pre[16,4,1]</code></p><p>输出<br><code>x[16,5120]</code></p><details><summary>完整kernel名称</summary><code>mhc_pre_apply_mix_fwd_asc_kernel</code></details></li><li data-order="步骤 5"><h4>计算混合系数</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21692">Task 21692</a> · 9.970 μs</p><p>输入<br><code>R[16,4,5120] → 展平[16,20480]</code></p><p>输出<br><code>系数中间量[16,24] + 平方和[16]</code></p><details><summary>完整kernel名称</summary><code>tf32_hc_prenorm_gemm_kernel_kernel</code></details></li><li data-order="步骤 6"><h4>归一化系数</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21693">Task 21693</a> · 2.491 μs</p><p>输入<br><code>系数中间量[16,24] + 平方和[16]</code></p><p>输出<br><code>mixes[16,24]</code></p><details><summary>完整kernel名称</summary><code>mhc_reduce_partials_and_rmsnorm_fwd_asc_kernel</code></details></li><li data-order="步骤 7"><h4>拆出混合系数</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21694">Task 21694</a> · 2.792 μs</p><p>输入<br><code>mixes[16,24]</code></p><p>输出<br><code>pre/post各[16,4,1]<br>残差mix[16,4,4]</code></p><details><summary>完整kernel名称</summary><code>mhc_pre_split_mixes_fwd_simd_mhc4_asc_kernel</code></details></li><li data-order="步骤 8"><h4>Sinkhorn归一化</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21695">Task 21695</a> · 4.171 μs</p><p>输入<br><code>残差mix[16,4,4]</code></p><p>输出<br><code>归一化mix[16,4,4]</code></p><details><summary>完整kernel名称</summary><code>mhc_sinkhorn_fwd_asc_kernel</code></details></li><li data-order="步骤 9"><h4>子层输入RMSNorm</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21696">Task 21696</a> · 10.158 μs</p><p>输入<br><code>x[16,5120]</code></p><p>输出<br><code>x_norm[16,5120]（含所需格式）</code></p><details><summary>完整kernel名称</summary><code>_norm_kernel</code></details></li><li data-order="步骤 10"><h4>联合投影Q_a与SWA KV</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21697">Task 21697</a> · 6.485 μs</p><p>输入<br><code>x[16,5120]</code></p><p>输出<br><code>[16,1792] → Q_a[16,1280]<br>及SWA KV[16,1,512]</code></p><details><summary>完整kernel名称</summary><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj1792ELj5120ELj16ELj64ELj512ELj16ELj64ELj256ELj4ELj2ELj10ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></details></li><li data-order="步骤 11"><h4>处理并写入SWA KV</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21698">Task 21698</a> · 3.410 μs</p><p>输入<br><code>SWA KV[16,1,512] + position[16]</code></p><p>输出<br><code>逻辑KV[16,1,512]（缓存格式）<br>及SWA缓存更新</code></p><details><summary>完整kernel名称</summary><code>_fused_norm_rope_hadamard_cast_store_kvcache_kernel</code></details></li><li data-order="步骤 12"><h4>低秩Q归一化</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21699">Task 21699</a> · 4.753 μs</p><p>输入<br><code>Q_a[16,1280]</code></p><p>输出<br><code>Q_a_norm[16,1280]</code></p><details><summary>完整kernel名称</summary><code>_norm_kernel</code></details></li><li data-order="步骤 13"><h4>展开主Attention Q</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21700">Task 21700</a> · 18.882 μs</p><p>输入<br><code>Q_a[16,1280]</code></p><p>输出<br><code>[16,32768] → view Q[16,64,512]</code></p><details><summary>完整kernel名称</summary><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj32768ELj1280ELj16ELj512ELj256ELj16ELj256ELj128ELj3ELj2ELj5ELj2ELj4ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></details></li><li data-order="步骤 14"><h4>归一化/旋转主Q</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21701">Task 21701</a> · 3.628 μs</p><p>输入<br><code>主Q[16,64,512] + position[16]</code></p><p>输出<br><code>主Q[16,64,512]（所需计算格式）</code></p><details><summary>完整kernel名称</summary><code>_fused_norm_rope_hadamard_cast_store_kvcache_kernel</code></details></li><li data-order="步骤 15"><h4>L01上下文汇聚</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21702">Task 21702</a> · 8.286 μs</p><p>输入<br><code>Q[16,64,512] + SWA历史KV</code></p><p>输出<br><code>context[16,64,512]</code></p><details><summary>完整kernel名称</summary><code>_ZN6ascend7prefill10sparse_fwd22sparse_attn_fwd_kernelINS1_6KernelIXtlNS1_6ConfigEL17SparseAttnFwdMode1ELj64ELj640ELb1EEEEEEEvNT_6ParamsENS7_9AuxParamsE</code></details></li><li data-order="步骤 16"><h4>输出逆向RoPE</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21703">Task 21703</a> · 4.796 μs</p><p>输入<br><code>context[16,64,512]</code></p><p>输出<br><code>旋转后的context[16,64,512]</code></p><details><summary>完整kernel名称</summary><code>_rope_kernel_kernel</code></details></li><li data-order="步骤 17"><h4>上下文转FP8</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21704">Task 21704</a> · 4.108 μs</p><p>输入<br><code>context[16,32768]（view）</code></p><p>输出<br><code>FP8[16,32768] + SF</code></p><details><summary>完整kernel名称</summary><code>per_token_cast_kernel_kernel</code></details></li><li data-order="步骤 18"><h4>分组输出投影Wv</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21705">Task 21705</a> · 14.955 μs</p><p>输入<br><code>FP8[16,8,4096] + SF（view）</code></p><p>输出<br><code>Wv结果[16,8,1024]</code></p><details><summary>完整kernel名称</summary><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj1024ELj4096ELj16ELj256ELj512ELj16ELj256ELj128ELj3ELj2ELj8ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE3Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb0ELb0EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></details></li><li data-order="步骤 19"><h4>Wv结果转FP8</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21706">Task 21706</a> · 3.737 μs</p><p>输入<br><code>Wv结果[16,8192]（view）</code></p><p>输出<br><code>FP8[16,8192] + SF</code></p><details><summary>完整kernel名称</summary><code>per_token_cast_kernel_kernel</code></details></li><li data-order="步骤 20"><h4>合并输出投影Wo</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21707">Task 21707</a> · 19.585 μs</p><p>输入<br><code>FP8[16,8192] + SF（view）</code></p><p>输出<br><code>子层输出[16,5120]</code></p><details><summary>完整kernel名称</summary><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj5120ELj8192ELj16ELj160ELj256ELj16ELj160ELj128ELj4ELj2ELj32ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></details></li></ol><a href="files/deepinfer-inference-guide-20261102-v2/assets/08-d02-flow-02.png" target="_blank" rel="noopener">打开静态整图 ↗</a></details>
 <p>第二段先注入Engram，再进入Attention。Engram投影Task21689为57.995 μs，gate Task21690为4.999 μs；Attention核心Task21702为8.286 μs。其他GEMM分别是Q投影和Wv/Wo，不能都认成MegaMoE。</p>
-<details class="flow-block"><summary>展开本段10个步骤：shape、耗时与完整名称</summary><p>按编号逐行阅读，手机自动单列；此处表示执行顺序，框宽不代表耗时。</p><ol class="flow-nodes"><li data-order="步骤 1"><h4>写回四路主干</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21708">Task 21708</a> · 3.508 μs</p><p>输入<br><code>x[16,5120] + R[16,4,5120]<br>post[16,4,1] + mix[16,4,4]</code></p><p>输出<br><code>R′[16,4,5120]</code></p><details><summary>完整kernel名称</summary><code>mhc_post_fwd_asc_kernel</code></details></li><li data-order="步骤 2"><h4>四路读成一路</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21709">Task 21709</a> · 2.921 μs</p><p>输入<br><code>R[16,4,5120] + pre[16,4,1]</code></p><p>输出<br><code>x[16,5120]</code></p><details><summary>完整kernel名称</summary><code>mhc_pre_apply_mix_fwd_asc_kernel</code></details></li><li data-order="步骤 3"><h4>计算混合系数</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21710">Task 21710</a> · 9.351 μs</p><p>输入<br><code>R[16,4,5120] → 展平[16,20480]</code></p><p>输出<br><code>系数中间量[16,24] + 平方和[16]</code></p><details><summary>完整kernel名称</summary><code>tf32_hc_prenorm_gemm_kernel_kernel</code></details></li><li data-order="步骤 4"><h4>归一化系数</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21711">Task 21711</a> · 2.643 μs</p><p>输入<br><code>系数中间量[16,24] + 平方和[16]</code></p><p>输出<br><code>mixes[16,24]</code></p><details><summary>完整kernel名称</summary><code>mhc_reduce_partials_and_rmsnorm_fwd_asc_kernel</code></details></li><li data-order="步骤 5"><h4>拆出混合系数</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21712">Task 21712</a> · 2.589 μs</p><p>输入<br><code>mixes[16,24]</code></p><p>输出<br><code>pre/post各[16,4,1]<br>残差mix[16,4,4]</code></p><details><summary>完整kernel名称</summary><code>mhc_pre_split_mixes_fwd_simd_mhc4_asc_kernel</code></details></li><li data-order="步骤 6"><h4>Sinkhorn归一化</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21713">Task 21713</a> · 4.320 μs</p><p>输入<br><code>残差mix[16,4,4]</code></p><p>输出<br><code>归一化mix[16,4,4]</code></p><details><summary>完整kernel名称</summary><code>mhc_sinkhorn_fwd_asc_kernel</code></details></li><li data-order="步骤 7"><h4>子层输入RMSNorm</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21714">Task 21714</a> · 4.328 μs</p><p>输入<br><code>x[16,5120]</code></p><p>输出<br><code>x_norm[16,5120]（含所需格式）</code></p><details><summary>完整kernel名称</summary><code>_norm_kernel</code></details></li><li data-order="步骤 8"><h4>专家Gate投影</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21715">Task 21715</a> · 5.709 μs</p><p>输入<br><code>x[16,5120]</code></p><p>输出<br><code>专家分数[16,384]</code></p><details><summary>完整kernel名称</summary><code>_ZN9deep_gemm14bf16_gemm_implILNS_5MajorE0ELS1_0ELj0ELj384ELj5120ELj16ELj16ELj2048ELj16ELj16ELj1024ELj5ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0EfNS_8epilogue9operators8IdentityELj256ELb1ELb1ELb0EEEvNS_6gm_ptrIu6__bf16XT_EEENS8_Iu6__bf16XT0_EEENS8_IT19_LS1_0EEEjjjPijNS5_4ArgsE</code></details></li><li data-order="步骤 9"><h4>选择Top6专家</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21716">Task 21716</a> · 5.038 μs</p><p>输入<br><code>专家分数[16,384]</code></p><p>输出<br><code>专家ID[16,6] + 权重[16,6]</code></p><details><summary>完整kernel名称</summary><code>moe_topk_gate_forward_kernel_asc_kernel</code></details></li><li data-order="步骤 10"><h4>专家计算与汇聚</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21718">Task 21718</a> · 140.441 μs</p><p>输入<br><code>x[16,5120] + ID/权重[16,6]</code></p><p>输出<br><code>MoE输出[16,5120]</code></p><details><summary>完整kernel名称</summary><code>_ZN9deep_gemm8mega_moe13mega_moe_implILj16ELj416ELj1ELj512ELj6ELj5120ELj2304EEEvPu6__bf16PiPKhPKsS5_S7_S5_S7_S5_S7_jfNS_6layout9SymBufferILj256EEE</code></details></li></ol><a href="files/deepinfer-inference-guide-20261102/assets/09-d02-flow-03.png" target="_blank" rel="noopener">打开静态整图 ↗</a></details>
+<details class="flow-block"><summary>展开本段10个步骤：shape、耗时与完整名称</summary><p>按编号逐行阅读，手机自动单列；此处表示执行顺序，框宽不代表耗时。</p><ol class="flow-nodes"><li data-order="步骤 1"><h4>写回四路主干</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21708">Task 21708</a> · 3.508 μs</p><p>输入<br><code>x[16,5120] + R[16,4,5120]<br>post[16,4,1] + mix[16,4,4]</code></p><p>输出<br><code>R′[16,4,5120]</code></p><details><summary>完整kernel名称</summary><code>mhc_post_fwd_asc_kernel</code></details></li><li data-order="步骤 2"><h4>四路读成一路</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21709">Task 21709</a> · 2.921 μs</p><p>输入<br><code>R[16,4,5120] + pre[16,4,1]</code></p><p>输出<br><code>x[16,5120]</code></p><details><summary>完整kernel名称</summary><code>mhc_pre_apply_mix_fwd_asc_kernel</code></details></li><li data-order="步骤 3"><h4>计算混合系数</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21710">Task 21710</a> · 9.351 μs</p><p>输入<br><code>R[16,4,5120] → 展平[16,20480]</code></p><p>输出<br><code>系数中间量[16,24] + 平方和[16]</code></p><details><summary>完整kernel名称</summary><code>tf32_hc_prenorm_gemm_kernel_kernel</code></details></li><li data-order="步骤 4"><h4>归一化系数</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21711">Task 21711</a> · 2.643 μs</p><p>输入<br><code>系数中间量[16,24] + 平方和[16]</code></p><p>输出<br><code>mixes[16,24]</code></p><details><summary>完整kernel名称</summary><code>mhc_reduce_partials_and_rmsnorm_fwd_asc_kernel</code></details></li><li data-order="步骤 5"><h4>拆出混合系数</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21712">Task 21712</a> · 2.589 μs</p><p>输入<br><code>mixes[16,24]</code></p><p>输出<br><code>pre/post各[16,4,1]<br>残差mix[16,4,4]</code></p><details><summary>完整kernel名称</summary><code>mhc_pre_split_mixes_fwd_simd_mhc4_asc_kernel</code></details></li><li data-order="步骤 6"><h4>Sinkhorn归一化</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21713">Task 21713</a> · 4.320 μs</p><p>输入<br><code>残差mix[16,4,4]</code></p><p>输出<br><code>归一化mix[16,4,4]</code></p><details><summary>完整kernel名称</summary><code>mhc_sinkhorn_fwd_asc_kernel</code></details></li><li data-order="步骤 7"><h4>子层输入RMSNorm</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21714">Task 21714</a> · 4.328 μs</p><p>输入<br><code>x[16,5120]</code></p><p>输出<br><code>x_norm[16,5120]（含所需格式）</code></p><details><summary>完整kernel名称</summary><code>_norm_kernel</code></details></li><li data-order="步骤 8"><h4>专家Gate投影</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21715">Task 21715</a> · 5.709 μs</p><p>输入<br><code>x[16,5120]</code></p><p>输出<br><code>专家分数[16,384]</code></p><details><summary>完整kernel名称</summary><code>_ZN9deep_gemm14bf16_gemm_implILNS_5MajorE0ELS1_0ELj0ELj384ELj5120ELj16ELj16ELj2048ELj16ELj16ELj1024ELj5ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0EfNS_8epilogue9operators8IdentityELj256ELb1ELb1ELb0EEEvNS_6gm_ptrIu6__bf16XT_EEENS8_Iu6__bf16XT0_EEENS8_IT19_LS1_0EEEjjjPijNS5_4ArgsE</code></details></li><li data-order="步骤 9"><h4>选择Top6专家</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21716">Task 21716</a> · 5.038 μs</p><p>输入<br><code>专家分数[16,384]</code></p><p>输出<br><code>专家ID[16,6] + 权重[16,6]</code></p><details><summary>完整kernel名称</summary><code>moe_topk_gate_forward_kernel_asc_kernel</code></details></li><li data-order="步骤 10"><h4>专家计算与汇聚</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21718">Task 21718</a> · 140.441 μs</p><p>输入<br><code>x[16,5120] + ID/权重[16,6]</code></p><p>输出<br><code>MoE输出[16,5120]</code></p><details><summary>完整kernel名称</summary><code>_ZN9deep_gemm8mega_moe13mega_moe_implILj16ELj416ELj1ELj512ELj6ELj5120ELj2304EEEvPu6__bf16PiPKhPKsS5_S7_S5_S7_S5_S7_jfNS_6layout9SymBufferILj256EEE</code></details></li></ol><a href="files/deepinfer-inference-guide-20261102-v2/assets/09-d02-flow-03.png" target="_blank" rel="noopener">打开静态整图 ↗</a></details>
 <p>第三段与第一段同类，但MegaMoE Task21718为140.441 μs。同样的入口shape与符号不保证相同路由负载或时延；没有内部timer与逐专家计数时，不能继续断言差异来自哪一个内部阶段。</p>
-<details class="flow-block"><summary>展开本段32个步骤：shape、耗时与完整名称</summary><p>按编号逐行阅读，手机自动单列；此处表示执行顺序，框宽不代表耗时。</p><ol class="flow-nodes"><li data-order="步骤 1"><h4>写回四路主干</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21719">Task 21719</a> · 3.073 μs</p><p>输入<br><code>x[16,5120] + R[16,4,5120]<br>post[16,4,1] + mix[16,4,4]</code></p><p>输出<br><code>R′[16,4,5120]</code></p><details><summary>完整kernel名称</summary><code>mhc_post_fwd_asc_kernel</code></details></li><li data-order="步骤 2"><h4>四路读成一路</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21720">Task 21720</a> · 3.007 μs</p><p>输入<br><code>R[16,4,5120] + pre[16,4,1]</code></p><p>输出<br><code>x[16,5120]</code></p><details><summary>完整kernel名称</summary><code>mhc_pre_apply_mix_fwd_asc_kernel</code></details></li><li data-order="步骤 3"><h4>计算混合系数</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21721">Task 21721</a> · 9.891 μs</p><p>输入<br><code>R[16,4,5120] → 展平[16,20480]</code></p><p>输出<br><code>系数中间量[16,24] + 平方和[16]</code></p><details><summary>完整kernel名称</summary><code>tf32_hc_prenorm_gemm_kernel_kernel</code></details></li><li data-order="步骤 4"><h4>归一化系数</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21722">Task 21722</a> · 2.689 μs</p><p>输入<br><code>系数中间量[16,24] + 平方和[16]</code></p><p>输出<br><code>mixes[16,24]</code></p><details><summary>完整kernel名称</summary><code>mhc_reduce_partials_and_rmsnorm_fwd_asc_kernel</code></details></li><li data-order="步骤 5"><h4>拆出混合系数</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21723">Task 21723</a> · 2.627 μs</p><p>输入<br><code>mixes[16,24]</code></p><p>输出<br><code>pre/post各[16,4,1]<br>残差mix[16,4,4]</code></p><details><summary>完整kernel名称</summary><code>mhc_pre_split_mixes_fwd_simd_mhc4_asc_kernel</code></details></li><li data-order="步骤 6"><h4>Sinkhorn归一化</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21724">Task 21724</a> · 4.611 μs</p><p>输入<br><code>残差mix[16,4,4]</code></p><p>输出<br><code>归一化mix[16,4,4]</code></p><details><summary>完整kernel名称</summary><code>mhc_sinkhorn_fwd_asc_kernel</code></details></li><li data-order="步骤 7"><h4>子层输入RMSNorm</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21725">Task 21725</a> · 10.561 μs</p><p>输入<br><code>x[16,5120]</code></p><p>输出<br><code>x_norm[16,5120]（含所需格式）</code></p><details><summary>完整kernel名称</summary><code>_norm_kernel</code></details></li><li data-order="步骤 8"><h4>投影压缩KV和索引权重</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21726">Task 21726</a> · 8.207 μs</p><p>输入<br><code>x[16,5120]</code></p><p>输出<br><code>[16,1056] → score/latent各[16,512]<br>及索引头权重[16,32]</code></p><details><summary>完整kernel名称</summary><code>_ZN9deep_gemm14bf16_gemm_implILNS_5MajorE0ELS1_0ELj0ELj1056ELj5120ELj16ELj48ELj256ELj16ELj48ELj128ELj8ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0EfNS_8epilogue9operators8IdentityELj256ELb1ELb1ELb0EEEvNS_6gm_ptrIu6__bf16XT_EEENS8_Iu6__bf16XT0_EEENS8_IT19_LS1_0EEEjjjPijNS5_4ArgsE</code></details></li><li data-order="步骤 9"><h4>拷贝投影分量</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21727">Task 21727</a> · 2.970 μs</p><p>输入<br><code>联合投影分量视图T[?]</code></p><p>输出<br><code>独立分量缓冲T′[?]</code></p><details><summary>完整kernel名称</summary><code>aclnnInplaceCopy_SliceAiCore_Slice</code></details></li><li data-order="步骤 10"><h4>索引权重转BF16</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21728">Task 21728</a> · 1.582 μs</p><p>输入<br><code>权重[16,32]，FP32</code></p><p>输出<br><code>权重[16,32]，BF16</code></p><details><summary>完整kernel名称</summary><code>aclnnInplaceCopy_CastAiCore_Cast</code></details></li><li data-order="步骤 11"><h4>联合投影Q_a与SWA KV</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21729">Task 21729</a> · 6.339 μs</p><p>输入<br><code>x[16,5120]</code></p><p>输出<br><code>[16,1792] → Q_a[16,1280]<br>及SWA KV[16,1,512]</code></p><details><summary>完整kernel名称</summary><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj1792ELj5120ELj16ELj64ELj512ELj16ELj64ELj256ELj4ELj2ELj10ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></details></li><li data-order="步骤 12"><h4>处理并写入SWA KV</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21730">Task 21730</a> · 3.352 μs</p><p>输入<br><code>SWA KV[16,1,512] + position[16]</code></p><p>输出<br><code>逻辑KV[16,1,512]（缓存格式）<br>及SWA缓存更新</code></p><details><summary>完整kernel名称</summary><code>_fused_norm_rope_hadamard_cast_store_kvcache_kernel</code></details></li><li data-order="步骤 13"><h4>低秩Q归一化</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21731">Task 21731</a> · 4.705 μs</p><p>输入<br><code>Q_a[16,1280]</code></p><p>输出<br><code>Q_a_norm[16,1280]</code></p><details><summary>完整kernel名称</summary><code>_norm_kernel</code></details></li><li data-order="步骤 14"><h4>联合展开主Q和索引Q</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21732">Task 21732</a> · 18.507 μs</p><p>输入<br><code>Q_a[16,1280]</code></p><p>输出<br><code>[16,36864] → 主Q[16,64,512]<br>及索引Q[16,32,128]</code></p><details><summary>完整kernel名称</summary><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj36864ELj1280ELj16ELj384ELj256ELj16ELj192ELj128ELj4ELj2ELj5ELj2ELj6ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></details></li><li data-order="步骤 15"><h4>归一化/旋转主Q</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21733">Task 21733</a> · 4.707 μs</p><p>输入<br><code>主Q[16,64,512] + position[16]</code></p><p>输出<br><code>主Q[16,64,512]（所需计算格式）</code></p><details><summary>完整kernel名称</summary><code>_fused_norm_rope_hadamard_cast_store_kvcache_kernel</code></details></li><li data-order="步骤 16"><h4>写入KV压缩状态</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21734">Task 21734</a> · 6.009 μs</p><p>输入<br><code>score/latent各[16,512]<br>context_len[16] + state[S,R,2,512]</code></p><p>输出<br><code>更新state；输出缓冲[16,512]</code></p><details><summary>完整kernel名称</summary><code>_compress_and_update_state_decode_kernel</code></details></li><li data-order="步骤 17"><h4>完成当前组KV压缩</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21735">Task 21735</a> · 3.111 μs</p><p>输入<br><code>更新的state[S,R,2,512]</code></p><p>输出<br><code>压缩KV[16,512]<br>是否有有效行由压缩组进度决定</code></p><details><summary>完整kernel名称</summary><code>_compress_and_update_state_decode_kernel_1</code></details></li><li data-order="步骤 18"><h4>处理并写入压缩KV</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21736">Task 21736</a> · 3.645 μs</p><p>输入<br><code>压缩KV[16,1,512] + position_c[16]</code></p><p>输出<br><code>pre-RoPE KV[16,512]<br>及主压缩KV缓存更新</code></p><details><summary>完整kernel名称</summary><code>_fused_norm_rope_hadamard_cast_store_kvcache_kernel</code></details></li><li data-order="步骤 19"><h4>旋转/量化索引Q</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21737">Task 21737</a> · 6.436 μs</p><p>输入<br><code>索引Q[16,32,128]</code></p><p>输出<br><code>FP4逻辑Q[16,32,128] + SF</code></p><details><summary>完整kernel名称</summary><code>_fused_norm_rope_hadamard_cast_store_kvcache_kernel</code></details></li><li data-order="步骤 20"><h4>投影索引Key</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21738">Task 21738</a> · 3.538 μs</p><p>输入<br><code>主KV pre-RoPE[16,512]</code></p><p>输出<br><code>索引K[16,128]</code></p><details><summary>完整kernel名称</summary><code>_ZN9deep_gemm14bf16_gemm_implILNS_5MajorE0ELS1_0ELj0ELj128ELj512ELj16ELj16ELj512ELj16ELj16ELj256ELj8ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1ELb0EEEvNS_6gm_ptrIu6__bf16XT_EEENS8_Iu6__bf16XT0_EEENS8_IT19_LS1_0EEEjjjPijNS5_4ArgsE</code></details></li><li data-order="步骤 21"><h4>处理并写入索引K</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21739">Task 21739</a> · 3.286 μs</p><p>输入<br><code>索引K[16,128] + position_c[16]</code></p><p>输出<br><code>FP4逻辑K[16,128] + SF<br>及索引K缓存更新</code></p><details><summary>完整kernel名称</summary><code>_fused_norm_rope_hadamard_cast_store_kvcache_kernel</code></details></li><li data-order="步骤 22"><h4>准备分页评分metadata</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21740">Task 21740</a> · 3.927 μs</p><p>输入<br><code>klen[16] + query_index[16]<br>及后端分页参数</code></p><p>输出<br><code>调度metadata（后端布局）</code></p><details><summary>完整kernel名称</summary><code>_ZN9deep_gemm35paged_mqa_logits_metadata_simt_implILj512ELj2ELj32EEEvjPjS1_S1_</code></details></li><li data-order="步骤 23"><h4>调整评分输入布局</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21741">Task 21741</a> · 3.425 μs</p><p>输入<br><code>待转置视图T[?]（维度未记录）</code></p><p>输出<br><code>布局调整后的T′[?]</code></p><details><summary>完整kernel名称</summary><code>aclnnInplaceCopy_TransposeAiCore_Transpose</code></details></li><li data-order="步骤 24"><h4>给历史位置打分</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21742">Task 21742</a> · 4.870 μs</p><p>输入<br><code>索引Q[16,32,128] + 索引K缓存<br>权重[16,32] + 分页metadata</code></p><p>输出<br><code>历史分数p_sum[16,Lmax]</code></p><details><summary>完整kernel名称</summary><code>_ZN9deep_gemm21paged_mqa_logits_implILb1ELj32ELj128ELj64ELj512ELj64ELj2ELj2ELj4ELj3ELj3ELb0EEEvjjmNS_6gm_ptrIhLNS_5MajorE0EEEPsS3_NS1_Iu6__bf16LS2_0EEES5_PjS6_S6_S6_</code></details></li><li data-order="步骤 25"><h4>选择历史位置</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21743">Task 21743</a> · 2.967 μs</p><p>输入<br><code>p_sum[16,Lmax] + 有效长度[16]</code></p><p>输出<br><code>逻辑历史位置[16,Kidx]</code></p><details><summary>完整kernel名称</summary><code>_ZN18topk_select_ascend18topk_select_kernelIXtlNS_6ConfigELj512ELb1ELb1EEEEEv14TopkSelectArgs</code></details></li><li data-order="步骤 26"><h4>转换KV物理索引</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21744">Task 21744</a> · 4.235 μs</p><p>输入<br><code>位置[16,Kidx] + block_table</code></p><p>输出<br><code>缓存物理slot[16,Kidx]（原地）</code></p><details><summary>完整kernel名称</summary><code>_convert_kv_index_kernel</code></details></li><li data-order="步骤 27"><h4>L02上下文汇聚</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21745">Task 21745</a> · 15.187 μs</p><p>输入<br><code>Q[16,64,512] + SWA/压缩KV<br>及选中历史索引[16,Kidx]</code></p><p>输出<br><code>context[16,64,512]</code></p><details><summary>完整kernel名称</summary><code>_ZN6ascend7prefill10sparse_fwd22sparse_attn_fwd_kernelINS1_6KernelIXtlNS1_6ConfigEL17SparseAttnFwdMode1ELj64ELj640ELb1EL9ModelType0ELS6_1EEEEEEEvNT_6ParamsENS8_9AuxParamsE</code></details></li><li data-order="步骤 28"><h4>输出逆向RoPE</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21746">Task 21746</a> · 4.267 μs</p><p>输入<br><code>context[16,64,512]</code></p><p>输出<br><code>旋转后的context[16,64,512]</code></p><details><summary>完整kernel名称</summary><code>_rope_kernel_kernel</code></details></li><li data-order="步骤 29"><h4>上下文转FP8</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21747">Task 21747</a> · 3.938 μs</p><p>输入<br><code>context[16,32768]（view）</code></p><p>输出<br><code>FP8[16,32768] + SF</code></p><details><summary>完整kernel名称</summary><code>per_token_cast_kernel_kernel</code></details></li><li data-order="步骤 30"><h4>分组输出投影Wv</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21748">Task 21748</a> · 15.206 μs</p><p>输入<br><code>FP8[16,8,4096] + SF（view）</code></p><p>输出<br><code>Wv结果[16,8,1024]</code></p><details><summary>完整kernel名称</summary><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj1024ELj4096ELj16ELj256ELj512ELj16ELj256ELj128ELj3ELj2ELj8ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE3Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb0ELb0EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></details></li><li data-order="步骤 31"><h4>Wv结果转FP8</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21749">Task 21749</a> · 3.790 μs</p><p>输入<br><code>Wv结果[16,8192]（view）</code></p><p>输出<br><code>FP8[16,8192] + SF</code></p><details><summary>完整kernel名称</summary><code>per_token_cast_kernel_kernel</code></details></li><li data-order="步骤 32"><h4>合并输出投影Wo</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21750">Task 21750</a> · 18.970 μs</p><p>输入<br><code>FP8[16,8192] + SF（view）</code></p><p>输出<br><code>子层输出[16,5120]</code></p><details><summary>完整kernel名称</summary><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj5120ELj8192ELj16ELj160ELj256ELj16ELj160ELj128ELj4ELj2ELj32ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></details></li></ol><a href="files/deepinfer-inference-guide-20261102/assets/10-d02-flow-04.png" target="_blank" rel="noopener">打开静态整图 ↗</a></details>
+<details class="flow-block"><summary>展开本段32个步骤：shape、耗时与完整名称</summary><p>按编号逐行阅读，手机自动单列；此处表示执行顺序，框宽不代表耗时。</p><ol class="flow-nodes"><li data-order="步骤 1"><h4>写回四路主干</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21719">Task 21719</a> · 3.073 μs</p><p>输入<br><code>x[16,5120] + R[16,4,5120]<br>post[16,4,1] + mix[16,4,4]</code></p><p>输出<br><code>R′[16,4,5120]</code></p><details><summary>完整kernel名称</summary><code>mhc_post_fwd_asc_kernel</code></details></li><li data-order="步骤 2"><h4>四路读成一路</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21720">Task 21720</a> · 3.007 μs</p><p>输入<br><code>R[16,4,5120] + pre[16,4,1]</code></p><p>输出<br><code>x[16,5120]</code></p><details><summary>完整kernel名称</summary><code>mhc_pre_apply_mix_fwd_asc_kernel</code></details></li><li data-order="步骤 3"><h4>计算混合系数</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21721">Task 21721</a> · 9.891 μs</p><p>输入<br><code>R[16,4,5120] → 展平[16,20480]</code></p><p>输出<br><code>系数中间量[16,24] + 平方和[16]</code></p><details><summary>完整kernel名称</summary><code>tf32_hc_prenorm_gemm_kernel_kernel</code></details></li><li data-order="步骤 4"><h4>归一化系数</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21722">Task 21722</a> · 2.689 μs</p><p>输入<br><code>系数中间量[16,24] + 平方和[16]</code></p><p>输出<br><code>mixes[16,24]</code></p><details><summary>完整kernel名称</summary><code>mhc_reduce_partials_and_rmsnorm_fwd_asc_kernel</code></details></li><li data-order="步骤 5"><h4>拆出混合系数</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21723">Task 21723</a> · 2.627 μs</p><p>输入<br><code>mixes[16,24]</code></p><p>输出<br><code>pre/post各[16,4,1]<br>残差mix[16,4,4]</code></p><details><summary>完整kernel名称</summary><code>mhc_pre_split_mixes_fwd_simd_mhc4_asc_kernel</code></details></li><li data-order="步骤 6"><h4>Sinkhorn归一化</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21724">Task 21724</a> · 4.611 μs</p><p>输入<br><code>残差mix[16,4,4]</code></p><p>输出<br><code>归一化mix[16,4,4]</code></p><details><summary>完整kernel名称</summary><code>mhc_sinkhorn_fwd_asc_kernel</code></details></li><li data-order="步骤 7"><h4>子层输入RMSNorm</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21725">Task 21725</a> · 10.561 μs</p><p>输入<br><code>x[16,5120]</code></p><p>输出<br><code>x_norm[16,5120]（含所需格式）</code></p><details><summary>完整kernel名称</summary><code>_norm_kernel</code></details></li><li data-order="步骤 8"><h4>投影压缩KV和索引权重</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21726">Task 21726</a> · 8.207 μs</p><p>输入<br><code>x[16,5120]</code></p><p>输出<br><code>[16,1056] → score/latent各[16,512]<br>及索引头权重[16,32]</code></p><details><summary>完整kernel名称</summary><code>_ZN9deep_gemm14bf16_gemm_implILNS_5MajorE0ELS1_0ELj0ELj1056ELj5120ELj16ELj48ELj256ELj16ELj48ELj128ELj8ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0EfNS_8epilogue9operators8IdentityELj256ELb1ELb1ELb0EEEvNS_6gm_ptrIu6__bf16XT_EEENS8_Iu6__bf16XT0_EEENS8_IT19_LS1_0EEEjjjPijNS5_4ArgsE</code></details></li><li data-order="步骤 9"><h4>拷贝投影分量</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21727">Task 21727</a> · 2.970 μs</p><p>输入<br><code>联合投影分量视图T[?]</code></p><p>输出<br><code>独立分量缓冲T′[?]</code></p><details><summary>完整kernel名称</summary><code>aclnnInplaceCopy_SliceAiCore_Slice</code></details></li><li data-order="步骤 10"><h4>索引权重转BF16</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21728">Task 21728</a> · 1.582 μs</p><p>输入<br><code>权重[16,32]，FP32</code></p><p>输出<br><code>权重[16,32]，BF16</code></p><details><summary>完整kernel名称</summary><code>aclnnInplaceCopy_CastAiCore_Cast</code></details></li><li data-order="步骤 11"><h4>联合投影Q_a与SWA KV</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21729">Task 21729</a> · 6.339 μs</p><p>输入<br><code>x[16,5120]</code></p><p>输出<br><code>[16,1792] → Q_a[16,1280]<br>及SWA KV[16,1,512]</code></p><details><summary>完整kernel名称</summary><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj1792ELj5120ELj16ELj64ELj512ELj16ELj64ELj256ELj4ELj2ELj10ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></details></li><li data-order="步骤 12"><h4>处理并写入SWA KV</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21730">Task 21730</a> · 3.352 μs</p><p>输入<br><code>SWA KV[16,1,512] + position[16]</code></p><p>输出<br><code>逻辑KV[16,1,512]（缓存格式）<br>及SWA缓存更新</code></p><details><summary>完整kernel名称</summary><code>_fused_norm_rope_hadamard_cast_store_kvcache_kernel</code></details></li><li data-order="步骤 13"><h4>低秩Q归一化</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21731">Task 21731</a> · 4.705 μs</p><p>输入<br><code>Q_a[16,1280]</code></p><p>输出<br><code>Q_a_norm[16,1280]</code></p><details><summary>完整kernel名称</summary><code>_norm_kernel</code></details></li><li data-order="步骤 14"><h4>联合展开主Q和索引Q</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21732">Task 21732</a> · 18.507 μs</p><p>输入<br><code>Q_a[16,1280]</code></p><p>输出<br><code>[16,36864] → 主Q[16,64,512]<br>及索引Q[16,32,128]</code></p><details><summary>完整kernel名称</summary><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj36864ELj1280ELj16ELj384ELj256ELj16ELj192ELj128ELj4ELj2ELj5ELj2ELj6ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></details></li><li data-order="步骤 15"><h4>归一化/旋转主Q</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21733">Task 21733</a> · 4.707 μs</p><p>输入<br><code>主Q[16,64,512] + position[16]</code></p><p>输出<br><code>主Q[16,64,512]（所需计算格式）</code></p><details><summary>完整kernel名称</summary><code>_fused_norm_rope_hadamard_cast_store_kvcache_kernel</code></details></li><li data-order="步骤 16"><h4>写入KV压缩状态</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21734">Task 21734</a> · 6.009 μs</p><p>输入<br><code>score/latent各[16,512]<br>context_len[16] + state[S,R,2,512]</code></p><p>输出<br><code>更新state；输出缓冲[16,512]</code></p><details><summary>完整kernel名称</summary><code>_compress_and_update_state_decode_kernel</code></details></li><li data-order="步骤 17"><h4>完成当前组KV压缩</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21735">Task 21735</a> · 3.111 μs</p><p>输入<br><code>更新的state[S,R,2,512]</code></p><p>输出<br><code>压缩KV[16,512]<br>是否有有效行由压缩组进度决定</code></p><details><summary>完整kernel名称</summary><code>_compress_and_update_state_decode_kernel_1</code></details></li><li data-order="步骤 18"><h4>处理并写入压缩KV</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21736">Task 21736</a> · 3.645 μs</p><p>输入<br><code>压缩KV[16,1,512] + position_c[16]</code></p><p>输出<br><code>pre-RoPE KV[16,512]<br>及主压缩KV缓存更新</code></p><details><summary>完整kernel名称</summary><code>_fused_norm_rope_hadamard_cast_store_kvcache_kernel</code></details></li><li data-order="步骤 19"><h4>旋转/量化索引Q</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21737">Task 21737</a> · 6.436 μs</p><p>输入<br><code>索引Q[16,32,128]</code></p><p>输出<br><code>FP4逻辑Q[16,32,128] + SF</code></p><details><summary>完整kernel名称</summary><code>_fused_norm_rope_hadamard_cast_store_kvcache_kernel</code></details></li><li data-order="步骤 20"><h4>投影索引Key</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21738">Task 21738</a> · 3.538 μs</p><p>输入<br><code>主KV pre-RoPE[16,512]</code></p><p>输出<br><code>索引K[16,128]</code></p><details><summary>完整kernel名称</summary><code>_ZN9deep_gemm14bf16_gemm_implILNS_5MajorE0ELS1_0ELj0ELj128ELj512ELj16ELj16ELj512ELj16ELj16ELj256ELj8ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1ELb0EEEvNS_6gm_ptrIu6__bf16XT_EEENS8_Iu6__bf16XT0_EEENS8_IT19_LS1_0EEEjjjPijNS5_4ArgsE</code></details></li><li data-order="步骤 21"><h4>处理并写入索引K</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21739">Task 21739</a> · 3.286 μs</p><p>输入<br><code>索引K[16,128] + position_c[16]</code></p><p>输出<br><code>FP4逻辑K[16,128] + SF<br>及索引K缓存更新</code></p><details><summary>完整kernel名称</summary><code>_fused_norm_rope_hadamard_cast_store_kvcache_kernel</code></details></li><li data-order="步骤 22"><h4>准备分页评分metadata</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21740">Task 21740</a> · 3.927 μs</p><p>输入<br><code>klen[16] + query_index[16]<br>及后端分页参数</code></p><p>输出<br><code>调度metadata（后端布局）</code></p><details><summary>完整kernel名称</summary><code>_ZN9deep_gemm35paged_mqa_logits_metadata_simt_implILj512ELj2ELj32EEEvjPjS1_S1_</code></details></li><li data-order="步骤 23"><h4>调整评分输入布局</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21741">Task 21741</a> · 3.425 μs</p><p>输入<br><code>待转置视图T[?]（维度未记录）</code></p><p>输出<br><code>布局调整后的T′[?]</code></p><details><summary>完整kernel名称</summary><code>aclnnInplaceCopy_TransposeAiCore_Transpose</code></details></li><li data-order="步骤 24"><h4>给历史位置打分</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21742">Task 21742</a> · 4.870 μs</p><p>输入<br><code>索引Q[16,32,128] + 索引K缓存<br>权重[16,32] + 分页metadata</code></p><p>输出<br><code>历史分数p_sum[16,Lmax]</code></p><details><summary>完整kernel名称</summary><code>_ZN9deep_gemm21paged_mqa_logits_implILb1ELj32ELj128ELj64ELj512ELj64ELj2ELj2ELj4ELj3ELj3ELb0EEEvjjmNS_6gm_ptrIhLNS_5MajorE0EEEPsS3_NS1_Iu6__bf16LS2_0EEES5_PjS6_S6_S6_</code></details></li><li data-order="步骤 25"><h4>选择历史位置</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21743">Task 21743</a> · 2.967 μs</p><p>输入<br><code>p_sum[16,Lmax] + 有效长度[16]</code></p><p>输出<br><code>逻辑历史位置[16,Kidx]</code></p><details><summary>完整kernel名称</summary><code>_ZN18topk_select_ascend18topk_select_kernelIXtlNS_6ConfigELj512ELb1ELb1EEEEEv14TopkSelectArgs</code></details></li><li data-order="步骤 26"><h4>转换KV物理索引</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21744">Task 21744</a> · 4.235 μs</p><p>输入<br><code>位置[16,Kidx] + block_table</code></p><p>输出<br><code>缓存物理slot[16,Kidx]（原地）</code></p><details><summary>完整kernel名称</summary><code>_convert_kv_index_kernel</code></details></li><li data-order="步骤 27"><h4>L02上下文汇聚</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21745">Task 21745</a> · 15.187 μs</p><p>输入<br><code>Q[16,64,512] + SWA/压缩KV<br>及选中历史索引[16,Kidx]</code></p><p>输出<br><code>context[16,64,512]</code></p><details><summary>完整kernel名称</summary><code>_ZN6ascend7prefill10sparse_fwd22sparse_attn_fwd_kernelINS1_6KernelIXtlNS1_6ConfigEL17SparseAttnFwdMode1ELj64ELj640ELb1EL9ModelType0ELS6_1EEEEEEEvNT_6ParamsENS8_9AuxParamsE</code></details></li><li data-order="步骤 28"><h4>输出逆向RoPE</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21746">Task 21746</a> · 4.267 μs</p><p>输入<br><code>context[16,64,512]</code></p><p>输出<br><code>旋转后的context[16,64,512]</code></p><details><summary>完整kernel名称</summary><code>_rope_kernel_kernel</code></details></li><li data-order="步骤 29"><h4>上下文转FP8</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21747">Task 21747</a> · 3.938 μs</p><p>输入<br><code>context[16,32768]（view）</code></p><p>输出<br><code>FP8[16,32768] + SF</code></p><details><summary>完整kernel名称</summary><code>per_token_cast_kernel_kernel</code></details></li><li data-order="步骤 30"><h4>分组输出投影Wv</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21748">Task 21748</a> · 15.206 μs</p><p>输入<br><code>FP8[16,8,4096] + SF（view）</code></p><p>输出<br><code>Wv结果[16,8,1024]</code></p><details><summary>完整kernel名称</summary><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj1024ELj4096ELj16ELj256ELj512ELj16ELj256ELj128ELj3ELj2ELj8ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE3Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb0ELb0EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></details></li><li data-order="步骤 31"><h4>Wv结果转FP8</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21749">Task 21749</a> · 3.790 μs</p><p>输入<br><code>Wv结果[16,8192]（view）</code></p><p>输出<br><code>FP8[16,8192] + SF</code></p><details><summary>完整kernel名称</summary><code>per_token_cast_kernel_kernel</code></details></li><li data-order="步骤 32"><h4>合并输出投影Wo</h4><p><a href="deepinfer-inference-guide-20261102-operators.html#task-21750">Task 21750</a> · 18.970 μs</p><p>输入<br><code>FP8[16,8192] + SF（view）</code></p><p>输出<br><code>子层输出[16,5120]</code></p><details><summary>完整kernel名称</summary><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj5120ELj8192ELj16ELj160ELj256ELj16ELj160ELj128ELj4ELj2ELj32ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></details></li></ol><a href="files/deepinfer-inference-guide-20261102-v2/assets/10-d02-flow-04.png" target="_blank" rel="noopener">打开静态整图 ↗</a></details>
 <p>第四段出现 <code>_compress_and_update_state_decode_kernel</code>及后续kernel、索引Q/K处理、历史评分和TopK，最后才执行Attention核心Task21745。选择位置的Task21743不是MoE Top6，也不是词表采样。</p>
 <p><strong>小核对③：只找五个post边界。</strong> Task21677、21688、21708、21719、21751框出四段。先解释“MoE、Attention、MoE、Attention”交替，再按图查细节。它们跨L00～L02，不是四个完整层。</p>
 <p>全名和逐事件时间见<a href="deepinfer-inference-guide-20261102-operators.html">附录A</a>。图中<code>Lmax</code>为历史评分容量、<code>Kidx</code>为历史TopK宽度、<code>SF</code>为缩放因子；metadata、拷贝视图T[?]和缓存容量中无法确认的维度保留符号。本节使用同一轮D02的72个事件，不混用其他轮次的耗时。</p>
 <p>四段说明了循环为何不等长：mHC边界反复出现，但边界之后可能是MoE、普通Attention，或带Engram/压缩/索引的Attention。先认子层职责，再比较其内部kernel，才不会把所有循环当作相同的工作。</p>
-<h2 id="第八章把整次推理算清楚调用次数与moe负载">第八章：把整次推理算清楚——调用次数与MoE负载</h2>
-<h3 id="81-三本账答案模型设备">8.1 三本账：答案、模型、设备</h3>
+<h2 id="第九章把整次推理算清楚调用次数与moe负载">第九章：把整次推理算清楚——调用次数与MoE负载</h2>
+<h3 id="91-三本账答案模型设备">9.1 三本账：答案、模型、设备</h3>
 <p>现在可以回答开篇的问题：一共跑了多少次，MegaMoE又在处理什么负载？需要三本账：输出账记录每请求真正返回的token，模型账记录batch完整经过模型的次数，设备账记录每rank实际执行的kernel。padding和占位会增加设备工作，但不增加用户输出。</p>
 <p>同一batch中A、B共享一次主模型调用，不能把它们各自参与轮数相加当作forward总数。两份driver trace计数相同也不代表已测得16卡全部事件。</p>
-<h3 id="82-主模型和草稿到底跑了几次">8.2 主模型和草稿到底跑了几次</h3>
+<h3 id="92-主模型和草稿到底跑了几次">9.2 主模型和草稿到底跑了几次</h3>
 <p>以下按 <strong>每个被采集的driver rank、batch调用次数</strong> 计数。非占位decode包含请求收尾时已提交的在途工作；“服务真实请求的图”与“本轮结果最终写入答案”是两种判断。</p>
 <div class="table-scroll"><table>
 <thead>
@@ -798,7 +982,7 @@ prefill当场回收本轮；ZOS decode留到下一轮回收
 </tr>
 </tbody>
 </table></div>
-<p>第7章的71次主模型调用，在这里拆成<code>37占位＋1prefill＋33decode</code>。prefill只准备草稿历史KV，因此草稿完整forward比主模型少1次。</p>
+<p>第8章的71次主模型调用，在这里拆成<code>37占位＋1prefill＋33decode</code>。prefill只准备草稿历史KV，因此草稿完整forward比主模型少1次。</p>
 <p>D01～D22是双请求槽位，D23～D33只剩B。A参与22轮decode图，但贡献答案的基础输出计21轮；B对应33轮图、32个基础输出。多出来的执行属于收尾在途工作，不能再计一次有效输出。</p>
 <p>采集metadata中的 <code>target_steps</code> 对A、B分别为22、33，其中包含首token步骤。结合输出记录和ZOS顺序重建：</p>
 <div class="math-display">\[\begin{aligned}
@@ -806,7 +990,7 @@ O_A&amp;=1\text{个首token}+21\text{个基础输出}+42\text{个接受草稿}=6
 O_B&amp;=1+32+31=64.
 \end{aligned}\]</div>
 <p>这是输出账本，不是独立request-ID完成事件逐轮标注。A、B接受草稿分别42/105、31/160，不能把5个候选都当作每轮有效输出。两路DP重复同组输入，最终共256个输出token。</p>
-<h3 id="83-从模型调用推导模块与kernel次数">8.3 从模型调用推导模块与kernel次数</h3>
+<h3 id="93-从模型调用推导模块与kernel次数">9.3 从模型调用推导模块与kernel次数</h3>
 <div class="table-scroll"><table>
 <thead>
 <tr>
@@ -881,7 +1065,7 @@ O_B&amp;=1+32+31=64.
 </table></div>
 <p>物理kernel再单独算：主模型每次 <code>mhc_pre_apply_mix_fwd_asc_kernel</code> 是81条，草稿7条，多出末端一次读出；<code>mhc_post_fwd_asc_kernel</code>分别80和6条。因此含占位每driver的pre-apply为6241条、post为6100条。6100次post不是6100层主模型。</p>
 <p>Engram同理：含占位为71次hash、71次fetch、142次gate，不把它们混成同一种次数。两driver可以各自统计、再做观测合计；其余14rank未独立采集，不给出全16卡实测总账。</p>
-<h3 id="84-megamoe的真实负载入口m不等于每专家m_e">8.4 MegaMoE的真实负载：入口M不等于每专家M_e</h3>
+<h3 id="94-megamoe的真实负载入口m不等于每专家m_e">9.4 MegaMoE的真实负载：入口M不等于每专家M_e</h3>
 <p>先看每张被观察卡的入口shape：</p>
 <div class="table-scroll"><table>
 <thead>
@@ -940,8 +1124,8 @@ O_B&amp;=1+32+31=64.
 <ul>
 <li><a href="deepinfer-inference-guide-20261102-operators.html">附录A：D02四段逐算子对照</a>：72个kernel全名、Task、时间、shape与作用。</li>
 <li><a href="deepinfer-inference-guide-20261102-forwards.html">附录B：71次主模型调用清单</a>：完整CPU事件名、起止时间和设备范围。</li>
-<li><a href="files/deepinfer-inference-guide-20261102/data/d02-four-segments.csv">本篇D02逐算子CSV</a>、<a href="files/deepinfer-inference-guide-20261102/data/model-forwards.csv">主模型/草稿调用CSV</a>、<a href="files/deepinfer-inference-guide-20261102/data/layer-atlas.csv">逐层索引CSV</a>。</li>
+<li><a href="files/deepinfer-inference-guide-20261102-v2/data/d02-four-segments.csv">本篇D02逐算子CSV</a>、<a href="files/deepinfer-inference-guide-20261102-v2/data/model-forwards.csv">主模型/草稿调用CSV</a>、<a href="files/deepinfer-inference-guide-20261102-v2/data/layer-atlas.csv">逐层索引CSV</a>。</li>
 <li>前置教程：<a href="https://zhaoyuhsin.github.io/downloads/deepinfer-token-trace-20261029.html">从Token到Token：一步步看懂DeepInfer</a>、<a href="https://zhaoyuhsin.github.io/downloads/deepinfer-shapes-20261028.html">沿着Shape看懂DeepInfer</a>。</li>
 </ul>
 <p>固定源码入口：<a href="https://github.com/deepseek-ai/DeepInfer/blob/553741557a57df44a46fb3ab72b6aafeaf945337/deepinfer/model_executor/models/deepseek.py">主模型forward与sample</a>、<a href="https://github.com/deepseek-ai/DeepInfer/blob/553741557a57df44a46fb3ab72b6aafeaf945337/deepinfer/model_executor/models/v4_modules/hc.py">mHC读写</a>、<a href="https://github.com/deepseek-ai/DeepInfer/blob/553741557a57df44a46fb3ab72b6aafeaf945337/deepinfer/model_executor/models/v4_modules/attn.py">Attention</a>、<a href="https://github.com/deepseek-ai/DeepInfer/blob/553741557a57df44a46fb3ab72b6aafeaf945337/deepinfer/model_executor/models/v4_modules/mlp.py">MoE与EPLB路由</a>、<a href="https://github.com/deepseek-ai/DeepInfer/blob/553741557a57df44a46fb3ab72b6aafeaf945337/deepinfer/model_executor/models/mtp/dflash.py">DFlash</a>、<a href="https://github.com/deepseek-ai/DeepInfer/blob/553741557a57df44a46fb3ab72b6aafeaf945337/deepinfer/model_executor/layers/tilelang_ops/fused_sample.py">验证采样参考实现</a>、<a href="https://github.com/deepseek-ai/DeepInfer/blob/553741557a57df44a46fb3ab72b6aafeaf945337/deepinfer/worker/worker.py">worker调度</a>。</p>
-<p>证据范围：源码固定在提交<code>553741557a57df44a46fb3ab72b6aafeaf945337</code>，采集为2026-10-27的两个driver rank连续trace；层号、shape、部分请求完成归属由源码与记录重建。未逐张量导出、未测全16rank，也没有完整HTTP服务链路，不将本文窗口当成端到端服务时延。编写与本轮可读性修订均为2026-10-31，没有新增NPU实验。</p></main><footer>采集2026-10-27，编写2026-10-31；shape为固定源码推导，耗时为采集事件。阅读版公式需联网加载MathJax；离线可用支持LaTeX的Markdown阅读器。<p><a href="#top">回到顶部</a></p></footer></body></html>
+<p>证据范围：源码固定在提交<code>553741557a57df44a46fb3ab72b6aafeaf945337</code>，采集为2026-10-27的两个driver rank连续trace；层号、shape、部分请求完成归属由源码与记录重建。未逐张量导出、未测全16rank，也没有完整HTTP服务链路，不将本文窗口当成端到端服务时延。初稿与可读性修订为2026-10-31，2026-11-02补入概念章；没有新增NPU实验。</p></main><footer>采集2026-10-27，编写2026-10-31；shape为固定源码推导，耗时为采集事件。阅读版公式需联网加载MathJax；离线可用支持LaTeX的Markdown阅读器。<p><a href="#top">回到顶部</a></p></footer></body></html>
