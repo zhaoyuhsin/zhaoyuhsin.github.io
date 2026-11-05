@@ -1,0 +1,94 @@
+﻿segment,order,category,label,shape_in,shape_out,call_id,phase,model_kind,op_id,start_ms,end_ms,duration_us,stream,model_id,task_id,name
+1,1,mHC,写回四路主干,"x[16,5120] + R[16,4,5120]
+post[16,4,1] + mix[16,4,4]","R′[16,4,5120]",D02-main,decode,main,K121,2351.496606,2351.5013480000002,4.742,181,62,21677,mhc_post_fwd_asc_kernel
+1,2,mHC,四路读成一路,"R[16,4,5120] + pre[16,4,1]","x[16,5120]",D02-main,decode,main,K122,2351.50137,2351.504242,2.872,181,62,21678,mhc_pre_apply_mix_fwd_asc_kernel
+1,3,mHC,计算混合系数,"R[16,4,5120] → 展平[16,20480]","系数中间量[16,24] + 平方和[16]",D02-main,decode,main,K128,2351.504264,2351.5138250625,9.5610625,181,62,21679,tf32_hc_prenorm_gemm_kernel_kernel
+1,4,mHC,归一化系数,"系数中间量[16,24] + 平方和[16]","mixes[16,24]",D02-main,decode,main,K124,2351.513847,2351.5164160000004,2.569,181,62,21680,mhc_reduce_partials_and_rmsnorm_fwd_asc_kernel
+1,5,mHC,拆出混合系数,"mixes[16,24]","pre/post各[16,4,1]
+残差mix[16,4,4]",D02-main,decode,main,K123,2351.516438,2351.519003,2.565,181,62,21681,mhc_pre_split_mixes_fwd_simd_mhc4_asc_kernel
+1,6,mHC,Sinkhorn归一化,"残差mix[16,4,4]","归一化mix[16,4,4]",D02-main,decode,main,K125,2351.519025,2351.523196,4.171,181,62,21682,mhc_sinkhorn_fwd_asc_kernel
+1,7,Norm,子层输入RMSNorm,"x[16,5120]","x_norm[16,5120]（含所需格式）",D02-main,decode,main,K068,2351.523218,2351.5289800625,5.7620625,181,62,21683,_norm_kernel
+1,8,投影GEMM,专家Gate投影,"x[16,5120]","专家分数[16,384]",D02-main,decode,main,K026,2351.5290019999998,2351.534926,5.924,181,62,21684,_ZN9deep_gemm14bf16_gemm_implILNS_5MajorE0ELS1_0ELj0ELj384ELj5120ELj16ELj16ELj2048ELj16ELj16ELj1024ELj5ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0EfNS_8epilogue9operators8IdentityELj256ELb1ELb1ELb0EEEvNS_6gm_ptrIu6__bf16XT_EEENS8_Iu6__bf16XT0_EEENS8_IT19_LS1_0EEEjjjPijNS5_4ArgsE
+1,9,选择TopK,选择Top6专家,"专家分数[16,384]","专家ID[16,6] + 权重[16,6]",D02-main,decode,main,K126,2351.534948,2351.54117,6.222,181,62,21685,moe_topk_gate_forward_kernel_asc_kernel
+1,10,MegaMoE,专家计算与汇聚,"x[16,5120] + ID/权重[16,6]","MoE输出[16,5120]",D02-main,decode,main,K038,2351.542466,2351.7661936875,223.7276875,181,62,21687,_ZN9deep_gemm8mega_moe13mega_moe_implILj16ELj416ELj1ELj512ELj6ELj5120ELj2304EEEvPu6__bf16PiPKhPKsS5_S7_S5_S7_S5_S7_jfNS_6layout9SymBufferILj256EEE
+2,1,mHC,写回四路主干,"x[16,5120] + R[16,4,5120]
+post[16,4,1] + mix[16,4,4]","R′[16,4,5120]",D02-main,decode,main,K121,2351.766216,2351.769596,3.38,181,62,21688,mhc_post_fwd_asc_kernel
+2,2,投影GEMM,Engram特征投影,"预取表项[16,6144]","特征[16,25600] → view[16,5,5120]",D02-main,decode,main,K013,2351.769618,2351.8276131875,57.9951875,181,62,21689,_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj25600ELj6144ELj16ELj416ELj256ELj16ELj208ELj128ELj4ELj2ELj11ELj2ELj4ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb0ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE
+2,3,Engram注入,门控注入主干,"R[16,4,5120] + 特征[16,5,5120]","更新后的R[16,4,5120]",D02-main,decode,main,K118,2351.8276349999996,2351.8326339999994,4.999,181,62,21690,engram_gate_fwd_kernel_asc_kernel
+2,4,mHC,四路读成一路,"R[16,4,5120] + pre[16,4,1]","x[16,5120]",D02-main,decode,main,K122,2351.832656,2351.8357229999997,3.067,181,62,21691,mhc_pre_apply_mix_fwd_asc_kernel
+2,5,mHC,计算混合系数,"R[16,4,5120] → 展平[16,20480]","系数中间量[16,24] + 平方和[16]",D02-main,decode,main,K128,2351.8357450000003,2351.8457150625,9.9700625,181,62,21692,tf32_hc_prenorm_gemm_kernel_kernel
+2,6,mHC,归一化系数,"系数中间量[16,24] + 平方和[16]","mixes[16,24]",D02-main,decode,main,K124,2351.845737,2351.8482280000003,2.491,181,62,21693,mhc_reduce_partials_and_rmsnorm_fwd_asc_kernel
+2,7,mHC,拆出混合系数,"mixes[16,24]","pre/post各[16,4,1]
+残差mix[16,4,4]",D02-main,decode,main,K123,2351.84825,2351.851042,2.792,181,62,21694,mhc_pre_split_mixes_fwd_simd_mhc4_asc_kernel
+2,8,mHC,Sinkhorn归一化,"残差mix[16,4,4]","归一化mix[16,4,4]",D02-main,decode,main,K125,2351.851064,2351.855235,4.171,181,62,21695,mhc_sinkhorn_fwd_asc_kernel
+2,9,Norm,子层输入RMSNorm,"x[16,5120]","x_norm[16,5120]（含所需格式）",D02-main,decode,main,K068,2351.855257,2351.8654150625002,10.1580625,181,62,21696,_norm_kernel
+2,10,投影GEMM,联合投影Q_a与SWA KV,"x[16,5120]","[16,1792] → Q_a[16,1280]
+及SWA KV[16,1,512]",D02-main,decode,main,K012,2351.865437,2351.871922,6.485,181,62,21697,_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj1792ELj5120ELj16ELj64ELj512ELj16ELj64ELj256ELj4ELj2ELj10ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE
+2,11,KV处理,处理并写入SWA KV,"SWA KV[16,1,512] + position[16]","逻辑KV[16,1,512]（缓存格式）
+及SWA缓存更新",D02-main,decode,main,K055,2351.871944,2351.8753540000002,3.41,181,62,21698,_fused_norm_rope_hadamard_cast_store_kvcache_kernel
+2,12,Norm,低秩Q归一化,"Q_a[16,1280]","Q_a_norm[16,1280]",D02-main,decode,main,K068,2351.875376,2351.880129,4.753,181,62,21699,_norm_kernel
+2,13,投影GEMM,展开主Attention Q,"Q_a[16,1280]","[16,32768] → view Q[16,64,512]",D02-main,decode,main,K014,2351.8801510000003,2351.8990330625,18.8820625,181,62,21700,_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj32768ELj1280ELj16ELj512ELj256ELj16ELj256ELj128ELj3ELj2ELj5ELj2ELj4ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE
+2,14,KV处理,归一化/旋转主Q,"主Q[16,64,512] + position[16]","主Q[16,64,512]（所需计算格式）",D02-main,decode,main,K055,2351.8990550000003,2351.9026830625003,3.6280625,181,62,21701,_fused_norm_rope_hadamard_cast_store_kvcache_kernel
+2,15,Attention核心,L01上下文汇聚,"Q[16,64,512] + SWA历史KV","context[16,64,512]",D02-main,decode,main,K004,2351.902706,2351.9109919999996,8.286,181,62,21702,_ZN6ascend7prefill10sparse_fwd22sparse_attn_fwd_kernelINS1_6KernelIXtlNS1_6ConfigEL17SparseAttnFwdMode1ELj64ELj640ELb1EEEEEEEvNT_6ParamsENS7_9AuxParamsE
+2,16,格式/布局,输出逆向RoPE,"context[16,64,512]","旋转后的context[16,64,512]",D02-main,decode,main,K074,2351.911014,2351.91581,4.796,181,62,21703,_rope_kernel_kernel
+2,17,格式/布局,上下文转FP8,"context[16,32768]（view）","FP8[16,32768] + SF",D02-main,decode,main,K127,2351.915832,2351.9199399999998,4.108,181,62,21704,per_token_cast_kernel_kernel
+2,18,投影GEMM,分组输出投影Wv,"FP8[16,8,4096] + SF（view）","Wv结果[16,8,1024]",D02-main,decode,main,K010,2351.919962,2351.9349170625,14.9550625,181,62,21705,_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj1024ELj4096ELj16ELj256ELj512ELj16ELj256ELj128ELj3ELj2ELj8ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE3Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb0ELb0EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE
+2,19,格式/布局,Wv结果转FP8,"Wv结果[16,8192]（view）","FP8[16,8192] + SF",D02-main,decode,main,K127,2351.9349389999998,2351.9386759999998,3.737,181,62,21706,per_token_cast_kernel_kernel
+2,20,投影GEMM,合并输出投影Wo,"FP8[16,8192] + SF（view）","子层输出[16,5120]",D02-main,decode,main,K017,2351.938698,2351.9582830625,19.5850625,181,62,21707,_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj5120ELj8192ELj16ELj160ELj256ELj16ELj160ELj128ELj4ELj2ELj32ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE
+3,1,mHC,写回四路主干,"x[16,5120] + R[16,4,5120]
+post[16,4,1] + mix[16,4,4]","R′[16,4,5120]",D02-main,decode,main,K121,2351.958305,2351.961813,3.508,181,62,21708,mhc_post_fwd_asc_kernel
+3,2,mHC,四路读成一路,"R[16,4,5120] + pre[16,4,1]","x[16,5120]",D02-main,decode,main,K122,2351.961835,2351.964756,2.921,181,62,21709,mhc_pre_apply_mix_fwd_asc_kernel
+3,3,mHC,计算混合系数,"R[16,4,5120] → 展平[16,20480]","系数中间量[16,24] + 平方和[16]",D02-main,decode,main,K128,2351.964778,2351.9741290624997,9.3510625,181,62,21710,tf32_hc_prenorm_gemm_kernel_kernel
+3,4,mHC,归一化系数,"系数中间量[16,24] + 平方和[16]","mixes[16,24]",D02-main,decode,main,K124,2351.974151,2351.976794,2.643,181,62,21711,mhc_reduce_partials_and_rmsnorm_fwd_asc_kernel
+3,5,mHC,拆出混合系数,"mixes[16,24]","pre/post各[16,4,1]
+残差mix[16,4,4]",D02-main,decode,main,K123,2351.9768160000003,2351.979405,2.589,181,62,21712,mhc_pre_split_mixes_fwd_simd_mhc4_asc_kernel
+3,6,mHC,Sinkhorn归一化,"残差mix[16,4,4]","归一化mix[16,4,4]",D02-main,decode,main,K125,2351.979427,2351.9837469999998,4.32,181,62,21713,mhc_sinkhorn_fwd_asc_kernel
+3,7,Norm,子层输入RMSNorm,"x[16,5120]","x_norm[16,5120]（含所需格式）",D02-main,decode,main,K068,2351.983769,2351.9880970625,4.3280625,181,62,21714,_norm_kernel
+3,8,投影GEMM,专家Gate投影,"x[16,5120]","专家分数[16,384]",D02-main,decode,main,K026,2351.988119,2351.9938279999997,5.709,181,62,21715,_ZN9deep_gemm14bf16_gemm_implILNS_5MajorE0ELS1_0ELj0ELj384ELj5120ELj16ELj16ELj2048ELj16ELj16ELj1024ELj5ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0EfNS_8epilogue9operators8IdentityELj256ELb1ELb1ELb0EEEvNS_6gm_ptrIu6__bf16XT_EEENS8_Iu6__bf16XT0_EEENS8_IT19_LS1_0EEEjjjPijNS5_4ArgsE
+3,9,选择TopK,选择Top6专家,"专家分数[16,384]","专家ID[16,6] + 权重[16,6]",D02-main,decode,main,K126,2351.9938500000003,2351.998888,5.038,181,62,21716,moe_topk_gate_forward_kernel_asc_kernel
+3,10,MegaMoE,专家计算与汇聚,"x[16,5120] + ID/权重[16,6]","MoE输出[16,5120]",D02-main,decode,main,K038,2351.999391,2352.1398324375,140.4414375,181,62,21718,_ZN9deep_gemm8mega_moe13mega_moe_implILj16ELj416ELj1ELj512ELj6ELj5120ELj2304EEEvPu6__bf16PiPKhPKsS5_S7_S5_S7_S5_S7_jfNS_6layout9SymBufferILj256EEE
+4,1,mHC,写回四路主干,"x[16,5120] + R[16,4,5120]
+post[16,4,1] + mix[16,4,4]","R′[16,4,5120]",D02-main,decode,main,K121,2352.139854,2352.142927,3.073,181,62,21719,mhc_post_fwd_asc_kernel
+4,2,mHC,四路读成一路,"R[16,4,5120] + pre[16,4,1]","x[16,5120]",D02-main,decode,main,K122,2352.142949,2352.1459560000003,3.007,181,62,21720,mhc_pre_apply_mix_fwd_asc_kernel
+4,3,mHC,计算混合系数,"R[16,4,5120] → 展平[16,20480]","系数中间量[16,24] + 平方和[16]",D02-main,decode,main,K128,2352.145978,2352.1558690625,9.8910625,181,62,21721,tf32_hc_prenorm_gemm_kernel_kernel
+4,4,mHC,归一化系数,"系数中间量[16,24] + 平方和[16]","mixes[16,24]",D02-main,decode,main,K124,2352.155891,2352.15858,2.689,181,62,21722,mhc_reduce_partials_and_rmsnorm_fwd_asc_kernel
+4,5,mHC,拆出混合系数,"mixes[16,24]","pre/post各[16,4,1]
+残差mix[16,4,4]",D02-main,decode,main,K123,2352.158602,2352.161229,2.627,181,62,21723,mhc_pre_split_mixes_fwd_simd_mhc4_asc_kernel
+4,6,mHC,Sinkhorn归一化,"残差mix[16,4,4]","归一化mix[16,4,4]",D02-main,decode,main,K125,2352.161251,2352.1658620000003,4.611,181,62,21724,mhc_sinkhorn_fwd_asc_kernel
+4,7,Norm,子层输入RMSNorm,"x[16,5120]","x_norm[16,5120]（含所需格式）",D02-main,decode,main,K068,2352.165884,2352.1764450625,10.5610625,181,62,21725,_norm_kernel
+4,8,投影GEMM,投影压缩KV和索引权重,"x[16,5120]","[16,1056] → score/latent各[16,512]
+及索引头权重[16,32]",D02-main,decode,main,K018,2352.1764670000002,2352.184674,8.207,181,62,21726,_ZN9deep_gemm14bf16_gemm_implILNS_5MajorE0ELS1_0ELj0ELj1056ELj5120ELj16ELj48ELj256ELj16ELj48ELj128ELj8ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0EfNS_8epilogue9operators8IdentityELj256ELb1ELb1ELb0EEEvNS_6gm_ptrIu6__bf16XT_EEENS8_Iu6__bf16XT0_EEENS8_IT19_LS1_0EEEjjjPijNS5_4ArgsE
+4,9,格式/布局,拷贝投影分量,联合投影分量视图T[?],独立分量缓冲T′[?],D02-main,decode,main,K094,2352.184696,2352.1876660000003,2.97,181,62,21727,aclnnInplaceCopy_SliceAiCore_Slice
+4,10,格式/布局,索引权重转BF16,"权重[16,32]，FP32","权重[16,32]，BF16",D02-main,decode,main,K093,2352.187688,2352.18927,1.582,181,62,21728,aclnnInplaceCopy_CastAiCore_Cast
+4,11,投影GEMM,联合投影Q_a与SWA KV,"x[16,5120]","[16,1792] → Q_a[16,1280]
+及SWA KV[16,1,512]",D02-main,decode,main,K012,2352.189292,2352.1956310624996,6.3390625,181,62,21729,_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj1792ELj5120ELj16ELj64ELj512ELj16ELj64ELj256ELj4ELj2ELj10ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE
+4,12,KV处理,处理并写入SWA KV,"SWA KV[16,1,512] + position[16]","逻辑KV[16,1,512]（缓存格式）
+及SWA缓存更新",D02-main,decode,main,K055,2352.1956529999998,2352.199005,3.352,181,62,21730,_fused_norm_rope_hadamard_cast_store_kvcache_kernel
+4,13,Norm,低秩Q归一化,"Q_a[16,1280]","Q_a_norm[16,1280]",D02-main,decode,main,K068,2352.1990269999997,2352.203732,4.705,181,62,21731,_norm_kernel
+4,14,投影GEMM,联合展开主Q和索引Q,"Q_a[16,1280]","[16,36864] → 主Q[16,64,512]
+及索引Q[16,32,128]",D02-main,decode,main,K015,2352.203754,2352.2222610625,18.5070625,181,62,21732,_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj36864ELj1280ELj16ELj384ELj256ELj16ELj192ELj128ELj4ELj2ELj5ELj2ELj6ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE
+4,15,KV处理,归一化/旋转主Q,"主Q[16,64,512] + position[16]","主Q[16,64,512]（所需计算格式）",D02-main,decode,main,K055,2352.2222829999996,2352.2269899999997,4.707,181,62,21733,_fused_norm_rope_hadamard_cast_store_kvcache_kernel
+4,16,KV处理,写入KV压缩状态,"score/latent各[16,512]
+context_len[16] + state[S,R,2,512]","更新state；输出缓冲[16,512]",D02-main,decode,main,K041,2352.2270120000003,2352.233021,6.009,181,62,21734,_compress_and_update_state_decode_kernel
+4,17,KV处理,完成当前组KV压缩,"更新的state[S,R,2,512]","压缩KV[16,512]
+是否有有效行由压缩组进度决定",D02-main,decode,main,K042,2352.233043,2352.236154,3.111,181,62,21735,_compress_and_update_state_decode_kernel_1
+4,18,KV处理,处理并写入压缩KV,"压缩KV[16,1,512] + position_c[16]","pre-RoPE KV[16,512]
+及主压缩KV缓存更新",D02-main,decode,main,K055,2352.236176,2352.2398210625,3.6450625,181,62,21736,_fused_norm_rope_hadamard_cast_store_kvcache_kernel
+4,19,KV处理,旋转/量化索引Q,"索引Q[16,32,128]","FP4逻辑Q[16,32,128] + SF",D02-main,decode,main,K055,2352.239844,2352.2462800000003,6.436,181,62,21737,_fused_norm_rope_hadamard_cast_store_kvcache_kernel
+4,20,投影GEMM,投影索引Key,"主KV pre-RoPE[16,512]","索引K[16,128]",D02-main,decode,main,K022,2352.246302,2352.2498400000004,3.538,181,62,21738,_ZN9deep_gemm14bf16_gemm_implILNS_5MajorE0ELS1_0ELj0ELj128ELj512ELj16ELj16ELj512ELj16ELj16ELj256ELj8ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1ELb0EEEvNS_6gm_ptrIu6__bf16XT_EEENS8_Iu6__bf16XT0_EEENS8_IT19_LS1_0EEEjjjPijNS5_4ArgsE
+4,21,KV处理,处理并写入索引K,"索引K[16,128] + position_c[16]","FP4逻辑K[16,128] + SF
+及索引K缓存更新",D02-main,decode,main,K055,2352.249862,2352.2531480000002,3.286,181,62,21739,_fused_norm_rope_hadamard_cast_store_kvcache_kernel
+4,22,索引评分/地址,准备分页评分metadata,"klen[16] + query_index[16]
+及后端分页参数",调度metadata（后端布局）,D02-main,decode,main,K036,2352.25317,2352.257097,3.927,181,62,21740,_ZN9deep_gemm35paged_mqa_logits_metadata_simt_implILj512ELj2ELj32EEEvjPjS1_S1_
+4,23,格式/布局,调整评分输入布局,待转置视图T[?]（维度未记录）,布局调整后的T′[?],D02-main,decode,main,K096,2352.257119,2352.2605440625,3.4250625,181,62,21741,aclnnInplaceCopy_TransposeAiCore_Transpose
+4,24,索引评分/地址,给历史位置打分,"索引Q[16,32,128] + 索引K缓存
+权重[16,32] + 分页metadata","历史分数p_sum[16,Lmax]",D02-main,decode,main,K030,2352.260566,2352.265436,4.87,181,62,21742,_ZN9deep_gemm21paged_mqa_logits_implILb1ELj32ELj128ELj64ELj512ELj64ELj2ELj2ELj4ELj3ELj3ELb0EEEvjjmNS_6gm_ptrIhLNS_5MajorE0EEEPsS3_NS1_Iu6__bf16LS2_0EEES5_PjS6_S6_S6_
+4,25,选择TopK,选择历史位置,"p_sum[16,Lmax] + 有效长度[16]","逻辑历史位置[16,Kidx]",D02-main,decode,main,K002,2352.2654580000003,2352.268425,2.967,181,62,21743,_ZN18topk_select_ascend18topk_select_kernelIXtlNS_6ConfigELj512ELb1ELb1EEEEEv14TopkSelectArgs
+4,26,索引评分/地址,转换KV物理索引,"位置[16,Kidx] + block_table","缓存物理slot[16,Kidx]（原地）",D02-main,decode,main,K047,2352.2684470000004,2352.272682,4.235,181,62,21744,_convert_kv_index_kernel
+4,27,Attention核心,L02上下文汇聚,"Q[16,64,512] + SWA/压缩KV
+及选中历史索引[16,Kidx]","context[16,64,512]",D02-main,decode,main,K005,2352.272704,2352.2878910625,15.1870625,181,62,21745,_ZN6ascend7prefill10sparse_fwd22sparse_attn_fwd_kernelINS1_6KernelIXtlNS1_6ConfigEL17SparseAttnFwdMode1ELj64ELj640ELb1EL9ModelType0ELS6_1EEEEEEEvNT_6ParamsENS8_9AuxParamsE
+4,28,格式/布局,输出逆向RoPE,"context[16,64,512]","旋转后的context[16,64,512]",D02-main,decode,main,K074,2352.287913,2352.2921800000004,4.267,181,62,21746,_rope_kernel_kernel
+4,29,格式/布局,上下文转FP8,"context[16,32768]（view）","FP8[16,32768] + SF",D02-main,decode,main,K127,2352.292202,2352.29614,3.938,181,62,21747,per_token_cast_kernel_kernel
+4,30,投影GEMM,分组输出投影Wv,"FP8[16,8,4096] + SF（view）","Wv结果[16,8,1024]",D02-main,decode,main,K010,2352.296162,2352.3113680624997,15.2060625,181,62,21748,_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj1024ELj4096ELj16ELj256ELj512ELj16ELj256ELj128ELj3ELj2ELj8ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE3Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb0ELb0EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE
+4,31,格式/布局,Wv结果转FP8,"Wv结果[16,8192]（view）","FP8[16,8192] + SF",D02-main,decode,main,K127,2352.3113900000003,2352.31518,3.79,181,62,21749,per_token_cast_kernel_kernel
+4,32,投影GEMM,合并输出投影Wo,"FP8[16,8192] + SF（view）","子层输出[16,5120]",D02-main,decode,main,K017,2352.315202,2352.3341720625,18.9700625,181,62,21750,_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj5120ELj8192ELj16ELj160ELj256ELj16ELj160ELj128ELj4ELj2ELj32ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE

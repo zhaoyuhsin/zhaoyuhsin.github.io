@@ -1,5 +1,6 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>附录A-D02四段逐算子对照</title><style>*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:20px}body{margin:0;background:#fafbf8;color:#24352d;font:17px/1.9 system-ui,"Microsoft YaHei",sans-serif}header,main,footer{max-width:1100px;margin:auto;padding:24px}header{border-bottom:1px solid #dce3db}nav{display:flex;flex-wrap:wrap;gap:18px}a{color:#08766b;text-underline-offset:3px}h1{font-size:clamp(28px,4vw,40px);line-height:1.4}h2{font-size:26px;line-height:1.5;margin-top:50px;border-top:1px solid #dce3db;padding-top:18px}h3{font-size:21px;margin-top:32px}p,li{overflow-wrap:anywhere}main>p{max-width:82ch}code{font:.88em/1.7 Consolas,monospace;overflow-wrap:anywhere}pre{padding:16px;background:#edf2ee;overflow:auto;border-radius:7px}pre code{white-space:pre-wrap;overflow-wrap:anywhere}.table-scroll{max-width:100%;overflow:auto;margin:20px 0}table{border-collapse:collapse;font-size:14px;width:100%}th,td{padding:10px;border-bottom:1px solid #dce3db;vertical-align:top;text-align:left;min-width:80px}th{background:#edf3ed}img{display:block;max-width:100%;height:auto;margin:25px auto}summary{cursor:pointer;font-weight:600}details{padding:14px 18px;background:#edf3ed;border-radius:7px;margin:20px 0}.math-display{overflow:auto;padding:8px 0}mjx-container{max-width:100%}.symbol{background:#f0f4ef}.symbol pre{background:transparent}tr:target{background:#fff0ce}.flow-nodes{list-style:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;padding:0}.flow-nodes>li{padding:14px;border:1px solid #d6e0d8;border-radius:7px;background:#edf3ed}.flow-nodes h4{margin:0;font-size:18px}.flow-nodes p{font-size:14px;line-height:1.7}.flow-nodes code{font-size:14px}.flow-nodes details{padding:0;font-size:13px;background:transparent}.flow-nodes li::before{content:attr(data-order);font-size:13px;color:#526b5d}.image-note{font-size:13px;color:#526b5d}footer{font-size:14px;border-top:1px solid #dce3db;margin-top:35px}@media(max-width:800px){.flow-nodes{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:600px){header,main,footer{padding:18px}.flow-nodes{grid-template-columns:minmax(0,1fr)}h2{font-size:23px}h3{font-size:20px}th,td{padding:8px}table{min-width:560px}}</style><script>window.MathJax={"tex": {"displayMath": [["\\[", "\\]"]]}, "svg": {"fontCache": "global"}, "options": {"skipHtmlTags": ["script", "noscript", "style", "textarea", "pre", "code"]}}</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script></head><body id="top"><header><nav><a href="../">YuHsin首页</a><a href="./#deepinfer-inference-guide-20261102">下载与资料</a><a href="deepinfer-inference-guide-20261102.html">正文</a><a href="deepinfer-inference-guide-20261102.html#concepts">概念与伪代码</a><a href="deepinfer-inference-guide-20261102.html#dflash-pseudocode">完整DFlash</a><a href="deepinfer-inference-guide-20261102-operators.html">逐算子附录</a><a href="deepinfer-inference-guide-20261102-forwards.html">71次调用</a><a href="files/deepinfer-inference-guide-20261102-v3/附录A-D02四段逐算子对照.md" download>下载Markdown</a><a href="files/deepinfer-inference-guide-20261102-v3.zip" download>完整阅读包</a></nav></header><main><details><summary>展开章节目录</summary><div class="toc">
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>附录A-D02四段逐算子对照</title><style>*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:20px}body{margin:0;background:#fafbf8;color:#24352d;font:17px/1.9 system-ui,"Microsoft YaHei",sans-serif}header,main,footer{max-width:1100px;margin:auto;padding:24px}header{border-bottom:1px solid #dce3db}nav{display:flex;flex-wrap:wrap;gap:18px}a{color:#08766b;text-underline-offset:3px}h1{font-size:clamp(28px,4vw,40px);line-height:1.4}h2{font-size:26px;line-height:1.5;margin-top:50px;border-top:1px solid #dce3db;padding-top:18px}h3{font-size:21px;margin-top:32px}p,li{overflow-wrap:anywhere}main>p{max-width:82ch}code{font:.88em/1.7 Consolas,monospace;overflow-wrap:anywhere}pre{padding:16px;background:#edf2ee;overflow:auto;border-radius:7px}pre code{white-space:pre-wrap;overflow-wrap:anywhere}.table-scroll{max-width:100%;overflow:auto;margin:20px 0}table{border-collapse:collapse;font-size:14px;width:100%}th,td{padding:10px;border-bottom:1px solid #dce3db;vertical-align:top;text-align:left;min-width:80px}th{background:#edf3ed}img{display:block;max-width:100%;height:auto;margin:25px auto}summary{cursor:pointer;font-weight:600}details{padding:14px 18px;background:#edf3ed;border-radius:7px;margin:20px 0}.math-display{overflow:auto;padding:8px 0}mjx-container{max-width:100%}.symbol{background:#f0f4ef}.symbol pre{background:transparent}tr:target{background:#fff0ce}.flow-nodes{list-style:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;padding:0}.flow-nodes>li{padding:14px;border:1px solid #d6e0d8;border-radius:7px;background:#edf3ed}.flow-nodes h4{margin:0;font-size:18px}.flow-nodes p{font-size:14px;line-height:1.7}.flow-nodes code{font-size:14px}.flow-nodes details{padding:0;font-size:13px;background:transparent}.flow-nodes li::before{content:attr(data-order);font-size:13px;color:#526b5d}.image-note{font-size:13px;color:#526b5d}footer{font-size:14px;border-top:1px solid #dce3db;margin-top:35px}@media(max-width:800px){.flow-nodes{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:600px){header,main,footer{padding:18px}.flow-nodes{grid-template-columns:minmax(0,1fr)}h2{font-size:23px}h3{font-size:20px}th,td{padding:8px}table{min-width:560px}}</style><script>window.MathJax={"tex": {"displayMath": [["\\[", "\\]"]]}, "svg": {"fontCache": "global"}, "options": {"skipHtmlTags": ["script", "noscript", "style", "textarea", "pre", "code"]}}</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script></head><body id="top"><header><nav><a href="../">YuHsin首页</a><a href="./#deepinfer-inference-guide-20261102">下载与资料</a><a href="deepinfer-inference-guide-20261102.html">正文</a><a href="deepinfer-inference-guide-20261102.html#concepts">概念与伪代码</a><a href="deepinfer-inference-guide-20261102.html#dflash-pseudocode">完整DFlash</a><a href="deepinfer-inference-guide-20261102-operators.html">逐算子附录</a><a href="deepinfer-inference-guide-20261102-forwards.html">71次调用</a><a href="files/deepinfer-inference-guide-20261102-v4/附录A-D02四段逐算子对照.md" download>下载Markdown</a><a href="files/deepinfer-inference-guide-20261102-v4.zip" download>完整阅读包</a></nav></header><main><details><summary>展开章节目录</summary><div class="toc">
 <ul>
+<li><a href="#⓪-图入口准备-l00-attention接①">⓪ 图入口准备 → L00 Attention（接①）</a></li>
 <li><a href="#①-l00-attention写回-l00-moe">① L00 Attention写回 → L00 MoE</a></li>
 <li><a href="#②-l00-moe写回-l01-engramattention">② L00 MoE写回 → L01 Engram＋Attention</a></li>
 <li><a href="#③-l01-attention写回-l01-moe">③ L01 Attention写回 → L01 MoE</a></li>
@@ -9,7 +10,235 @@
 </details><h1 id="附录ad02四段逐算子对照">附录A：D02四段逐算子对照</h1>
 <p>本表使用continuous-dp0.json的Stream181 / Model ID62，所有时间为DP0 scope相对+ms。四段包含左post，不含右post；共72个kernel，主模型设备图M=16，含padding。</p>
 <p>每条完整名称都可复制搜索，但必须同时核对时间、Stream和Task。shape为固定源码推导的逻辑接口，不是逐张量实测；权重常量未逐项列出。</p>
-<p><a href="deepinfer-inference-guide-20261102.html">返回正文</a>；<a href="files/deepinfer-inference-guide-20261102-v3/data/d02-four-segments.csv">完整CSV</a>。</p>
+<p><a href="deepinfer-inference-guide-20261102.html">返回正文</a>；<a href="files/deepinfer-inference-guide-20261102-v4/data/d02-prefix.csv">前置26算子CSV</a>；<a href="files/deepinfer-inference-guide-20261102-v4/data/d02-four-segments.csv">原四段72算子CSV</a>。</p>
+<h2 id="⓪-图入口准备-l00-attention接①">⓪ 图入口准备 → L00 Attention（接①）</h2>
+<p>从最后一串EVENT WAIT之后的第一个计算kernel Task21651开始，直到Task21677之前。全部位于Stream181 / Model62；N2表示两条请求，B12为12个逻辑位置，图补齐为M=16行。下表26个kernel随后直接接①，不含右边界Task21677，避免重复。</p>
+<p>+2351.299755～2351.496606 ms，区间196.851 μs；kernel累计196.280 μs，间隙0.571 μs。时间相对capture scope起点；若查看器以文件最早事件为零点，加10.275189 ms。</p>
+<p>阅读顺序：Embedding查表 → 提前hash/fetch两处Engram → 展开mHC并初始化 → mHC读出与系数计算 → Norm → SWA索引 → Q/KV投影及位置处理 → SWA Attention → 输出投影 → 接①的Attention写回。提前fetch不等于在L00注入Engram；真正注入仍在L01、L14。</p>
+<p>下表shape为逻辑接口推导，padding行不代表新增有效token；SF是量化缩放信息。初始化小算子与KV索引的物理shape未被trace记录，明确保留未知，不按名称猜形状。</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th style="text-align: right;">Task</th>
+<th>完整kernel名</th>
+<th>+起止ms</th>
+<th style="text-align: right;">耗时μs</th>
+<th>主要输入→输出</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr id="task-21651">
+<td style="text-align: right;">21651</td>
+<td><code>_gather_kernel</code></td>
+<td>2351.299755～2351.306108</td>
+<td style="text-align: right;">6.353</td>
+<td><code>token_ids[16] + Embedding表[V,5120] → hidden[16,5120]</code></td>
+<td>Token Embedding查表</td>
+</tr>
+<tr id="task-21652">
+<td style="text-align: right;">21652</td>
+<td><code>engram_hash_kernel_asc_kernel</code></td>
+<td>2351.306130～2351.327246</td>
+<td style="text-align: right;">21.116</td>
+<td><code>规范化token窗口[16,4] + 两层hash元数据 → 打包hash地址[2,16,24]，int32</code></td>
+<td>预计算两处Engram地址</td>
+</tr>
+<tr id="task-21653">
+<td style="text-align: right;">21653</td>
+<td><code>_ZN7deep_ep17engram_fetch_implILi16ELi256ELi4ELi24ELi512ELi64ELi8EJLi24000400ELi24001056EEEEvPvS1_PiS1_PsS3_llli</code></td>
+<td>2351.327268～2351.347549</td>
+<td style="text-align: right;">20.281</td>
+<td><code>hash地址[2,16,24] + 分片表 → 两层各memory[16,24,256]，可view为[16,6144]</code></td>
+<td>预取两处Engram表项</td>
+</tr>
+<tr id="task-21654">
+<td style="text-align: right;">21654</td>
+<td><code>expand_to_mhc_fwd_asc_kernel</code></td>
+<td>2351.347571～2351.350725</td>
+<td style="text-align: right;">3.154</td>
+<td><code>hidden[16,5120] → R[16,4,5120]</code></td>
+<td>展开四路主干</td>
+</tr>
+<tr id="task-21655">
+<td style="text-align: right;">21655</td>
+<td><code>aclnnInplaceZero_ZerosLikeAiCore_ZerosLike</code></td>
+<td>2351.350747～2351.352506</td>
+<td style="text-align: right;">1.759</td>
+<td><code>首层one-hot读出系数缓冲（每行四路） → 零初始化系数；trace未记录本任务张量shape</code></td>
+<td>初始化首层读出系数</td>
+</tr>
+<tr id="task-21656">
+<td style="text-align: right;">21656</td>
+<td><code>aclnnInplaceFillScalar_FillAiCore_Fill</code></td>
+<td>2351.352528～2351.354134</td>
+<td style="text-align: right;">1.606</td>
+<td><code>初始系数的选中视图 → 首路权重置1；视图物理shape未记录</code></td>
+<td>设置首路one-hot系数</td>
+</tr>
+<tr id="task-21657">
+<td style="text-align: right;">21657</td>
+<td><code>aclnnInplaceCopy_BroadcastToAiCore_BroadcastTo</code></td>
+<td>2351.354156～2351.355871</td>
+<td style="text-align: right;">1.715</td>
+<td><code>广播源与目标缓冲 → 广播复制后的缓冲；该任务shape未记录</code></td>
+<td>准备初始混合数据</td>
+</tr>
+<tr id="task-21658">
+<td style="text-align: right;">21658</td>
+<td><code>aclnnInplaceCopy_ViewCopyAiCore_ViewCopy</code></td>
+<td>2351.355893～2351.359324</td>
+<td style="text-align: right;">3.431</td>
+<td><code>源视图与目标缓冲 → 复制后的缓冲；该任务shape未记录</code></td>
+<td>整理初始混合数据</td>
+</tr>
+<tr id="task-21659">
+<td style="text-align: right;">21659</td>
+<td><code>mhc_pre_apply_mix_fwd_asc_kernel</code></td>
+<td>2351.359346～2351.363150</td>
+<td style="text-align: right;">3.804</td>
+<td><code>R[16,4,5120] + pre[16,4,1] → x[16,5120]</code></td>
+<td>四路读成一路</td>
+</tr>
+<tr id="task-21660">
+<td style="text-align: right;">21660</td>
+<td><code>tf32_hc_prenorm_gemm_kernel_kernel</code></td>
+<td>2351.363172～2351.373119</td>
+<td style="text-align: right;">9.947</td>
+<td><code>R[16,4,5120] → 展平[16,20480] → 系数中间量[16,24] + 平方和[16]</code></td>
+<td>计算混合系数</td>
+</tr>
+<tr id="task-21661">
+<td style="text-align: right;">21661</td>
+<td><code>mhc_reduce_partials_and_rmsnorm_fwd_asc_kernel</code></td>
+<td>2351.373141～2351.376448</td>
+<td style="text-align: right;">3.307</td>
+<td><code>系数中间量[16,24] + 平方和[16] → mixes[16,24]</code></td>
+<td>归一化系数</td>
+</tr>
+<tr id="task-21662">
+<td style="text-align: right;">21662</td>
+<td><code>mhc_pre_split_mixes_fwd_simd_mhc4_asc_kernel</code></td>
+<td>2351.376470～2351.380970</td>
+<td style="text-align: right;">4.500</td>
+<td><code>mixes[16,24] → pre/post各[16,4,1]；残差mix[16,4,4]</code></td>
+<td>拆出混合系数</td>
+</tr>
+<tr id="task-21663">
+<td style="text-align: right;">21663</td>
+<td><code>mhc_sinkhorn_fwd_asc_kernel</code></td>
+<td>2351.380992～2351.385923</td>
+<td style="text-align: right;">4.931</td>
+<td><code>残差mix[16,4,4] → 归一化mix[16,4,4]</code></td>
+<td>Sinkhorn归一化</td>
+</tr>
+<tr id="task-21664">
+<td style="text-align: right;">21664</td>
+<td><code>_norm_kernel</code></td>
+<td>2351.385945～2351.396073</td>
+<td style="text-align: right;">10.128</td>
+<td><code>x[16,5120] → x_norm[16,5120]（含所需格式）</code></td>
+<td>子层输入RMSNorm</td>
+</tr>
+<tr id="task-21665">
+<td style="text-align: right;">21665</td>
+<td><code>_load_kv_index_kernel</code></td>
+<td>2351.396095～2351.398508</td>
+<td style="text-align: right;">2.413</td>
+<td><code>请求状态/位置/缓存槽位 → SWA读取索引；物理宽度以缓存实现为准，trace未记录</code></td>
+<td>准备SWA缓存读取索引</td>
+</tr>
+<tr id="task-21666">
+<td style="text-align: right;">21666</td>
+<td><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj1792ELj5120ELj16ELj64ELj512ELj16ELj64ELj256ELj4ELj2ELj10ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></td>
+<td>2351.398530～2351.405873</td>
+<td style="text-align: right;">7.343</td>
+<td><code>x[16,5120] → [16,1792] → Q_a[16,1280]；及SWA KV[16,1,512]</code></td>
+<td>联合投影Q_a与SWA KV</td>
+</tr>
+<tr id="task-21667">
+<td style="text-align: right;">21667</td>
+<td><code>_fused_norm_rope_hadamard_cast_store_kvcache_kernel</code></td>
+<td>2351.405895～2351.409455</td>
+<td style="text-align: right;">3.560</td>
+<td><code>SWA KV[16,1,512] + position[16] → 处理后的逻辑KV及SWA缓存更新</code></td>
+<td>处理并写入L00 SWA KV</td>
+</tr>
+<tr id="task-21668">
+<td style="text-align: right;">21668</td>
+<td><code>_norm_kernel</code></td>
+<td>2351.409477～2351.414331</td>
+<td style="text-align: right;">4.854</td>
+<td><code>Q_a[16,1280] → Q_a_norm[16,1280]</code></td>
+<td>低秩Q归一化</td>
+</tr>
+<tr id="task-21669">
+<td style="text-align: right;">21669</td>
+<td><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj32768ELj1280ELj16ELj512ELj256ELj16ELj256ELj128ELj3ELj2ELj5ELj2ELj4ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></td>
+<td>2351.414353～2351.432914</td>
+<td style="text-align: right;">18.561</td>
+<td><code>Q_a[16,1280] → [16,32768] → view Q[16,64,512]</code></td>
+<td>展开主Attention Q</td>
+</tr>
+<tr id="task-21670">
+<td style="text-align: right;">21670</td>
+<td><code>_fused_norm_rope_hadamard_cast_store_kvcache_kernel</code></td>
+<td>2351.432936～2351.437740</td>
+<td style="text-align: right;">4.804</td>
+<td><code>Q[16,64,512] + position[16] → 归一化/旋转后的Q[16,64,512]，所需格式</code></td>
+<td>处理主Attention Q</td>
+</tr>
+<tr id="task-21671">
+<td style="text-align: right;">21671</td>
+<td><code>_ZN6ascend7prefill10sparse_fwd22sparse_attn_fwd_kernelINS1_6KernelIXtlNS1_6ConfigEL17SparseAttnFwdMode1ELj64ELj640ELb1EEEEEEEvNT_6ParamsENS7_9AuxParamsE</code></td>
+<td>2351.437762～2351.448718</td>
+<td style="text-align: right;">10.956</td>
+<td><code>Q[16,64,512] + SWA KV缓存/索引 → context[16,64,512]</code></td>
+<td>L00 SWA上下文汇聚</td>
+</tr>
+<tr id="task-21672">
+<td style="text-align: right;">21672</td>
+<td><code>_rope_kernel_kernel</code></td>
+<td>2351.448740～2351.453462</td>
+<td style="text-align: right;">4.722</td>
+<td><code>context[16,64,512] → 旋转后的context[16,64,512]</code></td>
+<td>输出逆向RoPE</td>
+</tr>
+<tr id="task-21673">
+<td style="text-align: right;">21673</td>
+<td><code>per_token_cast_kernel_kernel</code></td>
+<td>2351.453484～2351.457708</td>
+<td style="text-align: right;">4.224</td>
+<td><code>context[16,32768]（view） → FP8[16,32768] + SF</code></td>
+<td>Attention上下文转FP8</td>
+</tr>
+<tr id="task-21674">
+<td style="text-align: right;">21674</td>
+<td><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj1024ELj4096ELj16ELj256ELj512ELj16ELj256ELj128ELj3ELj2ELj8ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE3Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb0ELb0EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></td>
+<td>2351.457730～2351.472545</td>
+<td style="text-align: right;">14.815</td>
+<td><code>FP8[16,8,4096] + SF（view） → Wv结果[16,8,1024]</code></td>
+<td>分组输出投影Wv</td>
+</tr>
+<tr id="task-21675">
+<td style="text-align: right;">21675</td>
+<td><code>per_token_cast_kernel_kernel</code></td>
+<td>2351.472567～2351.477291</td>
+<td style="text-align: right;">4.724</td>
+<td><code>Wv结果[16,8192]（view） → FP8[16,8192] + SF</code></td>
+<td>分组输出结果转FP8</td>
+</tr>
+<tr id="task-21676">
+<td style="text-align: right;">21676</td>
+<td><code>_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj5120ELj8192ELj16ELj160ELj256ELj16ELj160ELj128ELj4ELj2ELj32ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE</code></td>
+<td>2351.477313～2351.496584</td>
+<td style="text-align: right;">19.271</td>
+<td><code>FP8[16,8192] + SF（view） → 子层输出[16,5120]</code></td>
+<td>合并输出投影Wo</td>
+</tr>
+</tbody>
+</table></div>
+<p>下一条就是①开头的Task21677 <code>mhc_post_fwd_asc_kernel</code>：将L00 Attention输出写回四路主干。随后读出MoE输入、路由并执行第一个MegaMoE Task21687。</p>
 <h2 id="①-l00-attention写回-l00-moe">① L00 Attention写回 → L00 MoE</h2>
 <p>+2351.496606～2351.766216 ms，区间269.610 μs；kernel累计268.116 μs，间隙1.494 μs。右边界post Task21688不计入本段。</p>
 <div class="table-scroll"><table>
@@ -649,4 +878,4 @@
 <td>合并输出投影Wo</td>
 </tr>
 </tbody>
-</table></div></main><footer>采集2026-10-27，编写2026-10-31；2026-11-04更新概念伪代码。shape为固定源码推导，耗时为采集事件。阅读版公式需联网加载MathJax；离线可用支持LaTeX的Markdown阅读器。<p><a href="#top">回到顶部</a></p></footer></body></html>
+</table></div></main><footer>采集2026-10-27，编写2026-10-31；2026-11-04更新概念伪代码，2026-11-05补齐D02入口与L00 Attention逐算子对照。shape为固定源码推导，耗时为采集事件。阅读版公式需联网加载MathJax；离线可用支持LaTeX的Markdown阅读器。<p><a href="#top">回到顶部</a></p></footer></body></html>
