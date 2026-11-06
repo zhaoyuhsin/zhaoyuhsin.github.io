@@ -1,0 +1,218 @@
+{
+  "date": "2026-11-06",
+  "status": "analysis only; no kernel change or NPU experiment",
+  "raw_trace": {
+    "filename": "20261106_deepinfer_dp2_cp8_ep16_trace_continuous-dp0.json",
+    "sha256": "175558ceadabe0aed6d7d6c405f56affeea607978e0f79ba2cbfe594155fe9b8",
+    "bytes": 231606064,
+    "pid": 715046336,
+    "trace_scope": "local CP drivers only, not all 16 ranks"
+  },
+  "call": {
+    "id": "D02-main",
+    "stream": 181,
+    "model_id": 62,
+    "logical_rows": 12,
+    "graph_rows": 16,
+    "dp": 2,
+    "cp": 8,
+    "ep": 16
+  },
+  "prior_analysis": {
+    "filename": "dp0-analysis.json",
+    "sha256": "4bac0525806c48df25a0874ae6a7a3909db40edc4b37063034de786abef548b3",
+    "d02_device_spans": {
+      "main": {
+        "stream": 181,
+        "model_id": 62,
+        "graph_size": 16,
+        "start_us": 2350062.11,
+        "end_us": 2364579.7663125,
+        "graph_ms": 14.517656312500126,
+        "kernel_sum_ms": 13.2278575
+      },
+      "sample_bridge": {
+        "stream": 61,
+        "model_id": null,
+        "graph_size": 0,
+        "start_us": 2364579.7663125,
+        "end_us": 2365618.3,
+        "graph_ms": 1.0385336874998174,
+        "kernel_sum_ms": 0.874881625
+      },
+      "draft": {
+        "stream": 163,
+        "model_id": 56,
+        "graph_size": 2,
+        "start_us": 2365618.3,
+        "end_us": 2367608.870875,
+        "graph_ms": 1.9905708750002087,
+        "kernel_sum_ms": 1.8218074375
+      }
+    },
+    "file_earliest_to_capture_offset_ms": 10.275189000000001
+  },
+  "prefill_cp_example": [
+    {
+      "task_id": 218152,
+      "stream": 24,
+      "name": "_ZN7deep_ep20urma_all_gather_implILi8ELl100000000000EEEvPvS1_S1_S1_iiNS_4comm10BucketListES3_",
+      "start_ms": "1306.374299",
+      "duration_us": "10.744"
+    },
+    {
+      "task_id": 218155,
+      "stream": 61,
+      "name": "_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj32768ELj1280ELj16ELj512ELj256ELj16ELj256ELj128ELj3ELj2ELj5ELj2ELj4ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE",
+      "start_ms": "1306.653557",
+      "duration_us": "16.0250625"
+    }
+  ],
+  "sources": [
+    {
+      "name": "DeepInfer",
+      "commit": "553741557a57df44a46fb3ab72b6aafeaf945337",
+      "files": [
+        {
+          "path": "deepinfer/model_executor/models/v4_modules/hc.py",
+          "worktree_sha256": "7b018ab3f5b4ff07c5361bc99c2908704f02a7a1ab5849ad7de625faac3ee336",
+          "git_blob_sha256": "1dd2d2e880c28deaa77363f040c31b451d1aeedf4ea188ace6803798713e3701",
+          "content_matches_commit": true
+        },
+        {
+          "path": "deepinfer/model_executor/models/v4_modules/engram.py",
+          "worktree_sha256": "0bf55d4be10fee2b073c9a17a440bc85777001c4d86a1cd8714a9536d66e2410",
+          "git_blob_sha256": "d2aa096a1f73177e2dd06f5a1fcd6746139c52af56c3bcfb77d5226a3deeae8f",
+          "content_matches_commit": true
+        },
+        {
+          "path": "deepinfer/model_executor/models/v4_modules/attn.py",
+          "worktree_sha256": "5e60a3985cff4411c90262399ea7f895d089999003dbbb24718a657649e3e09a",
+          "git_blob_sha256": "cb228c8fd4c76200e2ec266c51872107cfe7b384fdc88458b3d1c0ff101f3116",
+          "content_matches_commit": true
+        },
+        {
+          "path": "deepinfer/model_executor/models/v4_modules/mlp.py",
+          "worktree_sha256": "63af63e529870a8d1f7380845f03e38e8b266e0aa8990778d6ed3e151e67245a",
+          "git_blob_sha256": "2541bcc83b178a9e2f18b387b301d60111d6d603e18e2d31df38196b03d290dd",
+          "content_matches_commit": true
+        },
+        {
+          "path": "deepinfer/model_executor/models/deepseek.py",
+          "worktree_sha256": "b6e570afd0c7f592f1ff1506e2c8ccc96b859899b4cdb9e81cffb1a1ac9ec20d",
+          "git_blob_sha256": "881fe2839b34d191ffd50ca6d5b7b57443b43ed8d811e204e4d48164f31f613a",
+          "content_matches_commit": true
+        },
+        {
+          "path": "deepinfer/model_executor/parallel_utils/cp.py",
+          "worktree_sha256": "7ff23b8e5eab43d5405f9e9b874afa95a302fb224c4a11dd7686d952fb8dcb5e",
+          "git_blob_sha256": "beef76a3047051af30ba16d0c163fb0ca7793b86670492bd86b20e568f55af23",
+          "content_matches_commit": true
+        },
+        {
+          "path": "deepinfer/worker/worker.py",
+          "worktree_sha256": "ea64e6e666b331914644db3ba9cf5d3c185ae5645d4abf6444818f15cb8f98c2",
+          "git_blob_sha256": "ad32e595d9ab289dff1a7709136431ac60dae709e9e5123ae42eb0ebf7c30cbb",
+          "content_matches_commit": true
+        }
+      ]
+    },
+    {
+      "name": "DeepGEMM-Ascend",
+      "commit": "3a35326271b069b8b5bf1a754435acd6cc91575b",
+      "files": [
+        {
+          "path": "deep_gemm/include/deep_gemm/common.hpp",
+          "worktree_sha256": "0d30036e9087466338aa37f41d8e787f72e88799f4daad7510ffb2956cea8469",
+          "git_blob_sha256": "665037e4dbe5801d70847a3da77eec78e7b25874d899f478ab8310cae4b9d590",
+          "content_matches_commit": true
+        },
+        {
+          "path": "deep_gemm/include/deep_gemm/mega_moe.hpp",
+          "worktree_sha256": "68f19ba0f7e2b044339e9d339889bbc3bbc0171a30339f49abca653cebf3c4e6",
+          "git_blob_sha256": "356d7374dd272c534ca9540aa7988d5af9e8a54ae5f39c01dbf00cfce6459569",
+          "content_matches_commit": true
+        },
+        {
+          "path": "deep_gemm/include/deep_gemm/scheduler/mega_moe.hpp",
+          "worktree_sha256": "53496a49a24c3ae73916c941cdac7e5c138025c073b96271df81c3e8e7e92565",
+          "git_blob_sha256": "795f1264a319e9971359df014da00a0b0433e1371fe812571df7fa8f421acb0c",
+          "content_matches_commit": true
+        }
+      ]
+    }
+  ],
+  "source_csvs": [
+    {
+      "filename": "d02-prefix.csv",
+      "sha256": "cd1590ad3a499a9237c6b5d0ee4879230da3553d4014b192624efcfb84a555e8"
+    },
+    {
+      "filename": "d02-four-segments.csv",
+      "sha256": "93347a9348c85b94b65cae6447bcc7317d3a8a0b4517341bfd0eb5db7f3efe52"
+    }
+  ],
+  "output_csv": {
+    "filename": "data/d02-neighbors.csv",
+    "sha256": "ffb448d748a508e0dac86c494bcb1601a969230a9feb8a0e0035ad8d4f118afe",
+    "rows": 101
+  },
+  "duration_groups": {
+    "21677-21678": {
+      "count": 2,
+      "start_ms": "2351.496606",
+      "end_ms": "2351.504242",
+      "sum_duration_us": "7.614"
+    },
+    "21679-21682": {
+      "count": 4,
+      "start_ms": "2351.504264",
+      "end_ms": "2351.523196",
+      "sum_duration_us": "18.8660625"
+    },
+    "21683-21686": {
+      "count": 4,
+      "start_ms": "2351.523218",
+      "end_ms": "2351.542444",
+      "sum_duration_us": "19.1600625"
+    },
+    "21687-21687": {
+      "count": 1,
+      "start_ms": "2351.542466",
+      "end_ms": "2351.7661936875",
+      "sum_duration_us": "223.7276875"
+    },
+    "21688-21688": {
+      "count": 1,
+      "start_ms": "2351.766216",
+      "end_ms": "2351.769596",
+      "sum_duration_us": "3.38"
+    },
+    "21689-21689": {
+      "count": 1,
+      "start_ms": "2351.769618",
+      "end_ms": "2351.8276131875",
+      "sum_duration_us": "57.9951875"
+    },
+    "21690-21690": {
+      "count": 1,
+      "start_ms": "2351.827635",
+      "end_ms": "2351.832634",
+      "sum_duration_us": "4.999"
+    },
+    "21691-21696": {
+      "count": 6,
+      "start_ms": "2351.832656",
+      "end_ms": "2351.8654150625",
+      "sum_duration_us": "32.6491250"
+    },
+    "21697-21707": {
+      "count": 11,
+      "start_ms": "2351.865437",
+      "end_ms": "2351.9582830625",
+      "sum_duration_us": "92.6252500"
+    }
+  },
+  "diagram_timing": "logical only; no measured head/tail widths",
+  "reconstructed_shapes": "Source-reconstructed, not all directly recorded by the profiler"
+}
