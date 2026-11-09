@@ -1,0 +1,26 @@
+{
+  "title": "DeepInfer DP0 71轮原始trace",
+  "capture_date": "2026-10-27",
+  "published_date": "2026-11-09",
+  "scope": "DP0 driver only, not all 16 ranks",
+  "download": "/downloads/files/deepinfer-dp0-trace-20261109.zip",
+  "zip_bytes": 14771187,
+  "zip_sha256": "b6ed43d7da1cffe331153628a0648b8c44a41f66b4a9bd9fb4e3cce6b23f6102",
+  "trace_filename": "continuous-dp0.json",
+  "trace_bytes": 231606064,
+  "trace_sha256": "175558ceadabe0aed6d7d6c405f56affeea607978e0f79ba2cbfe594155fe9b8",
+  "trace_byte_identical_to_local_source": true,
+  "parallelism": {
+    "dp": 2,
+    "cp": 8,
+    "ep": 16
+  },
+  "rounds": {
+    "total": 71,
+    "placeholder": 37,
+    "prefill": 1,
+    "decode": 33
+  },
+  "workload": "short Chinese educational prompts; not a production capacity benchmark",
+  "source_commit": "553741557a57df44a46fb3ab72b6aafeaf945337"
+}
