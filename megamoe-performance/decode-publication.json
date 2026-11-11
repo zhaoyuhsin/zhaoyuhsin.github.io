@@ -3,8 +3,8 @@
   "historical_measurements_modified": false,
   "raw_artifacts_published": false,
   "panel_id": "decode-1111",
-  "public_html_sha256": "32cf08147252d603aabc30f61b21256d4c135f3e51facf22d2a329f01a801f4b",
-  "progress_sha256": "8efa656d6409198a65ed3bed7f83b8085a8b7baae52e79ed0cfcae76c5780774",
+  "public_html_sha256": "6fee2dee28f821dda776a3439463dc513aff575bbf898b24afbe951c33ec31c1",
+  "progress_sha256": "377d80ab99e1eec615f55b77cf5b62de2137ee8ff4cef5b7a0bd0145918d4996",
   "inline_js_syntax": "passed",
   "embedded_json": "passed"
 }
