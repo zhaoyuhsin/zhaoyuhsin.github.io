@@ -7,7 +7,8 @@
 - 同机四方案共享Event筛选已复核：G2为587.76／599.99／606.53μs，强小算子参考562.14／599.48／630.99μs。BS32仍慢4.56%（25.63μs），BS64基本持平，BS96快3.88%。单次顺序筛选非ABBA，不与旧kernel Duration混算；参考采集有效但最终化超时/session_normal=false/production_pass=false保留，全部资源已释放。
 - 独立CANNBot UB相位修正版EP8真正queued功能已过：6528份实际输出原全行Golden、384份原计数通过独立审计，资源释放；这不是性能收益。EP32新功能窗被外部占卡硬拒，替代19节点未找到匹配空闲组，不共跑。CPU证据链已正式append-only登记，实际A/B采集backend仍在接线，整体eligible=false。频率空闲观测不证明活动恒频，不回填旧证据。
 - 宿主解析修复已用于新EP8六job，未改设备通信。MTE2-credit完整EP8 ABBA降耗+0.065%/−0.117%/+0.038%，无可保留收益，不替换G2或main。双AIV最小硬件四正例已正常完成，root独立复核全部214原件及输出/guards/计数/退出；仅证明预展开FP8正向路径，不是实际FP4或性能收益。lag1真实FP4 local接线已冻结，root独立82源SHA与6项workload通过，另有原62项CPU回归通过；现进入私有SDK编译，尚无FP4设备或性能结果。
-- 容量诊断：最小纯SIMD实例64AIV均实测post-Init raw256KiB／SDK user248KiB，72原件及guards由root独立通过；ACL216KiB为另一属性口径，不直接判原组件容量。剩余240KiB观察在GO前被本任务poll误列而拒绝，未执行kernel，另备单剩余case新窗。本地Windows采集夹具也因PPID复用风险暂停真实进程测试，外部进程未被终止；纯身份修补18项独立通过，实际spawn链接线仍待审。
+- 后续进度：真实FP4 local原生库e53fb420已实际SDK编译通过，root复核库SHA与两个导出/模板kernel，未加载/执行，无新性能。容量诊断208／240KiB两次请求现均完成，64AIV都是post-Init raw256KiB／SDK user248KiB，两归档72＋43原件/guards独立通过；不据此判原组件模式/容量等价。此前poll误拒与打包缺执行位原件保留，资源探针到此收口。
+- CANNBot EP32后续空闲窗已通过32rank就绪并进入初始调用，但在精度报告Gloo all_gather_object发生异常header/SIGABRT，正式采样及数值聚合未完成；四节点/传输已安全释放，312原件保留。不将其冒充数值失败或旧fork根因；下一步分层控制诊断，先不盲重完整kernel。本地Windows采集夹具仍因PPID复用风险暂停真实测试，纯身份18项独立通过，外部进程未被终止。
 - 固定N256的Wave6→8已完成完整EP8 ABBA，BS32/64/96分别慢0.205%/0.216%/0.333%，幅度小但无可保留收益，不替换G2；原生trace证明预算确已启用，不能只看分配更均衡就推断更快。下一步c5/A2/G2的EP32回归及BS32余差定位。G2单次timer也未证明GMM2 ISSUE缩短，主性能以timer-off为准。
 - 当前进展及分口径表见性能页「1111 Decode攻关」；本地证据目录`outputs/decode-campaign-20261111`。原始CSV/流水与失败均保留，历史表不冒充新同窗成绩。
 
