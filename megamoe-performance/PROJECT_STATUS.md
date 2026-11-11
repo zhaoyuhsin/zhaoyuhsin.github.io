@@ -4,7 +4,8 @@
 
 - 当前重点：EP8／EP32，每卡BS32／64／96，目标是统一版本超越强小算子拼接，不按case拼不同分支最低值。其余EP目标保留。
 - 已完成六case原A基线与全行Golden；头部、更小N、更多Wave及N512未保留收益。GMM1 A2完整EP8同窗ABBA降耗1.105%／0.788%／0.853%；后续G2在另一个同窗ABBA相对A2再降耗0.556%／0.441%／0.364%，三BS为587.33／598.56／606.83μs。原CSV/精度/加载/流水已审并推送独立分支；两轮收益不连加，EP32待三版本同窗验证，main未改。
-- 独立CANNBot UB相位修正版六个原功能case已通过；EP32四节点正常完成，root重核四archive与32份CSV/96行PASS。扩展序列、默认false及实际route/原调度runtime门禁待补，尚无候选性能，eligible=false。强参考三BS诊断Event rank-max562.56／600.45／629.82μs采集有效但退出异常/production_pass=false保留；不与上述kernel Duration相减。四方案共享Event公平对照仍在做独立环境/输入字节门禁，不宣称达标。
+- 同机四方案共享Event筛选已复核：G2为587.76／599.99／606.53μs，强小算子参考562.14／599.48／630.99μs。BS32仍慢4.56%（25.63μs），BS64基本持平，BS96快3.88%。单次顺序筛选非ABBA，不与旧kernel Duration混算；参考采集有效但最终化超时/session_normal=false/production_pass=false保留，全部资源已释放。
+- 独立CANNBot UB相位修正版六个原功能case通过，序列／默认false及实际route诊断在推进，尚无候选性能/eligible=false。root已审39项新安全适配测试，序列与原六功能/性能分别报告。
 - 下一项是固定N256的Wave6→8正交实验，CPU检查通过，尚无NPU结果。G2小收益的单次timer没有证明GMM2 ISSUE缩短，BS32打点增幅差足以掩盖其小收益；不据此编造供数因果，主性能以timer-off为准。
 - 当前进展及分口径表见性能页「1111 Decode攻关」；本地证据目录`outputs/decode-campaign-20261111`。原始CSV/流水与失败均保留，历史表不冒充新同窗成绩。
 
