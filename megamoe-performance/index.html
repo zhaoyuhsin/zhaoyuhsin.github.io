@@ -14,7 +14,7 @@
 <aside id="private-artifacts" style="padding:12px 20px;background:#fff5dc;border-bottom:1px solid #e7cfa0;color:#5e491c;overflow-wrap:anywhere"><a href="../">← 返回个人网站</a> · 公开快照 main-gm-slice-summary-1027：性能、实验记录、项目状态及调优 SKILL 均保留。原始 timer/CSV 仅在本地归档，未公开；对应入口会标注“本地归档”，不是在线下载。</aside><div class="shell"><aside class="sidebar"><div class="brand">MegaMoE<span style="color:#63c7b8">.</span><small>PERFORMANCE LAB</small></div><div class="offline"><span class="dot"></span>离线可用 · 无外部依赖</div><nav aria-label="主要界面"><a href="#performance" data-page="performance" aria-current="page">性能</a><a href="#project-status" data-page="project-status">项目状态</a><a href="#tuning-skill" data-page="tuning-skill">调优 SKILL</a></nav><div class="side-note">先完成EP8，再推进其他EP。<br>对照为布局优化后的DS。<br>只展示真实测量。<br><br>项目状态与SKILL来自Markdown，<br>构建后可完整离线阅读。</div></aside>
 <main class="main"><div id="error" class="error hidden" role="alert"></div><header class="header"><div><div class="eyebrow">MEGAMOE / PERFORMANCE LAB</div><h1 id="view-title">每一份性能，都有迹可循。</h1><div class="muted" id="view-description">EP8 · 原始DS、布局优化DS与我们的候选 · 单位 μs，越低越好</div><div class="status-row" id="measurement-status"><span class="badge" id="status">正在读取数据</span><span class="muted" style="font-size:11px" id="updated"></span></div></div><div class="tools" id="performance-tools"><button id="download-json">导出 JSON</button><button id="download-csv">导出 CSV</button><button id="import-button">导入结果</button><input id="import-file" type="file" accept=".json,application/json" hidden></div></header>
 <div class="view" id="performance-view"><nav class="section-nav" id="performance-sections" aria-label="性能内容"><a href="#decode-1111">Decode攻关</a><a href="#latest-summary">最新结果</a><a href="#overview">历史曲线</a><a href="#versions">版本与口径</a><a href="#history">历史分析</a><a href="#evidence">原始证据</a></nav>
-<section class="panel" id="decode-1111"><p>更新时间：2026-11-12T01:12:14+08:00</p>
+<section class="panel" id="decode-1111"><p>更新时间：2026-11-12T02:18:25+08:00</p>
 <p>目标：EP8／EP32、每卡BS32／64／96，统一版本优于强级联参考。A2及其G2后续版已有小幅完整EP8收益，尚未验收为统一最优；main未因本轮实验改变。</p>
 <h2>完整通信原A基线</h2>
 <p>c5冻结源码，warmup10／iters20取后10；主性能timer-off、kernel Duration。主指标为逐轮全rank最大值的均值；rank-min另列，不与用户历史小算子event耗时混算收益。</p>
@@ -378,10 +378,10 @@
 <p>当前主要缺口是BS32约25.63μs／4.56%；BS64的约0.51μs不判输赢，BS96快约3.88%也不等于统一达标。先分析本窗原CSV／flow；旧timer未知gap不能直接拿来填余差。</p>
 <h2>正在推进</h2>
 <ul>
-<li>计算：A2完整EP8约1%收益已验；G2在A2上再降耗约0.36–0.56%。均不跨窗口连加，准备c5/A2/G2三版本EP32同窗验证，未提升main或达标。</li>
-<li>独立CANNBot：UB相位修正版六个原功能case已通过，EP32四节点正常退出；root另读32份CSV／96行PASS并重核四archive。扩展sequence／默认false／实际route和原调度runtime门禁仍在推进，尚无候选性能、eligible=false。原失败均保留。</li>
+<li>计算：A2完整EP8约1%收益已验；G2在A2上再降耗约0.36–0.56%。均不跨窗口连加。新c5/A2/G2三版EP32窗口首job触发进程表安全拒绝，已全组中止并归还，保留原始SMI调查，不发布不完整性能对照；main未变。</li>
+<li>独立CANNBot：六原功能case及额外EP8序列192call、EP32序列448call通过；root另重核四份EP32原archive。官方调度runtime PASS，但完整符合性仍因f6真实实验尚未采集／partial失败，整体eligible=false。正在修复事前协议与后置实验的时序映射；原queued采集等效功能和正式性能仍待，不能把串行短序列当替代。</li>
 <li>计算：固定N256的Wave6→8已完成完整EP8 ABBA，无可保留收益；已证预算生效，停止盲调。接下来优先c5／A2／G2的EP32回归及BS32剩余瓶颈定位。</li>
-<li>强参考：四方案共享Event筛选已复核，BS32仍是主要缺口；参考采集有效／退出异常分开记录，不宣称生产PASS或统一SOTA。更细阶段／分核PMU另行诊断，不跨口径计算收益。</li>
+<li>强参考：四方案共享Event筛选已复核，BS32仍是主要缺口；参考采集有效／退出异常分开记录，不宣称生产PASS或统一SOTA。已准备新G2／强参考BS32外包msprof task-block分核诊断，须独立通过安全／身份门禁才运行；原Level1聚合不能拆AIV0／AIV1，不跨口径计算收益。</li>
 <li>结果、原始JSON／CSV和失败证据均在本地outputs/decode-campaign-20261111各line；只使用空闲资源，不影响他人。</li>
 </ul>
 </section>
