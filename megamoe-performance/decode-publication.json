@@ -1,0 +1,10 @@
+{
+  "snapshot": "decode-campaign-20261111",
+  "historical_measurements_modified": false,
+  "raw_artifacts_published": false,
+  "panel_id": "decode-1111",
+  "public_html_sha256": "f2b6c623930f8b5e1d2da808fbf95d78c85c5c5ce190483938b705555c977329",
+  "progress_sha256": "c086a0381205be6b5ae5d284583b73cebe2740d9b793a86699b6199dc85316ec",
+  "inline_js_syntax": "passed",
+  "embedded_json": "passed"
+}
