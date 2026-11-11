@@ -6,7 +6,7 @@
 - 已完成六case原A基线与全行Golden；头部、更小N、更多Wave及N512未保留收益。GMM1 A2完整EP8同窗ABBA降耗1.105%／0.788%／0.853%；后续G2在另一个同窗ABBA相对A2再降耗0.556%／0.441%／0.364%，三BS为587.33／598.56／606.83μs。原CSV/精度/加载/流水已审并推送独立分支；两轮收益不连加，EP32待三版本同窗验证，main未改。
 - 同机四方案共享Event筛选已复核：G2为587.76／599.99／606.53μs，强小算子参考562.14／599.48／630.99μs。BS32仍慢4.56%（25.63μs），BS64基本持平，BS96快3.88%。单次顺序筛选非ABBA，不与旧kernel Duration混算；参考采集有效但最终化超时/session_normal=false/production_pass=false保留，全部资源已释放。
 - 独立CANNBot UB相位修正版六原功能及额外EP8/EP32串行选支序列已过；queued采集等效功能的CPU驱动18项、私有证据consumer19项由root独立重跑通过，真实queued及正式性能尚未执行，eligible=false。频率管理原文来源已找到，但空闲观测不证明活动恒频，不回填旧证据。
-- 宿主Gloo故障的同源纯CPU对照：fork继承PG失败，spawn全32rank九case通过；正在隔离profiler解析进程，不把它误认成设备通信优化。新MTE2-credit候选和父版同环境完整重建，各80项Linux CPU测试零跳过、四库/API8加载通过；尚未做硬件/性能验收。双AIV协作供数仅CPU准备，main不变。
+- 宿主Gloo的同源CPU对照fork失败/spawn全32rank通过；独立解析已真通过原20CSV逐字段回放并用于新EP8六job，未改设备通信。新MTE2-credit完整EP8 ABBA原Golden/身份/CSV/流水已审：BS32/64/96降耗+0.065%/−0.117%/+0.038%，两项两对反转，无可保留收益，不替换G2或main。双AIV供数probe已真编译/22CPU checks，未设备运行，硬件正确性及性能仍未知。
 - 固定N256的Wave6→8已完成完整EP8 ABBA，BS32/64/96分别慢0.205%/0.216%/0.333%，幅度小但无可保留收益，不替换G2；原生trace证明预算确已启用，不能只看分配更均衡就推断更快。下一步c5/A2/G2的EP32回归及BS32余差定位。G2单次timer也未证明GMM2 ISSUE缩短，主性能以timer-off为准。
 - 当前进展及分口径表见性能页「1111 Decode攻关」；本地证据目录`outputs/decode-campaign-20261111`。原始CSV/流水与失败均保留，历史表不冒充新同窗成绩。
 
