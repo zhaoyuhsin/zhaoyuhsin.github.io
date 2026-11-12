@@ -35,6 +35,17 @@ ISSUE表示Scalar提交，不表示硬件完成。阶段与核时统计标明提
 
 ## MegaMoE 性能实验室
 
+### Decode 优化独立实验台
+
+入口：`https://zhaoyuhsin.github.io/decode-optimization/`。固定2026-11-11候选与小算子拼接的EP8/EP32匹配窗口，包含11个BS、两次独立启动、NPU Event与设备首尾跨度、rank-min/rank-max。默认显示decode路径，prefill单列；只发布聚合性能，不含原始流水或机器信息。
+
+```text
+node scripts/build-decode-comparison.mjs <本地outputs目录>
+node scripts/check-decode-comparison.mjs
+```
+
+构建器逐项复核审计表与双轮样本行，再生成HTML、JSON、CSV及SHA；页面比例和图表由同一数据快照派生。这个历史固定候选不等于后续Decode攻关最优版本，设备timer关闭，Profiler开启；未测精度。
+
 2026-11-12 共享专家对照：`/megamoe-performance/shared-expert-comparison.html`。本次 FP8 共享专家（timer-on）与旧候选无共享（timer-off）的数据分开，不能相减推导共享开销。公开聚合 JSON 保留 rank-max、双启动范围和证据 SHA，不发布服务器或原始流水。
 
 生成与检查：`node scripts/build-shared-comparison.mjs <本地outputs目录>`、`node scripts/check-shared-comparison.mjs <本地outputs目录>`。原性能实验室数据和其他实验面板不变。

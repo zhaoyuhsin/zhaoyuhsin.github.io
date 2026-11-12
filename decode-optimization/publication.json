@@ -1,0 +1,23 @@
+{
+  "published": "2026-11-12",
+  "sources": [
+    {
+      "ep": 8,
+      "id": "performance-compare-20261111-r05-f",
+      "audit_sha256": "5dc7f69fea5507e471f25a161e9e57b3e4f89c8f19c6143511a1ab65b79d58a9"
+    },
+    {
+      "ep": 32,
+      "id": "performance-compare-20261111-r05-i",
+      "audit_sha256": "9a3ad9eca5bdbeb428a8b803478e11fe0ca442ae65ffdc460cf6de397d95d6f0"
+    }
+  ],
+  "files": {
+    "index.html": "3430ba39a8560d7b73eda22bfc578143245c43af3a1c1dd089b1b0399e18f25c",
+    "decode.css": "aa917904764d1b7673ffff0c998277edd675f6c87fdea013518eff4ef6601603",
+    "decode.js": "0a9c966e89873a28c72163f35074d0c645bd38612f96db42da776f376e2b8c53",
+    "results.json": "d7d2c120d73942c76cddc30ae27a3ad4597cfe81bebdbb6e5d71f82dd89576ac",
+    "results.csv": "a50bf37e6c95b62fe39acf33cb584751bc5ee78e02109a4a2d8ff615bca03dca"
+  },
+  "public_scope": "Sanitized aggregate performance only; no raw trace, logs, machine addresses, local paths, or credentials."
+}

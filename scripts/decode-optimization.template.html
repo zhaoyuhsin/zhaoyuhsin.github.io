@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Decode 优化 · MegaMoE vs 小算子拼接 · YuHsin</title>
+<meta name="description" content="MegaMoE与小算子拼接的EP8、EP32双轮性能对照：decode耗时、收益比例和运行波动，保留小BS回退与独立prefill结果。">
+<link rel="icon" href="../assets/favicon.svg"><link rel="stylesheet" href="../assets/home.css"><link rel="stylesheet" href="decode.css">
+<script src="decode.js" defer></script></head><body>
+<a class="skip" href="#main">跳到正文</a>
+<header class="site-header"><a class="brand" href="../"><span class="mark">YH</span>YuHsin</a><nav aria-label="主导航"><a href="#comparison" aria-current="page">Decode 优化</a><a href="../megamoe-performance/">性能实验室</a><a href="../megamoe-performance/shared-expert-comparison.html">共享专家对照</a></nav></header>
+<main id="main">
+<header class="hero"><div><p class="eyebrow">DECODE OPTIMIZATION / 01 · MATCHED BASELINE</p><h1>融合，<em>从哪里开始更快？</em></h1><p class="intro">MegaMoE 与小算子拼接的 EP8 / EP32 对照。看完整链路耗时，也看小 BS 的回退；用两次独立启动，检查收益是否重复出现。</p>
+<div class="tags"><span>无共享专家 · W4A8</span><span>11 个 BS / EP</span><span>双轮实测 · 已审计</span></div>
+<nav class="anchors" aria-label="本页内容"><a href="#comparison">曲线与完整数据</a><a href="#stability">两次运行稳定性</a><a href="#protocol">测量与版本边界</a></nav></div>
+<aside class="scope-note"><span class="eyebrow">READ THE SCOPE</span><h2>这是匹配基线，<br>不是引擎最终成绩。</h2><p>2026-11-11 实测；2026-11-12 发布。Profiler 开启、设备 timer 关闭，参考为 eager 串行小算子链路。</p><p>默认仅展示 <strong>BS≤512 的 decode 路径</strong>。BS≥1024 走 prefill，单独筛选，不算成 decode 收益。</p></aside></header>
+<div class="notice"><strong>快与慢都保留。</strong>收益 =（拼接 − MegaMoE）÷ 拼接；正值更快，负值更慢。此页是 c5d68f0d + shared-fp8-1110 候选的固定快照，<a href="../megamoe-performance/index.html#decode-1111">后续 Decode 攻关</a>单独记录，不混用版本或挑选最低值。</div>
+<section id="comparison" class="block">
+<div class="section-heading"><div><p class="eyebrow">01 / PERFORMANCE</p><h2>相同输入，完整链路。</h2></div><p id="selection-summary" aria-live="polite">EP8 · decode · NPU Event · rank-min</p></div>
+<form class="controls" aria-label="性能数据筛选" onsubmit="return false">
+<fieldset><legend>专家并行</legend><div class="segmented"><button type="button" data-ep="8" aria-pressed="true">EP8</button><button type="button" data-ep="32" aria-pressed="false">EP32</button></div></fieldset>
+<label>参考执行路径<select id="scope"><option value="decode">Decode · BS≤512</option><option value="prefill">Prefill · BS≥1024</option><option value="all">全部 BS · 路径分别标注</option></select></label>
+<label>计时口径<select id="metric"><option value="npu_event_e2e">NPU Event 端到端</option><option value="device_first_last_span">设备首尾跨度</option></select></label>
+<label>跨 rank 统计<select id="rank-stat"><option value="rank_min_us">rank-min · 历史对照口径</option><option value="rank_max_us">rank-max · 最慢 rank 口径</option></select></label>
+</form>
+<div class="insights" id="insights" aria-live="polite"></div>
+<div class="charts"><figure><figcaption><h3>完整耗时 <small>μs · 越低越好</small></h3><div class="legend"><span><i class="main-line"></i>MegaMoE</span><span><i class="ref-line"></i>小算子拼接</span></div></figcaption><div id="latency-chart" class="chart"></div></figure><figure><figcaption><h3>耗时降低率 <small>% · 正值更快</small></h3><p>0% 为同速；负值表示 MegaMoE 回退。</p></figcaption><div id="gain-chart" class="chart"></div></figure></div>
+<p class="chart-note">折线连接双轮均值；竖线表示两次启动的均值范围，不是置信区间。横轴按实际 BS 的 log₂ 间距；耗时纵轴从 0 开始。悬停数据点可查看数值，表格提供同样数据。</p>
+<div class="table-scroll" role="region" aria-label="完整性能对照表" tabindex="0"><table id="performance-table"><caption id="table-caption">EP8 decode · 双轮均值 · NPU Event · rank-min · 单位 μs</caption><thead><tr><th scope="col">BS / 卡</th><th scope="col">路径</th><th scope="col">MegaMoE μs</th><th scope="col">拼接 μs</th><th scope="col">耗时收益</th><th scope="col">加速比</th><th scope="col">Mega 两次差异</th><th scope="col">拼接两次差异</th></tr></thead><tbody><!--FALLBACK--></tbody></table></div>
+<p class="chart-note">每个耗时单元格下方为第一次 / 第二次独立启动的统计值。rank-min 不是全局最慢 rank 时延；rank-max 可在上方切换。小幅收益不等于统计显著。</p>
+<noscript><p class="notice">当前显示 EP8 decode 静态表。交互曲线和筛选需要 JavaScript；全部 EP、BS 和统计口径均可从下方 JSON / CSV 下载。</p></noscript>
+</section>
+<section id="stability" class="block"><div class="section-heading"><div><p class="eyebrow">02 / REPEATABILITY</p><h2>均值接近，不代表每轮都稳定。</h2></div><span class="pill">仅 2 次独立启动</span></div>
+<div class="stability-grid"><article><h3>EP8 · 拼接实现</h3><p>11 个 BS 中，9 个的两次均值差异小于 1%。BS1024 为 <strong>5.84%</strong>，BS2048 为 <strong>2.95%</strong>。</p><p>BS1024：2554.56 → 2409.54 μs。对应 MegaMoE 耗时收益分别为 58.17% / 55.58%，大幅领先不依赖某一次偏慢。</p></article><article><h3>EP32 · 拼接实现</h3><p>11 个 BS 中，9 个的两次均值差异小于 1%。BS1024 为 <strong>1.30%</strong>，BS2048 为 <strong>2.78%</strong>。</p><p>以上是逐轮 rank-min 的后10轮均值差异，不描述单轮尾部；20轮采样不等于20次独立实验。</p></article></div>
+<p class="meta">两次差异 = |启动 A − 启动 B| ÷ 双轮均值 ×100%。这是重复性观测，不是置信区间，也不保证长期稳定。上方筛选会同时列出两种实现、两种 rank 口径的启动差异。</p></section>
+<section id="protocol" class="block"><div class="section-heading"><div><p class="eyebrow">03 / PROTOCOL & EVIDENCE</p><h2>先把分母和版本说清楚。</h2></div></div>
+<dl class="contracts"><div><dt>固定模型</dt><dd>H7168 · I3072 · 384 experts · TopK6 · shared0；路由权重 FP4 E2M1 / E8M0 scale，激活 FP8。</dd></div><div><dt>输入与节点</dt><dd>每 rank BS；均衡 rank-first 路由；seed 20260922。EP8 与 EP32 均为同柜，候选与参考使用各自窗口内相同节点。</dd></div><div><dt>采样协议</dt><dd>每配置正序 / 反序两次独立启动；每次 warmup10，采样20取后10；先逐轮跨 rank 归约，再求轮次与启动均值。</dd></div><div><dt>端到端含义</dt><dd>NPU Event 包围完整调用，含实际通信、计算与设备空隙；不是各小算子最小耗时相加，也不是 CPU 请求端到端。</dd></div><div><dt>参考执行方式</dt><dd>BS≤512：decode Dispatch/CombineV2 路径；BS≥1024：prefill Alltoall 路径。eager 串行，无图模式或共享专家多流优化。</dd></div><div><dt>测量边界</dt><dd>双方 Profiler Level1 / PipeUtilization 开启，设备内部 timer 关闭；当前无共享对照没有内部 timer trace。Profiler 可影响主机发射空隙，不能外推无 Profiler 引擎收益。</dd></div><div><dt>容量与跨 EP 边界</dt><dd>进程内 HCCL buffer 6000MB。EP8 MegaMoE 按 BS 建 buffer；EP32 会话复用 capacity4096。计时外生命周期不同，跨 EP 差异不能全归因到 EP。</dd></div><div><dt>性能与精度分开</dt><dd>accuracy=not_run_user_requested；仅性能，不宣称精度通过或生产合入就绪。新页不重跑实验，不上传原始 trace 或机器信息。</dd></div></dl>
+<details><summary>查看冻结版本、二进制身份与数据来源</summary><div class="version-grid"><div><h3>MegaMoE 候选</h3><code>c5d68f0d174be6a0fb81676de560e2193dd11e35 + shared-fp8-1110</code><p>已测隔离候选，不代表最新 main 或后续 Decode 优化版本。</p><p class="meta">kernel SHA256</p><code class="hash">92abc16f4f8f70fe29f42ee2771b633b8d8ad6129a733b2978861a99714f120d</code></div><div><h3>小算子拼接参考</h3><p><a href="https://gitcode.com/SimpleBright_Man/mega_test">mega_test 仓库 ↗</a></p><code>ad369c0ac817f36ad6f2306f1c2e4834b6ad4568 + binding adapter 3f95223</code><p>环境：Ascend950DT / CANN 9.2.0 B080 / torch 2.12.0+cpu / torch-npu 2.12.0.post2。</p></div></div><div id="source-hashes"></div></details>
+<div class="downloads"><a class="button primary" href="results.json" download>下载聚合 JSON ↓</a><a class="button" href="results.csv" download>下载对照 CSV ↓</a><a href="publication.json">发布指纹 ↗</a></div>
+<p class="meta">下载包含全部 22 个 EP×BS 配对、两种计时口径、rank-min/rank-max、两次启动均值与范围。原始归档已在本地独立核验；公开文件仅保留可分享的聚合数据及审计 SHA256，不包含原始流水、日志、机器地址或凭据。</p>
+</section><footer class="page-footer">YuHsin · Decode 优化实验台 / 2026-11-12 · 保留回退，才能看清优化。</footer>
+</main><script id="benchmark-data" type="application/json"><!--RESULTS--></script></body></html>
