@@ -2,6 +2,8 @@
 
 ## 2026-11-11：Decode 两周攻关
 
+- 17:38准备进度：A原Plan数据桥已实际CPU读取并核验336文件/1.69GB、库依赖与77原件，尚未调用Plan/NPU；B的96原EP32缓存已源端逐SHA/完整contract只读通过，正在取回本地，不重生数值；C短时单节点原生wait判别已获CPU-only范围、现场门禁后一次运行，不冒充已完成。暂无新性能。
+
 - 17:25补充：独立CANNBot修复换行后确实跑通32rank CPU身份/ACK提交，但rank0原生TCPStore.wait(32keys)超时；超时后33个身份/ACK key全部存在，250原件独立核验。不能再说连接不通/某rank缺写，也还不能称完整Store通过。全组归还，下一单节点短时原生wait/check/get判别，无NPU或新性能；A仅CPU数据桥准备、B准备EP32完整功能与原缓存只读导出。
 
 - 11月12日17:15：通信候选真实完整EP8功能通过，连续BS32/64/96、24rank-case/48次调用；总控独立重算原Golden、完整byte-repeat/输入/累计counts，实载身份、自然exit0及资源终检齐，全部证据已本地保存。但EP8不覆盖跨服务器partial-prefix，因此尚无收益结论。计算线确认两次private异常均在同一GMM1读取块，改复用已工作原Plan入口，不继续盲重。独立CANNBot发现并因果验证Linux shell的CRLF解析错误，只修LF序列化后的新窗口仍为CPU诊断。暂无新性能，main/G2及性能表不变。
