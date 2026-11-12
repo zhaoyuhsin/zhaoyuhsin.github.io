@@ -35,6 +35,10 @@ ISSUE表示Scalar提交，不表示硬件完成。阶段与核时统计标明提
 
 ## MegaMoE 性能实验室
 
+2026-11-12 共享专家对照：`/megamoe-performance/shared-expert-comparison.html`。本次 FP8 共享专家（timer-on）与旧候选无共享（timer-off）的数据分开，不能相减推导共享开销。公开聚合 JSON 保留 rank-max、双启动范围和证据 SHA，不发布服务器或原始流水。
+
+生成与检查：`node scripts/build-shared-comparison.mjs <本地outputs目录>`、`node scripts/check-shared-comparison.mjs <本地outputs目录>`。原性能实验室数据和其他实验面板不变。
+
 公开页面：`https://zhaoyuhsin.github.io/megamoe-performance/index.html#ds-converge`。
 
 包含性能、项目状态、调优 SKILL 三个界面；性能数据嵌入 HTML，不依赖本地文件或服务端。当前快照为 `ds-converge-final-1021`，旧冻结曲线与最新候选分开显示。原始 timer、CSV、日志、源码载荷和二进制不随公开页发布，页面对应入口明确标为本地归档。

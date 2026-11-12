@@ -1,0 +1,804 @@
+{
+  "schema_version": 1,
+  "published_on": "2026-11-12",
+  "title": "MegaMoE vs 布局优化 DS：共享专家对照",
+  "model": {
+    "hidden": 7168,
+    "intermediate": 3072,
+    "experts": 384,
+    "topk": 6,
+    "bs_definition": "per_rank",
+    "seed": 20260922
+  },
+  "aggregation": "20 rounds per start, discard first 10; mean of per-round rank-min, then mean of two independent starts",
+  "slowdown_definition": "100 * (ours / layout_ds - 1); positive is slower, negative is faster",
+  "accuracy": "not_run_user_requested",
+  "raw_artifacts_published": false,
+  "current_shared": {
+    "shared_experts_per_rank": 1,
+    "shared_dtype": "FP8 W8A8 (E4M3 / E8M0 scales)",
+    "routed_dtype": "W4A8",
+    "metric": "full_fused_kernel_duration",
+    "timer": "all measured invocations, all ranks",
+    "ours_revision": "c5d68f0d174be6a0fb81676de560e2193dd11e35+shared-fp8-1110",
+    "layout_ds_revision": "d0a774514d4bfee5b5f808868688e22321f11c1b",
+    "main_promoted": false,
+    "cohort": "same rack; methods use the same ordered node cohort within each EP",
+    "results": [
+      {
+        "ep": 8,
+        "rows": [
+          {
+            "bs": 1,
+            "ours": {
+              "rank_min_us": 150.0803,
+              "rank_max_us": 151.11395,
+              "rank_min_run_range_us": [
+                149.5562,
+                150.6044
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 113.85965,
+              "rank_max_us": 115.32355,
+              "rank_min_run_range_us": [
+                113.6435,
+                114.0758
+              ]
+            },
+            "slowdown_pct": 31.81166462394711
+          },
+          {
+            "bs": 4,
+            "ours": {
+              "rank_min_us": 347.7072,
+              "rank_max_us": 348.6245,
+              "rank_min_run_range_us": [
+                347.6466,
+                347.7678
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 315.3642,
+              "rank_max_us": 318.08860000000004,
+              "rank_min_run_range_us": [
+                315.1336,
+                315.59479999999996
+              ]
+            },
+            "slowdown_pct": 10.25576143392306
+          },
+          {
+            "bs": 8,
+            "ours": {
+              "rank_min_us": 622.4791,
+              "rank_max_us": 623.4253,
+              "rank_min_run_range_us": [
+                622.157,
+                622.8012
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 591.8097,
+              "rank_max_us": 593.0578499999999,
+              "rank_min_run_range_us": [
+                591.6524000000001,
+                591.967
+              ]
+            },
+            "slowdown_pct": 5.182307758727167
+          },
+          {
+            "bs": 16,
+            "ours": {
+              "rank_min_us": 625.2213,
+              "rank_max_us": 626.36745,
+              "rank_min_run_range_us": [
+                624.1158,
+                626.3268
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 594.3539,
+              "rank_max_us": 595.8883,
+              "rank_min_run_range_us": [
+                594.2466,
+                594.4612
+              ]
+            },
+            "slowdown_pct": 5.193437781766064
+          },
+          {
+            "bs": 32,
+            "ours": {
+              "rank_min_us": 630.3583000000001,
+              "rank_max_us": 631.5369499999999,
+              "rank_min_run_range_us": [
+                630.2896000000001,
+                630.427
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 600.0945,
+              "rank_max_us": 601.23955,
+              "rank_min_run_range_us": [
+                599.5465,
+                600.6425
+              ]
+            },
+            "slowdown_pct": 5.043172367018878
+          },
+          {
+            "bs": 96,
+            "ours": {
+              "rank_min_us": 653.02965,
+              "rank_max_us": 654.1159,
+              "rank_min_run_range_us": [
+                652.7723,
+                653.287
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 618.4283,
+              "rank_max_us": 620.0218,
+              "rank_min_run_range_us": [
+                618.0708,
+                618.7858
+              ]
+            },
+            "slowdown_pct": 5.5950463457121735
+          },
+          {
+            "bs": 256,
+            "ours": {
+              "rank_min_us": 712.49765,
+              "rank_max_us": 713.7117000000001,
+              "rank_min_run_range_us": [
+                710.4921,
+                714.5032
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 669.6370999999999,
+              "rank_max_us": 671.45205,
+              "rank_min_run_range_us": [
+                669.1324,
+                670.1418
+              ]
+            },
+            "slowdown_pct": 6.400563827780759
+          },
+          {
+            "bs": 512,
+            "ours": {
+              "rank_min_us": 848.5843,
+              "rank_max_us": 849.6836000000001,
+              "rank_min_run_range_us": [
+                846.5475,
+                850.6211
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 785.56455,
+              "rank_max_us": 787.8743999999999,
+              "rank_min_run_range_us": [
+                784.7781,
+                786.351
+              ]
+            },
+            "slowdown_pct": 8.022224271703692
+          },
+          {
+            "bs": 1024,
+            "ours": {
+              "rank_min_us": 1289.4505,
+              "rank_max_us": 1290.9975,
+              "rank_min_run_range_us": [
+                1288.7273,
+                1290.1737
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 1177.50815,
+              "rank_max_us": 1180.54305,
+              "rank_min_run_range_us": [
+                1176.5747999999999,
+                1178.4415
+              ]
+            },
+            "slowdown_pct": 9.506715516151631
+          },
+          {
+            "bs": 2048,
+            "ours": {
+              "rank_min_us": 2371.7897000000003,
+              "rank_max_us": 2375.4867,
+              "rank_min_run_range_us": [
+                2371.5429,
+                2372.0365
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 2303.8388999999997,
+              "rank_max_us": 2306.4842,
+              "rank_min_run_range_us": [
+                2302.4302,
+                2305.2476
+              ]
+            },
+            "slowdown_pct": 2.949459703974977
+          },
+          {
+            "bs": 4096,
+            "ours": {
+              "rank_min_us": 4717.62805,
+              "rank_max_us": 4722.538500000001,
+              "rank_min_run_range_us": [
+                4717.1659,
+                4718.090200000001
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 4582.7456,
+              "rank_max_us": 4589.4193000000005,
+              "rank_min_run_range_us": [
+                4581.103,
+                4584.3882
+              ]
+            },
+            "slowdown_pct": 2.9432672413672645
+          }
+        ]
+      },
+      {
+        "ep": 32,
+        "rows": [
+          {
+            "bs": 1,
+            "ours": {
+              "rank_min_us": 145.7797,
+              "rank_max_us": 149.0401,
+              "rank_min_run_range_us": [
+                145.7603,
+                145.7991
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 142.85475000000002,
+              "rank_max_us": 146.3349,
+              "rank_min_run_range_us": [
+                142.5087,
+                143.20080000000002
+              ]
+            },
+            "slowdown_pct": 2.0474992956131866
+          },
+          {
+            "bs": 4,
+            "ours": {
+              "rank_min_us": 209.82704999999999,
+              "rank_max_us": 213.9261,
+              "rank_min_run_range_us": [
+                209.7707,
+                209.8834
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 217.01905,
+              "rank_max_us": 222.15365,
+              "rank_min_run_range_us": [
+                216.7851,
+                217.25300000000001
+              ]
+            },
+            "slowdown_pct": -3.313994785250418
+          },
+          {
+            "bs": 8,
+            "ours": {
+              "rank_min_us": 211.6073,
+              "rank_max_us": 215.1346,
+              "rank_min_run_range_us": [
+                211.2221,
+                211.9925
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 222.4261,
+              "rank_max_us": 229.23225,
+              "rank_min_run_range_us": [
+                222.16649999999998,
+                222.6857
+              ]
+            },
+            "slowdown_pct": -4.863997525470253
+          },
+          {
+            "bs": 16,
+            "ours": {
+              "rank_min_us": 214.4062,
+              "rank_max_us": 218.56045,
+              "rank_min_run_range_us": [
+                213.9865,
+                214.8259
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 229.52605,
+              "rank_max_us": 235.98559999999998,
+              "rank_min_run_range_us": [
+                229.0121,
+                230.04
+              ]
+            },
+            "slowdown_pct": -6.587422211988569
+          },
+          {
+            "bs": 32,
+            "ours": {
+              "rank_min_us": 219.11515000000003,
+              "rank_max_us": 223.48485,
+              "rank_min_run_range_us": [
+                218.84720000000002,
+                219.3831
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 234.86765,
+              "rank_max_us": 242.20195,
+              "rank_min_run_range_us": [
+                234.6849,
+                235.0504
+              ]
+            },
+            "slowdown_pct": -6.7069687971076375
+          },
+          {
+            "bs": 96,
+            "ours": {
+              "rank_min_us": 235.4819,
+              "rank_max_us": 239.00105,
+              "rank_min_run_range_us": [
+                234.5697,
+                236.3941
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 274.67095,
+              "rank_max_us": 278.41235,
+              "rank_min_run_range_us": [
+                273.4519,
+                275.89
+              ]
+            },
+            "slowdown_pct": -14.267635510781174
+          },
+          {
+            "bs": 256,
+            "ours": {
+              "rank_min_us": 388.06550000000004,
+              "rank_max_us": 391.94825000000003,
+              "rank_min_run_range_us": [
+                385.7731,
+                390.35790000000003
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 415.20445,
+              "rank_max_us": 418.92235,
+              "rank_min_run_range_us": [
+                414.7191,
+                415.6898
+              ]
+            },
+            "slowdown_pct": -6.536285918900909
+          },
+          {
+            "bs": 512,
+            "ours": {
+              "rank_min_us": 731.1536,
+              "rank_max_us": 734.65595,
+              "rank_min_run_range_us": [
+                729.7854,
+                732.5218
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 691.2758,
+              "rank_max_us": 694.6673499999999,
+              "rank_min_run_range_us": [
+                689.8074,
+                692.7442
+              ]
+            },
+            "slowdown_pct": 5.768725015399068
+          },
+          {
+            "bs": 1024,
+            "ours": {
+              "rank_min_us": 1302.5279500000001,
+              "rank_max_us": 1306.4637500000001,
+              "rank_min_run_range_us": [
+                1296.4538,
+                1308.6021
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 1298.95675,
+              "rank_max_us": 1311.1534,
+              "rank_min_run_range_us": [
+                1293.4688,
+                1304.4447
+              ]
+            },
+            "slowdown_pct": 0.27492832228632746
+          },
+          {
+            "bs": 2048,
+            "ours": {
+              "rank_min_us": 2448.47945,
+              "rank_max_us": 2453.3845,
+              "rank_min_run_range_us": [
+                2445.6732,
+                2451.2857
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 2527.103,
+              "rank_max_us": 2548.67695,
+              "rank_min_run_range_us": [
+                2526.8607,
+                2527.3453
+              ]
+            },
+            "slowdown_pct": -3.1112127206528672
+          },
+          {
+            "bs": 4096,
+            "ours": {
+              "rank_min_us": 4935.4971000000005,
+              "rank_max_us": 4940.4605,
+              "rank_min_run_range_us": [
+                4915.1013,
+                4955.8929
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 4918.953750000001,
+              "rank_max_us": 4955.07775,
+              "rank_min_run_range_us": [
+                4909.4516,
+                4928.4559
+              ]
+            },
+            "slowdown_pct": 0.33631847016248884
+          }
+        ]
+      }
+    ]
+  },
+  "historical_no_shared": {
+    "historical": true,
+    "shared_experts_per_rank": 0,
+    "metric": "full_fused_kernel_duration",
+    "timer": false,
+    "trace": "separate rank0 timer pass",
+    "ours_revision": "4a0de8571b18d4dde6e55e03e895ea9f55cc0e1c",
+    "layout_ds_revision": "d0a774514d4bfee5b5f808868688e22321f11c1b",
+    "cohort": "each EP uses a matched cohort; EP8 and EP32 are independent historical windows",
+    "results": [
+      {
+        "ep": 8,
+        "rows": [
+          {
+            "bs": 32,
+            "ours": {
+              "rank_min_us": 596.86375,
+              "rank_max_us": 598.3624,
+              "rank_min_run_range_us": [
+                596.4345000000001,
+                597.293
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 595.21345,
+              "rank_max_us": 595.9377,
+              "rank_min_run_range_us": [
+                595.1804,
+                595.2465
+              ]
+            },
+            "slowdown_pct": 0.27726187975087857
+          },
+          {
+            "bs": 96,
+            "ours": {
+              "rank_min_us": 613.73795,
+              "rank_max_us": 615.2688499999999,
+              "rank_min_run_range_us": [
+                613.5028,
+                613.9731
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 607.01345,
+              "rank_max_us": 608.1274,
+              "rank_min_run_range_us": [
+                606.0550000000001,
+                607.9719
+              ]
+            },
+            "slowdown_pct": 1.1078008238532222
+          },
+          {
+            "bs": 256,
+            "ours": {
+              "rank_min_us": 651.1587,
+              "rank_max_us": 652.6892499999999,
+              "rank_min_run_range_us": [
+                650.9612999999999,
+                651.3561
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 632.082,
+              "rank_max_us": 634.025,
+              "rank_min_run_range_us": [
+                631.9828,
+                632.1812
+              ]
+            },
+            "slowdown_pct": 3.0180736043741163
+          },
+          {
+            "bs": 512,
+            "ours": {
+              "rank_min_us": 738.2167,
+              "rank_max_us": 740.4171,
+              "rank_min_run_range_us": [
+                736.5692,
+                739.8642
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 707.1037,
+              "rank_max_us": 708.7997,
+              "rank_min_run_range_us": [
+                706.7954,
+                707.412
+              ]
+            },
+            "slowdown_pct": 4.4000618296863525
+          },
+          {
+            "bs": 1024,
+            "ours": {
+              "rank_min_us": 1099.2721000000001,
+              "rank_max_us": 1100.74945,
+              "rank_min_run_range_us": [
+                1097.6935,
+                1100.8507
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 1056.572,
+              "rank_max_us": 1058.6936999999998,
+              "rank_min_run_range_us": [
+                1056.0295999999998,
+                1057.1144
+              ]
+            },
+            "slowdown_pct": 4.041380994385646
+          },
+          {
+            "bs": 2048,
+            "ours": {
+              "rank_min_us": 2069.9119,
+              "rank_max_us": 2072.1817,
+              "rank_min_run_range_us": [
+                2069.6839,
+                2070.1399
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 2048.67585,
+              "rank_max_us": 2049.7475999999997,
+              "rank_min_run_range_us": [
+                2047.8101,
+                2049.5416
+              ]
+            },
+            "slowdown_pct": 1.036574429283177
+          },
+          {
+            "bs": 4096,
+            "ours": {
+              "rank_min_us": 4041.5765499999998,
+              "rank_max_us": 4045.61945,
+              "rank_min_run_range_us": [
+                4041.4028,
+                4041.7503
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 4017.73465,
+              "rank_max_us": 4023.1163500000002,
+              "rank_min_run_range_us": [
+                4012.3839,
+                4023.0854
+              ]
+            },
+            "slowdown_pct": 0.5934164915545104
+          }
+        ]
+      },
+      {
+        "ep": 32,
+        "rows": [
+          {
+            "bs": 32,
+            "ours": {
+              "rank_min_us": 205.1599,
+              "rank_max_us": 209.47480000000002,
+              "rank_min_run_range_us": [
+                205.0246,
+                205.2952
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 234.4299,
+              "rank_max_us": 238.27945,
+              "rank_min_run_range_us": [
+                234.113,
+                234.7468
+              ]
+            },
+            "slowdown_pct": -12.485608704350426
+          },
+          {
+            "bs": 96,
+            "ours": {
+              "rank_min_us": 235.92325,
+              "rank_max_us": 240.08105,
+              "rank_min_run_range_us": [
+                235.28730000000002,
+                236.5592
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 270.13385,
+              "rank_max_us": 272.9175,
+              "rank_min_run_range_us": [
+                269.6982,
+                270.5695
+              ]
+            },
+            "slowdown_pct": -12.66431437600286
+          },
+          {
+            "bs": 256,
+            "ours": {
+              "rank_min_us": 377.61185,
+              "rank_max_us": 382.99295,
+              "rank_min_run_range_us": [
+                377.4484,
+                377.7753
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 394.2786,
+              "rank_max_us": 397.55625,
+              "rank_min_run_range_us": [
+                393.8572,
+                394.7
+              ]
+            },
+            "slowdown_pct": -4.227150547861324
+          },
+          {
+            "bs": 512,
+            "ours": {
+              "rank_min_us": 678.3897,
+              "rank_max_us": 683.3775,
+              "rank_min_run_range_us": [
+                678.1052,
+                678.6742
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 638.90425,
+              "rank_max_us": 642.0252499999999,
+              "rank_min_run_range_us": [
+                638.1614,
+                639.6471
+              ]
+            },
+            "slowdown_pct": 6.180182711259152
+          },
+          {
+            "bs": 1024,
+            "ours": {
+              "rank_min_us": 1170.8258999999998,
+              "rank_max_us": 1176.8181,
+              "rank_min_run_range_us": [
+                1169.9559,
+                1171.6959
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 1123.26255,
+              "rank_max_us": 1131.9141,
+              "rank_min_run_range_us": [
+                1121.8052,
+                1124.7199
+              ]
+            },
+            "slowdown_pct": 4.234392929774078
+          },
+          {
+            "bs": 2048,
+            "ours": {
+              "rank_min_us": 2162.92535,
+              "rank_max_us": 2169.50855,
+              "rank_min_run_range_us": [
+                2162.5211,
+                2163.3296
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 2145.27905,
+              "rank_max_us": 2164.3967,
+              "rank_min_run_range_us": [
+                2144.2266,
+                2146.3315000000002
+              ]
+            },
+            "slowdown_pct": 0.8225643186139386
+          },
+          {
+            "bs": 4096,
+            "ours": {
+              "rank_min_us": 4181.28665,
+              "rank_max_us": 4189.6677,
+              "rank_min_run_range_us": [
+                4179.8661,
+                4182.7072
+              ]
+            },
+            "layout_ds": {
+              "rank_min_us": 4079.4936500000003,
+              "rank_max_us": 4108.121950000001,
+              "rank_min_run_range_us": [
+                4079.4652,
+                4079.5221
+              ]
+            },
+            "slowdown_pct": 2.495236142848256
+          }
+        ]
+      }
+    ]
+  },
+  "limitations": [
+    "Current no-shared MegaMoE vs layout-DS matched measurement is missing; the current no-shared reference was the eager small-operator cascade.",
+    "Historical no-shared and current shared rows use different candidates, windows and timer settings; do not subtract them to infer shared-expert overhead.",
+    "Rank-min is not slowest-rank latency. Rank-max and independent-start ranges are retained in this JSON.",
+    "Timer-on overhead was not independently measured for the shared cases; no universal overhead bound is claimed.",
+    "Main applies routed weights after GMM2; DS applies them before GMM2. This performance-only comparison does not establish output equivalence.",
+    "Source and loaded extensions were audited; the DS JIT cache binary was not independently audited."
+  ],
+  "evidence": [
+    {
+      "role": "current shared audit aggregate",
+      "sha256": "8842dfa74c2e6a6cefa6b378131d0845981009d6d73870c03465ce876c20e86e"
+    },
+    {
+      "role": "historical no-shared EP8 audit aggregate",
+      "sha256": "a4b5c0337395961285377e706b02eafcb6640492ab39c240d4bc0160a23c03a9"
+    },
+    {
+      "role": "historical no-shared EP32 audit aggregate",
+      "sha256": "cae616e26d9250041cc6437a3a40fce20f238d81db715fcf566f8997630e7533"
+    }
+  ]
+}
