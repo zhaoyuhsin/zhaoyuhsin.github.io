@@ -2,6 +2,8 @@
 
 ## 2026-11-11：Decode 两周攻关
 
+- 17:25补充：独立CANNBot修复换行后确实跑通32rank CPU身份/ACK提交，但rank0原生TCPStore.wait(32keys)超时；超时后33个身份/ACK key全部存在，250原件独立核验。不能再说连接不通/某rank缺写，也还不能称完整Store通过。全组归还，下一单节点短时原生wait/check/get判别，无NPU或新性能；A仅CPU数据桥准备、B准备EP32完整功能与原缓存只读导出。
+
 - 11月12日17:15：通信候选真实完整EP8功能通过，连续BS32/64/96、24rank-case/48次调用；总控独立重算原Golden、完整byte-repeat/输入/累计counts，实载身份、自然exit0及资源终检齐，全部证据已本地保存。但EP8不覆盖跨服务器partial-prefix，因此尚无收益结论。计算线确认两次private异常均在同一GMM1读取块，改复用已工作原Plan入口，不继续盲重。独立CANNBot发现并因果验证Linux shell的CRLF解析错误，只修LF序列化后的新窗口仍为CPU诊断。暂无新性能，main/G2及性能表不变。
 
 - 11月12日16:45：暂无新性能。A补齐原CTRL[60]入口状态后，单parent设备功能仍报507015，否定“仅补此项即可恢复”，已保原件/归还，不跑Dual。B原生产编译和完整public API8 CPU实载已通过（四库maps/文件身份/no-init/退出齐），准备完整EP8三BS有限功能，不是性能收益。C独立32rank CPUStore诊断已实际运行，在connect屏障失败，未进入报告或模型；下一identity/key/socket判别只本地准备，不盲重旧测试。main/推荐候选/性能表不变，研究分支不冒充最优。
