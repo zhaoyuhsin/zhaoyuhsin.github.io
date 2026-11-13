@@ -1,0 +1,1004 @@
+{
+  "version": 2,
+  "budget_shape": {
+    "M": 16,
+    "H": 5120,
+    "r": 4,
+    "E": 384,
+    "K": 6,
+    "I": 2304,
+    "D": 32768,
+    "J": 8192
+  },
+  "units": "FMA/MAC=2 arithmetic FLOPs; MiB=2^20B; special/integer/compare counts separate; logical operand bytes are NOT measured HBM traffic",
+  "old_trace": {
+    "filename": "20261106_deepinfer_dp2_cp8_ep16_trace_continuous-dp0.json",
+    "sha256": "175558ceadabe0aed6d7d6c405f56affeea607978e0f79ba2cbfe594155fe9b8",
+    "dp": 2,
+    "cp": 8,
+    "ep": 16,
+    "logical_rows": 12,
+    "graph_rows": 16,
+    "relative_origin": "capture:real_requests_prefill_through_completion"
+  },
+  "steps": [
+    {
+      "role": "CSA",
+      "task_ids": [
+        21671
+      ],
+      "arithmetic_flops": null,
+      "activation_bytes": null,
+      "weight_bytes": 0,
+      "operand_bytes": null,
+      "note": "2*64*(512+512)*sum(L_t) FLOPs plus softmax; KV window and unique KV reuse not recorded here; IO cannot be inferred from Q alone",
+      "network_payload_bytes": 0,
+      "old_trace": {
+        "stream": 181,
+        "model_id": 62,
+        "task_ids": [
+          21671
+        ],
+        "start_ms": "2351.437762",
+        "end_ms": "2351.4487180625",
+        "kernel_sum_us": 10.9560625,
+        "kernel_names": [
+          "_ZN6ascend7prefill10sparse_fwd22sparse_attn_fwd_kernelINS1_6KernelIXtlNS1_6ConfigEL17SparseAttnFwdMode1ELj64ELj640ELb1EEEEEEEvNT_6ParamsENS7_9AuxParamsE"
+        ]
+      }
+    },
+    {
+      "role": "inverse_rope",
+      "task_ids": [
+        21672
+      ],
+      "arithmetic_flops": null,
+      "activation_bytes": 2097152,
+      "weight_bytes": 0,
+      "operand_bytes": 2097152,
+      "note": "Upper logical whole-context read+write; only rotary channels do arithmetic; exact rotary width needed",
+      "network_payload_bytes": 0,
+      "old_trace": {
+        "stream": 181,
+        "model_id": 62,
+        "task_ids": [
+          21672
+        ],
+        "start_ms": "2351.44874",
+        "end_ms": "2351.453462",
+        "kernel_sum_us": 4.722,
+        "kernel_names": [
+          "_rope_kernel_kernel"
+        ]
+      }
+    },
+    {
+      "role": "context_cast",
+      "task_ids": [
+        21673
+      ],
+      "arithmetic_flops": null,
+      "activation_bytes": 1589248,
+      "weight_bytes": 0,
+      "operand_bytes": 1589248,
+      "note": "FP8 cast/reduction; scale bytes count one exponent per32 elements; no ISA FLOP estimate",
+      "network_payload_bytes": 0,
+      "old_trace": {
+        "stream": 181,
+        "model_id": 62,
+        "task_ids": [
+          21673
+        ],
+        "start_ms": "2351.453484",
+        "end_ms": "2351.457708",
+        "kernel_sum_us": 4.224,
+        "kernel_names": [
+          "per_token_cast_kernel_kernel"
+        ]
+      }
+    },
+    {
+      "role": "Wv_grouped",
+      "task_ids": [
+        21674
+      ],
+      "arithmetic_flops": 1073741824,
+      "activation_bytes": 786432,
+      "weight_bytes": 33554432,
+      "operand_bytes": 34340864,
+      "note": "FP8 weight data; excludes weight/activation scales and padding",
+      "network_payload_bytes": 0,
+      "old_trace": {
+        "stream": 181,
+        "model_id": 62,
+        "task_ids": [
+          21674
+        ],
+        "start_ms": "2351.45773",
+        "end_ms": "2351.4725450625",
+        "kernel_sum_us": 14.8150625,
+        "kernel_names": [
+          "_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj1024ELj4096ELj16ELj256ELj512ELj16ELj256ELj128ELj3ELj2ELj8ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE3Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb0ELb0EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE"
+        ]
+      }
+    },
+    {
+      "role": "U_cast",
+      "task_ids": [
+        21675
+      ],
+      "arithmetic_flops": null,
+      "activation_bytes": 397312,
+      "weight_bytes": 0,
+      "operand_bytes": 397312,
+      "note": "FP8 cast/reduction; data and packed scale bytes",
+      "network_payload_bytes": 0,
+      "old_trace": {
+        "stream": 181,
+        "model_id": 62,
+        "task_ids": [
+          21675
+        ],
+        "start_ms": "2351.472567",
+        "end_ms": "2351.477291",
+        "kernel_sum_us": 4.724,
+        "kernel_names": [
+          "per_token_cast_kernel_kernel"
+        ]
+      }
+    },
+    {
+      "role": "Wo",
+      "task_ids": [
+        21676
+      ],
+      "arithmetic_flops": 1342177280,
+      "activation_bytes": 294912,
+      "weight_bytes": 41943040,
+      "operand_bytes": 42237952,
+      "note": "FP8 weight data; excludes GEMM scales and padding",
+      "network_payload_bytes": 0,
+      "old_trace": {
+        "stream": 181,
+        "model_id": 62,
+        "task_ids": [
+          21676
+        ],
+        "start_ms": "2351.477313",
+        "end_ms": "2351.4965840625",
+        "kernel_sum_us": 19.2710625,
+        "kernel_names": [
+          "_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj5120ELj8192ELj16ELj160ELj256ELj16ELj160ELj128ELj4ELj2ELj32ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb1ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE"
+        ]
+      }
+    },
+    {
+      "role": "attention_post",
+      "task_ids": [
+        21677
+      ],
+      "arithmetic_flops": 3276800,
+      "activation_bytes": 1475840,
+      "weight_bytes": 0,
+      "operand_bytes": 1475840,
+      "note": "2 FLOPs per MAC; includes residual mix and b*y epilogue; logical tensors, not repeated loads",
+      "network_payload_bytes": 0,
+      "old_trace": {
+        "stream": 181,
+        "model_id": 62,
+        "task_ids": [
+          21677
+        ],
+        "start_ms": "2351.496606",
+        "end_ms": "2351.501348",
+        "kernel_sum_us": 4.742,
+        "kernel_names": [
+          "mhc_post_fwd_asc_kernel"
+        ]
+      }
+    },
+    {
+      "role": "moe_pre",
+      "task_ids": [
+        21678
+      ],
+      "arithmetic_flops": 655360,
+      "activation_bytes": 819456,
+      "weight_bytes": 0,
+      "operand_bytes": 819456,
+      "note": "Dot-product FMA convention",
+      "network_payload_bytes": 0,
+      "old_trace": {
+        "stream": 181,
+        "model_id": 62,
+        "task_ids": [
+          21678
+        ],
+        "start_ms": "2351.50137",
+        "end_ms": "2351.504242",
+        "kernel_sum_us": 2.872,
+        "kernel_names": [
+          "mhc_pre_apply_mix_fwd_asc_kernel"
+        ]
+      }
+    },
+    {
+      "role": "mhc_projection",
+      "task_ids": [
+        21679
+      ],
+      "arithmetic_flops": 16384000,
+      "activation_bytes": 656960,
+      "weight_bytes": 1966080,
+      "operand_bytes": 2623040,
+      "note": "FP32 coefficient weight; includes squared-sum arithmetic; excludes TF32 conversion details",
+      "network_payload_bytes": 0,
+      "old_trace": {
+        "stream": 181,
+        "model_id": 62,
+        "task_ids": [
+          21679
+        ],
+        "start_ms": "2351.504264",
+        "end_ms": "2351.5138250625",
+        "kernel_sum_us": 9.5610625,
+        "kernel_names": [
+          "tf32_hc_prenorm_gemm_kernel_kernel"
+        ]
+      }
+    },
+    {
+      "role": "mhc_reduce_norm",
+      "task_ids": [
+        21680
+      ],
+      "arithmetic_flops": null,
+      "activation_bytes": 3136,
+      "weight_bytes": 0,
+      "operand_bytes": 3136,
+      "note": "Minimal semantic IO; kernel may also write copied intermediate projection/squared-sum buffers",
+      "network_payload_bytes": 0,
+      "old_trace": {
+        "stream": 181,
+        "model_id": 62,
+        "task_ids": [
+          21680
+        ],
+        "start_ms": "2351.513847",
+        "end_ms": "2351.516416",
+        "kernel_sum_us": 2.569,
+        "kernel_names": [
+          "mhc_reduce_partials_and_rmsnorm_fwd_asc_kernel"
+        ]
+      }
+    },
+    {
+      "role": "mhc_split",
+      "task_ids": [
+        21681
+      ],
+      "arithmetic_flops": null,
+      "activation_bytes": 3072,
+      "weight_bytes": 108,
+      "operand_bytes": 3180,
+      "note": "128 sigmoid evaluations plus affine terms; not a GEMM FLOP count",
+      "network_payload_bytes": 0,
+      "old_trace": {
+        "stream": 181,
+        "model_id": 62,
+        "task_ids": [
+          21681
+        ],
+        "start_ms": "2351.516438",
+        "end_ms": "2351.519003",
+        "kernel_sum_us": 2.565,
+        "kernel_names": [
+          "mhc_pre_split_mixes_fwd_simd_mhc4_asc_kernel"
+        ]
+      }
+    },
+    {
+      "role": "mhc_sinkhorn",
+      "task_ids": [
+        21682
+      ],
+      "arithmetic_flops": null,
+      "activation_bytes": 2048,
+      "weight_bytes": 0,
+      "operand_bytes": 2048,
+      "note": "O(iterations*M*R^2); iterations not captured by this trace; UB iterations not repeated HBM IO",
+      "network_payload_bytes": 0,
+      "old_trace": {
+        "stream": 181,
+        "model_id": 62,
+        "task_ids": [
+          21682
+        ],
+        "start_ms": "2351.519025",
+        "end_ms": "2351.523196",
+        "kernel_sum_us": 4.171,
+        "kernel_names": [
+          "mhc_sinkhorn_fwd_asc_kernel"
+        ]
+      }
+    },
+    {
+      "role": "moe_norm_cast",
+      "task_ids": [
+        21683
+      ],
+      "arithmetic_flops": 327680,
+      "activation_bytes": 412160,
+      "weight_bytes": 0,
+      "operand_bytes": 412160,
+      "note": "Approx RMSNorm arithmetic excluding cast/max/reduction special ops; add gamma vector 10 or20KiB depending dtype",
+      "network_payload_bytes": 0,
+      "old_trace": {
+        "stream": 181,
+        "model_id": 62,
+        "task_ids": [
+          21683
+        ],
+        "start_ms": "2351.523218",
+        "end_ms": "2351.5289800625",
+        "kernel_sum_us": 5.7620625,
+        "kernel_names": [
+          "_norm_kernel"
+        ]
+      }
+    },
+    {
+      "role": "router_gemm",
+      "task_ids": [
+        21684
+      ],
+      "arithmetic_flops": 62914560,
+      "activation_bytes": 188416,
+      "weight_bytes": 3932160,
+      "operand_bytes": 4120576,
+      "note": "BF16 Wgate, FP32 logits",
+      "network_payload_bytes": 0,
+      "old_trace": {
+        "stream": 181,
+        "model_id": 62,
+        "task_ids": [
+          21684
+        ],
+        "start_ms": "2351.529002",
+        "end_ms": "2351.534926",
+        "kernel_sum_us": 5.924,
+        "kernel_names": [
+          "_ZN9deep_gemm14bf16_gemm_implILNS_5MajorE0ELS1_0ELj0ELj384ELj5120ELj16ELj16ELj2048ELj16ELj16ELj1024ELj5ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0EfNS_8epilogue9operators8IdentityELj256ELb1ELb1ELb0EEEvNS_6gm_ptrIu6__bf16XT_EEENS8_Iu6__bf16XT0_EEENS8_IT19_LS1_0EEEjjjPijNS5_4ArgsE"
+        ]
+      }
+    },
+    {
+      "role": "router_topk",
+      "task_ids": [
+        21685
+      ],
+      "arithmetic_flops": null,
+      "activation_bytes": 25728,
+      "weight_bytes": 1536,
+      "operand_bytes": 27264,
+      "note": "6144 score elements; up to6144 sqrtsoftplus activations; naive K scans 36864 compares; actual selection implementation differs; excludes mapping/counters",
+      "network_payload_bytes": 0,
+      "old_trace": {
+        "stream": 181,
+        "model_id": 62,
+        "task_ids": [
+          21685
+        ],
+        "start_ms": "2351.534948",
+        "end_ms": "2351.541170",
+        "kernel_sum_us": 6.222,
+        "kernel_names": [
+          "moe_topk_gate_forward_kernel_asc_kernel"
+        ]
+      }
+    },
+    {
+      "role": "progress_clear",
+      "task_ids": [
+        21686
+      ],
+      "arithmetic_flops": 0,
+      "activation_bytes": 0,
+      "weight_bytes": 0,
+      "operand_bytes": 0,
+      "note": "Workspace size not recorded; do not invent cleared bytes from kernel duration",
+      "network_payload_bytes": 0,
+      "old_trace": {
+        "stream": 181,
+        "model_id": 62,
+        "task_ids": [
+          21686
+        ],
+        "start_ms": "2351.541192",
+        "end_ms": "2351.542444",
+        "kernel_sum_us": 1.252,
+        "kernel_names": [
+          "MEMSET_ASYNC"
+        ]
+      }
+    },
+    {
+      "role": "mega_moe",
+      "task_ids": [
+        21687
+      ],
+      "arithmetic_flops": null,
+      "activation_bytes": null,
+      "weight_bytes": null,
+      "operand_bytes": null,
+      "note": "Routed GEMMs 6*N_recv*H*I; shared GEMMs6*N_shared*H*I; bytes depend on actual routes and active experts; network modeled separately",
+      "network_payload_bytes": null,
+      "old_trace": {
+        "stream": 181,
+        "model_id": 62,
+        "task_ids": [
+          21687
+        ],
+        "start_ms": "2351.542466",
+        "end_ms": "2351.7661936875",
+        "kernel_sum_us": 223.7276875,
+        "kernel_names": [
+          "_ZN9deep_gemm8mega_moe13mega_moe_implILj16ELj416ELj1ELj512ELj6ELj5120ELj2304EEEvPu6__bf16PiPKhPKsS5_S7_S5_S7_S5_S7_jfNS_6layout9SymBufferILj256EEE"
+        ]
+      }
+    },
+    {
+      "role": "moe_post",
+      "task_ids": [
+        21688
+      ],
+      "arithmetic_flops": 3276800,
+      "activation_bytes": 1475840,
+      "weight_bytes": 0,
+      "operand_bytes": 1475840,
+      "note": "Same tensor budget as attention_post; duration differs by context and cache",
+      "network_payload_bytes": 0,
+      "old_trace": {
+        "stream": 181,
+        "model_id": 62,
+        "task_ids": [
+          21688
+        ],
+        "start_ms": "2351.766216",
+        "end_ms": "2351.769596",
+        "kernel_sum_us": 3.38,
+        "kernel_names": [
+          "mhc_post_fwd_asc_kernel"
+        ]
+      }
+    },
+    {
+      "role": "engram_projection",
+      "task_ids": [
+        21689
+      ],
+      "arithmetic_flops": 5033164800,
+      "activation_bytes": 917504,
+      "weight_bytes": 157286400,
+      "operand_bytes": 158203904,
+      "note": "FP8 projection weight/input; excludes scales; BF16 KV output",
+      "network_payload_bytes": 0,
+      "old_trace": {
+        "stream": 181,
+        "model_id": 62,
+        "task_ids": [
+          21689
+        ],
+        "start_ms": "2351.769618",
+        "end_ms": "2351.8276131875",
+        "kernel_sum_us": 57.9951875,
+        "kernel_names": [
+          "_ZN9deep_gemm13fp8_gemm_implILNS_5MajorE0ELS1_0ELj0ELj25600ELj6144ELj16ELj416ELj256ELj16ELj208ELj128ELj4ELj2ELj11ELj2ELj4ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0Eu9__fp8e4m3u6__bf16NS_8epilogue9operators8IdentityELj256ELb0ELb1EEEvNS_6gm_ptrIT21_XT_EEENS8_IS9_XT0_EEEPsSC_NS8_IT22_LS1_0EEEjjjPijNS5_4ArgsE"
+        ]
+      }
+    },
+    {
+      "role": "engram_gate",
+      "task_ids": [
+        21690
+      ],
+      "arithmetic_flops": null,
+      "activation_bytes": 2129920,
+      "weight_bytes": 0,
+      "operand_bytes": 2129920,
+      "note": "O(M*R*H), few MFLOPs plus norm/dot/gates; fused norm weights omitted, no exact ISA count",
+      "network_payload_bytes": 0,
+      "old_trace": {
+        "stream": 181,
+        "model_id": 62,
+        "task_ids": [
+          21690
+        ],
+        "start_ms": "2351.827635",
+        "end_ms": "2351.832634",
+        "kernel_sum_us": 4.999,
+        "kernel_names": [
+          "engram_gate_fwd_kernel_asc_kernel"
+        ]
+      }
+    },
+    {
+      "role": "embedding",
+      "task_ids": [
+        21651
+      ],
+      "arithmetic_flops": 0,
+      "activation_bytes": 163904,
+      "weight_bytes": 163840,
+      "operand_bytes": 327744,
+      "note": "Selected BF16 embedding rows plus output and int32 IDs; table read classified as selected weights, not full vocabulary",
+      "network_payload_bytes": 0,
+      "old_trace": {
+        "stream": 181,
+        "model_id": 62,
+        "task_ids": [
+          21651
+        ],
+        "start_ms": "2351.299755",
+        "end_ms": "2351.306108",
+        "kernel_sum_us": 6.353,
+        "kernel_names": [
+          "_gather_kernel"
+        ]
+      }
+    },
+    {
+      "role": "engram_hash",
+      "task_ids": [
+        21652
+      ],
+      "arithmetic_flops": null,
+      "activation_bytes": 3328,
+      "weight_bytes": 0,
+      "operand_bytes": 3328,
+      "note": "768 int32 hash addresses for two layers; integer hash/mod not floating-point GEMM; metadata not counted",
+      "network_payload_bytes": 0,
+      "old_trace": {
+        "stream": 181,
+        "model_id": 62,
+        "task_ids": [
+          21652
+        ],
+        "start_ms": "2351.30613",
+        "end_ms": "2351.3272460625",
+        "kernel_sum_us": 21.1160625,
+        "kernel_names": [
+          "engram_hash_kernel_asc_kernel"
+        ]
+      }
+    },
+    {
+      "role": "engram_fetch",
+      "task_ids": [
+        21653
+      ],
+      "arithmetic_flops": 0,
+      "activation_bytes": 202752,
+      "weight_bytes": 202752,
+      "operand_bytes": 405504,
+      "note": "Two layers; template hidden_bytes256,sf_packs4 imply FP8 entries+8B scales; includes fetched write and source read; invalid indices skipped",
+      "network_payload_bytes": null,
+      "old_trace": {
+        "stream": 181,
+        "model_id": 62,
+        "task_ids": [
+          21653
+        ],
+        "start_ms": "2351.327268",
+        "end_ms": "2351.3475490625",
+        "kernel_sum_us": 20.2810625,
+        "kernel_names": [
+          "_ZN7deep_ep17engram_fetch_implILi16ELi256ELi4ELi24ELi512ELi64ELi8EJLi24000400ELi24001056EEEEvPvS1_PiS1_PsS3_llli"
+        ]
+      }
+    }
+  ],
+  "steady_baseline": [
+    {
+      "trace_filename": "fixed-trace-c32-dp0.json",
+      "sha256": "4bcc82b6b9291862a288d1dba8cce24fc38fabb9b2375aa8babbcaf183e4188e",
+      "rank": 0,
+      "scope": "replay:fixed-trace-c32:closed_loop:steady_scope",
+      "full_ffn": {
+        "count": 5080,
+        "median_us": 231.52354687500002,
+        "p95_us": 281.700046875,
+        "sum_us": 1201600.07390625
+      },
+      "mhc_coeff_group": {
+        "count": 5080,
+        "median_us": 17.422328125,
+        "p95_us": 18.30134375,
+        "sum_us": 88594.964703125
+      },
+      "roles": {
+        "moe_pre": {
+          "count": 5080,
+          "median_us": 2.528046875,
+          "p95_us": 2.8250625,
+          "sum_us": 12517.15578125
+        },
+        "mhc_projection": {
+          "count": 5080,
+          "median_us": 8.489171875,
+          "p95_us": 8.86015625,
+          "sum_us": 43197.901109375
+        },
+        "mhc_reduce_norm": {
+          "count": 5080,
+          "median_us": 2.354046875,
+          "p95_us": 2.658046875,
+          "sum_us": 11626.11040625
+        },
+        "mhc_split": {
+          "count": 5080,
+          "median_us": 2.8820625,
+          "p95_us": 3.2730625,
+          "sum_us": 14795.92121875
+        },
+        "mhc_sinkhorn": {
+          "count": 5080,
+          "median_us": 3.6725703125,
+          "p95_us": 4.322078125,
+          "sum_us": 18975.03196875
+        },
+        "moe_norm_cast": {
+          "count": 5080,
+          "median_us": 3.3555625,
+          "p95_us": 3.8870625,
+          "sum_us": 16941.503234375
+        },
+        "router_gemm": {
+          "count": 5080,
+          "median_us": 3.9720625,
+          "p95_us": 4.216078125,
+          "sum_us": 20204.8869375
+        },
+        "router_topk": {
+          "count": 5080,
+          "median_us": 3.605078125,
+          "p95_us": 4.007078125,
+          "sum_us": 18097.4990625
+        },
+        "mega_moe": {
+          "count": 5080,
+          "median_us": 196.2602265625,
+          "p95_us": 243.319625,
+          "sum_us": 1020516.555265625
+        },
+        "moe_post": {
+          "count": 5080,
+          "median_us": 2.8550625,
+          "p95_us": 3.068046875,
+          "sum_us": 14474.57390625
+        }
+      },
+      "other_main_graph_roles": {
+        "engram_hash": {
+          "count": 127,
+          "median_us": 20.697390625,
+          "p95_us": 21.481421875,
+          "sum_us": 2630.56278125
+        },
+        "engram_fetch": {
+          "count": 127,
+          "median_us": 8.16415625,
+          "p95_us": 8.665171875,
+          "sum_us": 1035.5838125
+        },
+        "Wv_grouped": {
+          "count": 5080,
+          "median_us": 13.71625,
+          "p95_us": 14.472265625,
+          "sum_us": 69858.940265625
+        },
+        "Wo": {
+          "count": 5080,
+          "median_us": 16.842328125,
+          "p95_us": 17.770328125,
+          "sum_us": 85590.728609375
+        },
+        "engram_projection": {
+          "count": 254,
+          "median_us": 57.203085937500006,
+          "p95_us": 58.319109375,
+          "sum_us": 14538.549015625
+        },
+        "engram_gate": {
+          "count": 254,
+          "median_us": 3.5240703125,
+          "p95_us": 4.41309375,
+          "sum_us": 921.28859375
+        }
+      },
+      "examples": {
+        "moe_pre": {
+          "task": 58458,
+          "stream": 10,
+          "name": "mhc_pre_apply_mix_fwd_asc_kernel",
+          "relative_start_us": 1412.935,
+          "duration_us": 2.509046875
+        },
+        "mhc_projection": {
+          "task": 58459,
+          "stream": 10,
+          "name": "tf32_hc_prenorm_gemm_kernel_kernel",
+          "relative_start_us": 1415.466,
+          "duration_us": 8.53915625
+        },
+        "mhc_reduce_norm": {
+          "task": 58460,
+          "stream": 10,
+          "name": "mhc_reduce_partials_and_rmsnorm_fwd_asc_kernel",
+          "relative_start_us": 1424.027,
+          "duration_us": 2.221046875
+        },
+        "mhc_split": {
+          "task": 58461,
+          "stream": 10,
+          "name": "mhc_pre_split_mixes_fwd_simd_mhc4_asc_kernel",
+          "relative_start_us": 1426.27,
+          "duration_us": 2.9320625
+        },
+        "mhc_sinkhorn": {
+          "task": 58462,
+          "stream": 10,
+          "name": "mhc_sinkhorn_fwd_asc_kernel",
+          "relative_start_us": 1429.224,
+          "duration_us": 3.6440625
+        },
+        "moe_norm_cast": {
+          "task": 58463,
+          "stream": 10,
+          "name": "_norm_kernel",
+          "relative_start_us": 1432.89,
+          "duration_us": 4.010078125
+        },
+        "router_gemm": {
+          "task": 58464,
+          "stream": 10,
+          "name": "_ZN9deep_gemm14bf16_gemm_implILNS_5MajorE0ELS1_0ELj0ELj384ELj5120ELj16ELj16ELj2048ELj16ELj16ELj1024ELj5ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0EfNS_8epilogue9operators8IdentityELj256ELb1ELb1ELb0EEEvNS_6gm_ptrIu6__bf16XT_EEENS8_Iu6__bf16XT0_EEENS8_IT19_LS1_0EEEjjjPijNS5_4ArgsE",
+          "relative_start_us": 1436.922,
+          "duration_us": 4.299078125
+        },
+        "router_topk": {
+          "task": 58465,
+          "stream": 10,
+          "name": "moe_topk_gate_forward_kernel_asc_kernel",
+          "relative_start_us": 1441.244,
+          "duration_us": 3.922078125
+        },
+        "mega_moe": {
+          "task": 58467,
+          "stream": 10,
+          "name": "_ZN9deep_gemm8mega_moe13mega_moe_implILj16ELj416ELj1ELj512ELj6ELj5120ELj2304EEEvPu6__bf16PiPKhPKsS5_S7_S5_S7_S5_S7_jfNS_6layout9SymBufferILj256EEE",
+          "relative_start_us": 1445.718,
+          "duration_us": 529.393046875
+        },
+        "moe_post": {
+          "task": 58468,
+          "stream": 10,
+          "name": "mhc_post_fwd_asc_kernel",
+          "relative_start_us": 1975.133,
+          "duration_us": 2.769046875
+        }
+      },
+      "scope_note": "127 main graph decode calls x40 layers; one baseline trace only; mixed actual query counts/padding and routing; no cross-version latency pairing",
+      "decode_placeholder_steps": 127,
+      "decode_real_query_tokens": 0
+    },
+    {
+      "trace_filename": "fixed-trace-c32-dp2.json",
+      "sha256": "e985e3ce376c30eb60d1f174260b1fc08b7cb7e34173eb19d1a76453d7fbf80b",
+      "rank": 2,
+      "scope": "replay:fixed-trace-c32:closed_loop:steady_scope",
+      "full_ffn": {
+        "count": 5080,
+        "median_us": 217.2735390625,
+        "p95_us": 270.094046875,
+        "sum_us": 1140408.87746875
+      },
+      "mhc_coeff_group": {
+        "count": 5080,
+        "median_us": 17.937234375,
+        "p95_us": 18.922250000000002,
+        "sum_us": 91161.296265625
+      },
+      "roles": {
+        "moe_pre": {
+          "count": 5080,
+          "median_us": 2.87203125,
+          "p95_us": 3.111046875,
+          "sum_us": 14328.897296875
+        },
+        "mhc_projection": {
+          "count": 5080,
+          "median_us": 9.111125,
+          "p95_us": 9.555125,
+          "sum_us": 46029.56853125
+        },
+        "mhc_reduce_norm": {
+          "count": 5080,
+          "median_us": 2.39203125,
+          "p95_us": 2.65803125,
+          "sum_us": 11845.1785625
+        },
+        "mhc_split": {
+          "count": 5080,
+          "median_us": 2.7295390625,
+          "p95_us": 3.121046875,
+          "sum_us": 13878.8741875
+        },
+        "mhc_sinkhorn": {
+          "count": 5080,
+          "median_us": 3.785046875,
+          "p95_us": 4.382046875,
+          "sum_us": 19407.674984375
+        },
+        "moe_norm_cast": {
+          "count": 5080,
+          "median_us": 4.2370625,
+          "p95_us": 4.6410625,
+          "sum_us": 20920.446015625
+        },
+        "router_gemm": {
+          "count": 5080,
+          "median_us": 4.5095546875,
+          "p95_us": 4.9270625,
+          "sum_us": 22720.66125
+        },
+        "router_topk": {
+          "count": 5080,
+          "median_us": 5.0680625,
+          "p95_us": 5.504078125,
+          "sum_us": 24201.733187499998
+        },
+        "mega_moe": {
+          "count": 5080,
+          "median_us": 178.623828125,
+          "p95_us": 225.061921875,
+          "sum_us": 940610.7825625
+        },
+        "moe_post": {
+          "count": 5080,
+          "median_us": 2.96803125,
+          "p95_us": 3.14003125,
+          "sum_us": 15036.18346875
+        }
+      },
+      "other_main_graph_roles": {
+        "engram_hash": {
+          "count": 127,
+          "median_us": 21.46628125,
+          "p95_us": 22.071296875,
+          "sum_us": 2720.837390625
+        },
+        "engram_fetch": {
+          "count": 127,
+          "median_us": 17.57921875,
+          "p95_us": 18.76625,
+          "sum_us": 1992.710859375
+        },
+        "Wv_grouped": {
+          "count": 5080,
+          "median_us": 14.4431875,
+          "p95_us": 15.171203125,
+          "sum_us": 73224.297671875
+        },
+        "Wo": {
+          "count": 5080,
+          "median_us": 18.125234375,
+          "p95_us": 19.07625,
+          "sum_us": 91411.56153125
+        },
+        "engram_projection": {
+          "count": 254,
+          "median_us": 58.603265625000006,
+          "p95_us": 59.76578125,
+          "sum_us": 14861.890203125
+        },
+        "engram_gate": {
+          "count": 254,
+          "median_us": 3.828546875,
+          "p95_us": 4.1640625,
+          "sum_us": 958.486515625
+        }
+      },
+      "examples": {
+        "moe_pre": {
+          "task": 58458,
+          "stream": 10,
+          "name": "mhc_pre_apply_mix_fwd_asc_kernel",
+          "relative_start_us": 2066.154,
+          "duration_us": 2.54203125
+        },
+        "mhc_projection": {
+          "task": 58459,
+          "stream": 10,
+          "name": "tf32_hc_prenorm_gemm_kernel_kernel",
+          "relative_start_us": 2068.718,
+          "duration_us": 8.627125
+        },
+        "mhc_reduce_norm": {
+          "task": 58460,
+          "stream": 10,
+          "name": "mhc_reduce_partials_and_rmsnorm_fwd_asc_kernel",
+          "relative_start_us": 2077.367,
+          "duration_us": 2.57603125
+        },
+        "mhc_split": {
+          "task": 58461,
+          "stream": 10,
+          "name": "mhc_pre_split_mixes_fwd_simd_mhc4_asc_kernel",
+          "relative_start_us": 2079.966,
+          "duration_us": 2.87303125
+        },
+        "mhc_sinkhorn": {
+          "task": 58462,
+          "stream": 10,
+          "name": "mhc_sinkhorn_fwd_asc_kernel",
+          "relative_start_us": 2082.861,
+          "duration_us": 3.445046875
+        },
+        "moe_norm_cast": {
+          "task": 58463,
+          "stream": 10,
+          "name": "_norm_kernel",
+          "relative_start_us": 2086.328,
+          "duration_us": 3.993046875
+        },
+        "router_gemm": {
+          "task": 58464,
+          "stream": 10,
+          "name": "_ZN9deep_gemm14bf16_gemm_implILNS_5MajorE0ELS1_0ELj0ELj384ELj5120ELj16ELj16ELj2048ELj16ELj16ELj1024ELj5ELj2ELj1ELj32EL22asc_load_l2_cache_mode0ELS2_4EL23asc_store_l2_cache_mode4ELb0ELNS_8GemmTypeE0EfNS_8epilogue9operators8IdentityELj256ELb1ELb1ELb0EEEvNS_6gm_ptrIu6__bf16XT_EEENS8_Iu6__bf16XT0_EEENS8_IT19_LS1_0EEEjjjPijNS5_4ArgsE",
+          "relative_start_us": 2090.343,
+          "duration_us": 4.2630625
+        },
+        "router_topk": {
+          "task": 58465,
+          "stream": 10,
+          "name": "moe_topk_gate_forward_kernel_asc_kernel",
+          "relative_start_us": 2094.628,
+          "duration_us": 3.401046875
+        },
+        "mega_moe": {
+          "task": 58467,
+          "stream": 10,
+          "name": "_ZN9deep_gemm8mega_moe13mega_moe_implILj16ELj416ELj1ELj512ELj6ELj5120ELj2304EEEvPu6__bf16PiPKhPKsS5_S7_S5_S7_S5_S7_jfNS_6layout9SymBufferILj256EEE",
+          "relative_start_us": 2098.58,
+          "duration_us": 159.555078125
+        },
+        "moe_post": {
+          "task": 58468,
+          "stream": 10,
+          "name": "mhc_post_fwd_asc_kernel",
+          "relative_start_us": 2258.157,
+          "duration_us": 2.95503125
+        }
+      },
+      "scope_note": "127 main graph decode calls x40 layers; one baseline trace only; mixed actual query counts/padding and routing; no cross-version latency pairing",
+      "decode_placeholder_steps": 27,
+      "decode_real_query_tokens": 600
+    }
+  ],
+  "natural_routing": {
+    "samples": 81280,
+    "valid_global_queries": 8010,
+    "received_rows_mean": 23.651574803149607,
+    "received_rows_median": 21.0,
+    "received_rows_p95": 47,
+    "received_rows_max": 110,
+    "active_experts_mean": 10.1816437007874,
+    "active_experts_median": 10.0,
+    "useful_routed_flops_mean": 1674031974.80315,
+    "logical_replication_dispatch_bytes_mean": 124880.31496062993,
+    "logical_replication_return_bytes_mean": 242192.12598425196,
+    "note": "Receive counts establish routed valid math volume; no source-destination matrix or link PMU, so these are logical per-route payload budgets, not measured cross-rank/network bytes; tile padding and repeated weight loads excluded"
+  },
+  "no_new_npu_experiment": true
+}

@@ -69,5 +69,7 @@
     ],
     "online_abba_accepted": false
   },
-  "current_new_work": "CPU math checks, source review and static explanatory figures only; no new NPU runs"
+  "current_new_work": "CPU math checks, source review and static explanatory figures only; no new NPU runs",
+  "trace_cost_reference": "trace-cost-analysis.json",
+  "trace_cost_note": "v2 reads existing traces/route ledgers; arithmetic and logical payloads are derived, not measured DRAM or link PMU"
 }

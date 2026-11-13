@@ -1,12 +1,12 @@
 <!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>MegaMoE头尾还能融合什么：从数据依赖到数学等价</title><style>
     :root{color-scheme:light dark}*{box-sizing:border-box}body{font:17px/1.85 system-ui,"Microsoft YaHei",sans-serif;color:#1c3448;background:#fff;max-width:960px;padding:28px 24px;margin:auto}
     h1{font-size:31px;line-height:1.5}h2{margin-top:2.4em;font-size:25px}h3{margin-top:1.8em;font-size:21px}p,li{overflow-wrap:anywhere}a{color:#145f9a}img{display:block;width:100%;height:auto;margin:26px 0 10px}
-    .figure-hint{display:block;text-align:center;color:#536b7c;font-size:14px;margin-bottom:22px}.article-nav{display:flex;gap:12px 24px;flex-wrap:wrap;font-size:15px;border-bottom:1px solid #cfdce6;padding-bottom:18px}.toc{background:#edf3f8;padding:12px 18px;border-radius:7px;margin:20px 0}.toc summary{cursor:pointer}
+    .figure-hint{display:block;text-align:center;color:#536b7c;font-size:14px;margin-bottom:22px}.article-nav{display:flex;gap:12px 24px;flex-wrap:wrap;font-size:15px;border-bottom:1px solid #cfdce6;padding-bottom:18px}.toc{background:#edf3f8;padding:12px 18px;border-radius:7px;margin:20px 0}.toc summary{cursor:pointer}.toc-sub{margin-left:1rem;font-size:15px}
     code{font:0.9em Consolas,monospace}pre{padding:16px;background:#edf3f8;overflow-x:auto;border-radius:6px;font-size:14px;line-height:1.7}table{display:block;width:100%;overflow-x:auto;border-collapse:collapse;font-size:15px}td,th{border-bottom:1px solid #cfdce6;padding:10px;text-align:left;min-width:110px}th{background:#edf3f8}.math{max-width:100%;overflow-x:auto;padding:8px 0}mjx-container[display="true"]{margin:1em 0!important}
     @media(max-width:600px){body{padding:18px 16px;font-size:16px}h1{font-size:26px}h2{font-size:23px}h3{font-size:20px}pre{font-size:13px}}
     @media(prefers-color-scheme:dark){body{color:#deebf4;background:#14212e}a{color:#8fc9ff}.toc,pre,th{background:#213548}td,th,.article-nav{border-color:#40566b}.figure-hint{color:#b3c8d8}}
-    </style><script>window.MathJax={tex:{inlineMath:[["$","$"]],displayMath:[["\\[","\\]"]]},options:{skipHtmlTags:["script","noscript","style","textarea","pre","code"]},startup:{typeset:true}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script></head><body><nav class="article-nav"><a href="../#deepinfer-notes">首页 · DeepInfer</a><a href="./#megamoe-math-overlap-20261113">资料下载</a><a href="files/megamoe-math-overlap-20261113/article.md" download="MegaMoE头尾还能融合什么：从数据依赖到数学等价.md">Markdown</a><a href="files/megamoe-math-overlap-20261113.zip">含配图完整包</a></nav><h1 id="megamoe">MegaMoE头尾还能融合什么：从数据依赖到数学等价</h1><details class="toc"><summary>文章目录</summary><ol><li><a href="#_1">一、背景：先看清真正的输入和完成边界</a></li><li><a href="#_2">二、数据依赖视角：哪些计算能放进头尾</a></li><li><a href="#_3">三、数学等价视角：能否让路由更早确定</a></li><li><a href="#_4">四、证据、实验优先级与结论</a></li></ol></details><p class="figure-hint">手机阅读：长公式和宽表可横向滑动；配图可点开查看。</p>
-<p>2026-11-13。面向熟悉 MegaMoE、希望进一步优化 DeepInfer 整层性能的同事。</p>
+    </style><script>window.MathJax={tex:{inlineMath:[["$","$"]],displayMath:[["\\[","\\]"]]},options:{skipHtmlTags:["script","noscript","style","textarea","pre","code"]},startup:{typeset:true}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script></head><body><nav class="article-nav"><a href="../#deepinfer-notes">首页 · DeepInfer</a><a href="./#megamoe-math-overlap-20261113">资料下载</a><a href="files/megamoe-math-overlap-20261113/article.md" download="MegaMoE头尾还能融合什么：从数据依赖到数学等价.md">Markdown</a><a href="files/megamoe-math-overlap-20261113.zip">含配图完整包</a></nav><h1 id="megamoe">MegaMoE头尾还能融合什么：从数据依赖到数学等价</h1><details class="toc"><summary>文章目录（含逐步骤账本入口）</summary><ul><li><a href="#_1">一、背景：先看清真正的输入和完成边界</a></li><li class="toc-sub"><a href="#11-kernel">1.1 优化的是完整子层，不是一个 kernel 的名字</a></li><li class="toc-sub"><a href="#12">1.2 统一符号，区分三套连接系数</a></li><li><a href="#_2">二、数据依赖视角：哪些计算能放进头尾</a></li><li class="toc-sub"><a href="#21">2.1 候选清单：可移动不等于一定更快</a></li><li class="toc-sub"><a href="#22-mhc-engram">2.2 mHC 和 Engram 到底包含什么</a></li><li class="toc-sub"><a href="#23-trace">2.3 旧 trace 能告诉我们多少</a></li><li class="toc-sub"><a href="#24">2.4 把候选变成账本：每步耗时、计算量和逻辑数据量</a></li><li class="toc-sub"><a href="#25">2.5 跨卡通信量：写出有效载荷，保留未知的物理流量</a></li><li class="toc-sub"><a href="#26">2.6 不只看一次调用：稳态中位数、频次和累计量</a></li><li class="toc-sub"><a href="#27">2.7 据此修正优先级：先问能省多少，再问能否融合</a></li><li><a href="#_3">三、数学等价视角：能否让路由更早确定</a></li><li class="toc-sub"><a href="#31">3.1 按真实顺序逐步展开</a></li><li class="toc-sub"><a href="#32">3.2 排序不变的条件：哪些能约掉，哪些不能</a></li><li class="toc-sub"><a href="#33-a-mhc-router">3.3 方案 A：把 mHC 展开，提前累加 router 分数</a></li><li class="toc-sub"><a href="#34-b-shape">3.4 方案 B：归一化尺度也能改写，但本 shape 不一定划算</a></li><li class="toc-sub"><a href="#35-c-logits-topk">3.5 方案 C：不强求完整 logits 提前，先证明 TopK 集合已固定</a></li><li class="toc-sub"><a href="#36-d">3.6 方案 D：不提前路由，也能缩短路由前缀</a></li><li class="toc-sub"><a href="#37">3.7 尾部也有数学机会：线性后处理可渐进推进</a></li><li class="toc-sub"><a href="#38-engram">3.8 同样的思路还能用于 Engram：查到一部分，就投影一部分</a></li><li><a href="#_4">四、证据、实验优先级与结论</a></li><li class="toc-sub"><a href="#41">4.1 已经验证的收益，和本文新方案分开</a></li><li class="toc-sub"><a href="#42">4.2 这次实际补做的事情</a></li><li class="toc-sub"><a href="#43">4.3 建议按这个顺序推进</a></li><li class="toc-sub"><a href="#44">4.4 本文最后留下的判断</a></li></ul></details><p class="figure-hint">手机阅读：长公式和宽表可横向滑动；配图可点开查看。</p>
+<p>2026-11-13，v2：补充逐步骤计算/通信预算、旧D02定位及稳态频次分析。面向熟悉 MegaMoE、希望进一步优化 DeepInfer 整层性能的同事。</p>
 <p><strong>先给结论：既要寻找“已经独立的计算”，也要寻找“改写后能更早得到的中间结果”。</strong> 前者已有 mHC 系数尾部融合的整网证据；后者包括提前累加 router 分数、提前确认专家集合、按 token 渐进写回。数学改写提供新的调度机会，但增加的计算、存储和舍入变化也必须算进账本。</p>
 <p>本文回答三个问题：哪些计算能填 MegaMoE 头尾；Attention 到 TopK 的每一步能否移动或约简；接下来最值得验证什么。新增方案仅做了 CPU 数学检查，<strong>没有新增 NPU 实现或性能实验</strong>。</p>
 <h2 id="_1">一、背景：先看清真正的输入和完成边界</h2>
@@ -192,6 +192,414 @@ e × Wkv[6144,25600] → KV[M,5,5120]
 </tbody>
 </table>
 <p>它们说明外围工作存在，<strong>不说明 18.866 或 57.995 μs 都能藏进头尾</strong>。223.728 μs 也是完整 MegaMoE，不是纯专家计算或纯通信时间。形状是固定源码重建，不能假装是所有 profiler 事件直接记录的参数。<a href="https://zhaoyuhsin.github.io/downloads/megamoe-head-tail-overlap-20261106.html">此前依赖分析</a>、<a href="https://zhaoyuhsin.github.io/downloads/deepinfer-inference-guide-20261102-operators.html#task-21677">逐算子定位入口</a></p>
+<!-- TRACE_COSTS_START -->
+<h3 id="24">2.4 把候选变成账本：每步耗时、计算量和逻辑数据量</h3>
+<p><strong>这次补充同时用了两类 trace：</strong> 旧 D02 的固定 M=16 片段用于唯一定位和 shape 预算；完整固定工作量实验的基线稳态 trace 用于检查频次和分布。两者 DP/CP、负载和窗口不同，不能互相相减当优化收益。</p>
+<p>先统一单位：一次 MAC/FMA 记2 FLOPs，GFLOPs 为十亿次浮点运算，MiB=2²⁰字节。整数 hash、比较、cast、exp/log/sigmoid 与平方根另列，不硬凑成等成本 FLOPs。<strong>逻辑数据量只按输入、输出和权重本体各一次计算，不是 HBM 实测流量</strong>；缓存命中、重复供数、scale、对齐和临时缓冲会改变实际流量。</p>
+<p>下表为旧 D02、Stream181 / Model62；起止时间沿用前表相对 capture 的 +ms。完整编译符号和逐任务区间可下载<a href="files/megamoe-math-overlap-20261113/trace-cost-steps.csv">明细 CSV</a>及<a href="files/megamoe-math-overlap-20261113/trace-cost-analysis.json">计算依据 JSON</a>。</p>
+<table>
+<thead>
+<tr>
+<th>步骤 / Task</th>
+<th style="text-align: right;">实测 μs</th>
+<th>计算量，M=16</th>
+<th style="text-align: right;">逻辑激活读写 MiB</th>
+<th style="text-align: right;">权重本体 MiB</th>
+<th>本步骤跨卡通信</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>分组输出投影 Wv / 21674</td>
+<td style="text-align: right;">14.815</td>
+<td>1.073742 GFLOPs</td>
+<td style="text-align: right;">0.7500</td>
+<td style="text-align: right;">32.0000</td>
+<td>0，局部计算</td>
+</tr>
+<tr>
+<td>合并输出投影 Wo / 21676</td>
+<td style="text-align: right;">19.271</td>
+<td>1.342177 GFLOPs</td>
+<td style="text-align: right;">0.2812</td>
+<td style="text-align: right;">40.0000</td>
+<td>0，局部计算</td>
+</tr>
+<tr>
+<td>Attention mHC Post / 21677</td>
+<td style="text-align: right;">4.742</td>
+<td>0.003277 GFLOPs</td>
+<td style="text-align: right;">1.4075</td>
+<td style="text-align: right;">0.0000</td>
+<td>0，局部计算</td>
+</tr>
+<tr>
+<td>MoE pre 读出 / 21678</td>
+<td style="text-align: right;">2.872</td>
+<td>0.000655 GFLOPs</td>
+<td style="text-align: right;">0.7815</td>
+<td style="text-align: right;">0.0000</td>
+<td>0，局部计算</td>
+</tr>
+<tr>
+<td>mHC 投影＋平方和 / 21679</td>
+<td style="text-align: right;">9.561</td>
+<td>0.016384 GFLOPs</td>
+<td style="text-align: right;">0.6265</td>
+<td style="text-align: right;">1.8750</td>
+<td>0，局部计算</td>
+</tr>
+<tr>
+<td>Gate GEMM / 21684</td>
+<td style="text-align: right;">5.924</td>
+<td>0.062915 GFLOPs</td>
+<td style="text-align: right;">0.1797</td>
+<td style="text-align: right;">3.7500</td>
+<td>0，局部计算</td>
+</tr>
+<tr>
+<td>MoE mHC Post / 21688</td>
+<td style="text-align: right;">3.380</td>
+<td>0.003277 GFLOPs</td>
+<td style="text-align: right;">1.4075</td>
+<td style="text-align: right;">0.0000</td>
+<td>0，局部计算</td>
+</tr>
+<tr>
+<td>Engram K/V 投影 / 21689</td>
+<td style="text-align: right;">57.995</td>
+<td>5.033165 GFLOPs</td>
+<td style="text-align: right;">0.8750</td>
+<td style="text-align: right;">150.0000</td>
+<td>0，局部计算</td>
+</tr>
+</tbody>
+</table>
+<p>几个容易误读的地方：Wv 仍保持8组，不计成稠密32768×8192；Gate 权重 BF16，其他表中大投影权重按该 trace 的 FP8 本体计；mHC 系数投影权重是 FP32。表中不含各 GEMM scale，不能用“权重本体÷Duration”直接宣称实测 HBM 带宽。小张量按缓存行搬运，重复加载和布局对齐都可能使物理流量超过逻辑量。</p>
+<table>
+<thead>
+<tr>
+<th>其余步骤 / Task</th>
+<th style="text-align: right;">实测 μs</th>
+<th>计算或逻辑量预算</th>
+<th>跨卡通信</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CSA / 21671</td>
+<td style="text-align: right;">10.956</td>
+<td>QKᵀ＋PV 约 <code>2×64×(512+512)×ΣL_t</code> FLOPs，另有 softmax；L_t 为每个有效 query 实际访问的 KV 数。缓存复用、有效窗口和压缩路径不齐，不能只用 Q shape 造一个精确流量。</td>
+<td>该 Attention kernel 的本地 KV 读取不等于网络通信；CP 通信若在别处执行需另计</td>
+</tr>
+<tr>
+<td>逆 RoPE / 21672</td>
+<td style="text-align: right;">4.722</td>
+<td>只处理旋转通道；算量取决于旋转维。完整 context 一次读写的上界口径约2 MiB，不能据此认定全部通道均被搬运。</td>
+<td>0</td>
+</tr>
+<tr>
+<td>context FP8 cast / 21673</td>
+<td style="text-align: right;">4.224</td>
+<td>归约、缩放和转换；BF16 输入＋FP8 输出＋packed scale 合计约1.5156 MiB。</td>
+<td>0</td>
+</tr>
+<tr>
+<td>U FP8 cast / 21675</td>
+<td style="text-align: right;">4.724</td>
+<td>同上，约0.3789 MiB；不能把格式准备完全漏在两次 matmul 之外。</td>
+<td>0</td>
+</tr>
+<tr>
+<td>系数 reduce / RMS / 21680</td>
+<td style="text-align: right;">2.569</td>
+<td>384个投影结果和16个平方和；语义最小读写约3.06 KiB。实现还可能写回中间副本，未含这些额外字节。</td>
+<td>0</td>
+</tr>
+<tr>
+<td>系数拆分 / 21681</td>
+<td style="text-align: right;">2.565</td>
+<td>128次 sigmoid 加 affine 等；逻辑输入输出和小参数约3.1 KiB。</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Sinkhorn / 21682</td>
+<td style="text-align: right;">4.171</td>
+<td>约 O(T×16×4²) 的归一化，T 是实际迭代次数；输入输出共2 KiB。迭代通常在片内进行，不能将2 KiB乘 T 当 HBM 流量。</td>
+<td>0</td>
+</tr>
+<tr>
+<td>MoE Norm＋cast / 21683</td>
+<td style="text-align: right;">5.762</td>
+<td>RMS 主体约0.328 MFLOPs，另有rsqrt、max/转换；BF16输入/输出、FP8输出和scale约0.393 MiB，加gamma向量及实现临时量。</td>
+<td>0</td>
+</tr>
+<tr>
+<td>打分、TopK、映射 / 21685</td>
+<td style="text-align: right;">6.222</td>
+<td>处理6144个分数；至多同量级sqrtsoftplus，朴素6次扫描约36864次比较。logits、bias、ID/权重约26.6 KiB，另有布局映射与统计；实际比较网络不是朴素扫描。</td>
+<td>选专家本身为0；产生后续通信元数据</td>
+</tr>
+<tr>
+<td>进度清零 / 21686</td>
+<td style="text-align: right;">1.252</td>
+<td>trace没有记录清零字节数，不从1.252 μs反推容量。</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Engram gate / 21690</td>
+<td style="text-align: right;">4.999</td>
+<td>约 O(MrH)，几 MFLOPs 加归约/门控；R、KV及更新R约2.031 MiB，加融合norm权重。完整注入仍需当前R就绪。</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Token embedding / 21651</td>
+<td style="text-align: right;">6.353</td>
+<td>读选中行、写输出及ID约0.313 MiB；不读取整个词表，也不按整个词表记通信。</td>
+<td>0，当前实现本地表</td>
+</tr>
+<tr>
+<td>Engram hash / 21652</td>
+<td style="text-align: right;">21.116</td>
+<td>两处注入层合计产生768个int32地址；整数混合、取模，输出3 KiB加窗口/元数据读取。</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Engram fetch / 21653</td>
+<td style="text-align: right;">20.281</td>
+<td>两层完整M16预算：768条表项，每条FP8数据256 B＋scale8 B，合计0.1934 MiB；源表读取和落地输出共约0.3867 MiB。无效地址跳过，实际有效量可能更小。</td>
+<td>其中远端地址的有效读取；见下节，不能把全部落地写入也算成网络字节</td>
+</tr>
+<tr>
+<td>MegaMoE / 21687</td>
+<td style="text-align: right;">223.728</td>
+<td>GMM1约4N_rHI，GMM2约2N_rHI；另加共享专家6N_sHI、激活、格式转换和归并。N_r是本rank实际收到的专家行数，不能直接代M=16。</td>
+<td>Dispatch / 回传 / 元数据，须按实际路由计算</td>
+</tr>
+</tbody>
+</table>
+<p>CSA 的 L_t、Sinkhorn 的 T、旋转维和临时缓冲大小仍需配置/张量或专用计数器补齐。上表对缺失量保留公式，不将“待核实”伪装成0。21671的编译符号包含prefill，是kernel实现命名，不改变本文D02为decode的含义。跨卡列的0只指这个局部操作；<strong>不代表整个 CP8 Attention 或整层没有通信</strong>。</p>
+<p>若仅作“16rank各有16个有效token且均匀路由”的参考，接收N_r≈96、共享N_s=16，路由GMM约6.795 GFLOPs、共享约1.132 GFLOPs，合计7.927 GFLOPs/rank。它不包含激活和padding，也不是下面自然路由的实测有效工作量。</p>
+<h3 id="25">2.5 跨卡通信量：写出有效载荷，保留未知的物理流量</h3>
+<p>设 u_r 是源rank有效token数，S_t 是其Top6物理专家槽；<code>owner(e)≠r</code> 的路由才跨rank。按每条专家路由单独传一份输入/结果的逻辑预算：</p>
+<div class="math">\[B_{dispatch,r}=\sum_{t=1}^{u_r}\sum_{e\in S_t}\mathbf{1}[owner(e)\ne r]\,(H+H/32),\]</div>
+
+<div class="math">\[B_{return,r}=\sum_{t=1}^{u_r}\sum_{e\in S_t}\mathbf{1}[owner(e)\ne r]\,2H.\]</div>
+
+<p>此处FP8输入为5120 B，packed UE8M0 scale为160 B，每路合计5280 B；回传BF16结果10240 B。路由实现中的64-bit token/weight元数据每路再计8 B，另有count、ready和进度。M16输入ID/权重张量为1152 B，目标rank按16×26个int32保存接收计数需1664 B；<strong>这些是布局/有效载荷大小，不是一次完整通信的物理字节数</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>参考场景</th>
+<th style="text-align: right;">Dispatch 输入＋scale</th>
+<th style="text-align: right;">BF16回传</th>
+<th style="text-align: right;">两者合计</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>假设单rank16个有效token、每token6路，先不扣本地路由</td>
+<td style="text-align: right;">0.4834 MiB</td>
+<td style="text-align: right;">0.9375 MiB</td>
+<td style="text-align: right;">1.4209 MiB</td>
+</tr>
+<tr>
+<td>再额外假设各rank均匀、本地概率1/16</td>
+<td style="text-align: right;">0.4532 MiB</td>
+<td style="text-align: right;">0.8789 MiB</td>
+<td style="text-align: right;">1.3321 MiB</td>
+</tr>
+</tbody>
+</table>
+<p><strong>第二行是均匀分布参考，不是我们自然路由的测量。</strong> 共享专家本地复制，不因此增加跨rank的专家权重广播；静态权重加载也不计入每次推理通信。链路包头、对齐、读请求、计数通知、交换机跳数、缓存命中、重试及可能的数据复用，都使物理流量不同；不能拿上述合计除kernel Duration当网络带宽。</p>
+<p>Engram fetch 的编译模板包含 <code>hidden_bytes=256</code>、<code>sf_packs=4</code>，结合256维表项和int16 packed scale，可重建每条264 B；这比误按BF16查表估算更准确。两层M16完整有效量约0.1934 MiB，其中只有地址落在远端的部分涉及跨rank读取。源码为按地址读取共享内存，不应直接套 all-gather 的字节公式。</p>
+<p>现有trace不带链路字节计数；自然路由账本记录目标专家接收计数，缺少完整逐token源→目标矩阵。因此本次可以重算逻辑算量和复制预算，<strong>不能给出已经实测的头部/尾部跨卡字节数</strong>。后续须补目标分布与链路PMU/计数器，且分清发送、接收、总和是否重复计数。</p>
+<h3 id="26">2.6 不只看一次调用：稳态中位数、频次和累计量</h3>
+<p>另从固定工作量基线 <code>fixed6-r01-57-a1-p0</code> 重读 rank0/rank2 的本地trace。筛选同一个 <code>replay:fixed-trace-c32:closed_loop:steady_scope</code>，只取主模型设备图decode：127轮×40层=5080个MoE子层；排除40层eager prefill和草稿FFN。完整文件名、SHA、示例Task/stream/相对scope时间在分析JSON中。</p>
+<table>
+<thead>
+<tr>
+<th>稳态步骤</th>
+<th style="text-align: right;">次数/rank</th>
+<th style="text-align: right;">rank0中位数 μs</th>
+<th style="text-align: right;">rank2中位数 μs</th>
+<th style="text-align: right;">rank2累计 ms</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Wv</td>
+<td style="text-align: right;">5080</td>
+<td style="text-align: right;">13.716</td>
+<td style="text-align: right;">14.443</td>
+<td style="text-align: right;">73.224</td>
+</tr>
+<tr>
+<td>Wo</td>
+<td style="text-align: right;">5080</td>
+<td style="text-align: right;">16.842</td>
+<td style="text-align: right;">18.125</td>
+<td style="text-align: right;">91.412</td>
+</tr>
+<tr>
+<td>旧pre读出</td>
+<td style="text-align: right;">5080</td>
+<td style="text-align: right;">2.528</td>
+<td style="text-align: right;">2.872</td>
+<td style="text-align: right;">14.329</td>
+</tr>
+<tr>
+<td>mHC投影＋平方和</td>
+<td style="text-align: right;">5080</td>
+<td style="text-align: right;">8.489</td>
+<td style="text-align: right;">9.111</td>
+<td style="text-align: right;">46.030</td>
+</tr>
+<tr>
+<td>系数reduce/RMS</td>
+<td style="text-align: right;">5080</td>
+<td style="text-align: right;">2.354</td>
+<td style="text-align: right;">2.392</td>
+<td style="text-align: right;">11.845</td>
+</tr>
+<tr>
+<td>系数拆分</td>
+<td style="text-align: right;">5080</td>
+<td style="text-align: right;">2.882</td>
+<td style="text-align: right;">2.730</td>
+<td style="text-align: right;">13.879</td>
+</tr>
+<tr>
+<td>Sinkhorn</td>
+<td style="text-align: right;">5080</td>
+<td style="text-align: right;">3.673</td>
+<td style="text-align: right;">3.785</td>
+<td style="text-align: right;">19.408</td>
+</tr>
+<tr>
+<td>MoE Norm/cast</td>
+<td style="text-align: right;">5080</td>
+<td style="text-align: right;">3.356</td>
+<td style="text-align: right;">4.237</td>
+<td style="text-align: right;">20.920</td>
+</tr>
+<tr>
+<td>Gate GEMM</td>
+<td style="text-align: right;">5080</td>
+<td style="text-align: right;">3.972</td>
+<td style="text-align: right;">4.510</td>
+<td style="text-align: right;">22.721</td>
+</tr>
+<tr>
+<td>打分/TopK/映射</td>
+<td style="text-align: right;">5080</td>
+<td style="text-align: right;">3.605</td>
+<td style="text-align: right;">5.068</td>
+<td style="text-align: right;">24.202</td>
+</tr>
+<tr>
+<td>完整MegaMoE</td>
+<td style="text-align: right;">5080</td>
+<td style="text-align: right;">196.260</td>
+<td style="text-align: right;">178.624</td>
+<td style="text-align: right;">940.611</td>
+</tr>
+<tr>
+<td>MoE Post</td>
+<td style="text-align: right;">5080</td>
+<td style="text-align: right;">2.855</td>
+<td style="text-align: right;">2.968</td>
+<td style="text-align: right;">15.036</td>
+</tr>
+<tr>
+<td>整轮Engram hash</td>
+<td style="text-align: right;">127</td>
+<td style="text-align: right;">20.697</td>
+<td style="text-align: right;">21.466</td>
+<td style="text-align: right;">2.721</td>
+</tr>
+<tr>
+<td>整轮Engram fetch</td>
+<td style="text-align: right;">127</td>
+<td style="text-align: right;">8.164</td>
+<td style="text-align: right;">17.579</td>
+<td style="text-align: right;">1.993</td>
+</tr>
+<tr>
+<td>Engram投影（仅两层）</td>
+<td style="text-align: right;">254</td>
+<td style="text-align: right;">57.203</td>
+<td style="text-align: right;">58.603</td>
+<td style="text-align: right;">14.862</td>
+</tr>
+<tr>
+<td>Engram门控（仅两层）</td>
+<td style="text-align: right;">254</td>
+<td style="text-align: right;">3.524</td>
+<td style="text-align: right;">3.829</td>
+<td style="text-align: right;">0.958</td>
+</tr>
+</tbody>
+</table>
+<p>四个系数kernel逐次加和再求中位数：rank0 <strong>17.422 μs</strong>，rank2 <strong>17.937 μs</strong>。不能把各行中位数简单相加冒充组中位数。rank2这组系数累计 <strong>91.161 ms</strong>，明显大于两处Engram投影的 <strong>14.862 ms</strong>。</p>
+<p>这解释了一个重要取舍：<strong>Engram一次约58 μs，比某个系数kernel长，但它每轮只有两次；mHC系数每层都有。</strong> 单个很短的Post每层重复，累计量反而与两处Engram投影接近。优化收益必须同时看时长、频次和关键路径位置。累计kernel Duration只是工作量账本，有跨流重叠时不是墙钟分解。</p>
+<p>这些不是shape完全相同的跨rank对照。rank0的127轮本地decode全部是占位；rank2有27轮占位、100轮真实decode，每轮真实6个query；它们仍参与全EP的专家计算。M16预算不能直接乘到所有稳态调用上。没有把两rank或A/B的不同请求拼成逐kernel收益比较。</p>
+<p>再用全部16rank、40层、127轮的真实接收计数校验有效专家工作：</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th style="text-align: right;">从路由账本重算</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>样本数（rank×层×轮）</td>
+<td style="text-align: right;">81280</td>
+</tr>
+<tr>
+<td>全局有效query（127轮）</td>
+<td style="text-align: right;">8010</td>
+</tr>
+<tr>
+<td>每rank每层每轮接收专家行数：均值 / 中位数</td>
+<td style="text-align: right;">23.652 / 21</td>
+</tr>
+<tr>
+<td>接收专家行数：P95 / 最大值</td>
+<td style="text-align: right;">47 / 110</td>
+</tr>
+<tr>
+<td>每rank非空物理专家数：均值</td>
+<td style="text-align: right;">10.182 / 26</td>
+</tr>
+<tr>
+<td>仅有效路由GMM1＋GMM2：均值</td>
+<td style="text-align: right;">1.674 GFLOPs</td>
+</tr>
+<tr>
+<td>按专家行计的输入复制预算：均值</td>
+<td style="text-align: right;">121.953 KiB</td>
+</tr>
+<tr>
+<td>按专家行计的结果复制预算：均值</td>
+<td style="text-align: right;">236.516 KiB</td>
+</tr>
+</tbody>
+</table>
+<p>以上复制预算尚未扣除本地路由，不是物理网络实测；有效GEMM算量不含共享专家、padding和内部tile扩展。每个物理专家三份FP4权重本体约16.875 MiB；若非空专家权重各读一次，按此平均非空数对应约171.8 MiB/rank/层/轮，另加scale。这仍是参数触达预算，实际HBM可能因缓存减少或供数重读而增加。它说明不能只用“网络payload不大”就判断kernel没有访存/供数压力。</p>
+<h3 id="27">2.7 据此修正优先级：先问能省多少，再问能否融合</h3>
+<ol>
+<li><strong>mHC系数仍是已证实有价值的候选</strong>：约18 μs、每层重复，且不参与当前路由。它已在现有候选中融合，不能把这部分收益再计入下一方案。</li>
+<li><strong>单独拆Post旧状态项应降优先级</strong>：稳态Post约3 μs。即便全部消失，对约217 μs的单个FFN也只有约1.4%的理想幅度；拆分 <code>C_F R0</code> 在M16时至少增加0.625 MiB中间写入和0.625 MiB再读取，可能得不偿失。已有尾部融合不等于值得再拆一个kernel。</li>
+<li><strong>Engram投影适合在注入层做局部试验</strong>：约58 μs，但FP8权重本体150 MiB，只有两层；不能当作40层都存在的免费填充工作。优先验证是否增加HBM/Cube竞争，避免先做全模型复杂调度。</li>
+<li><strong>Norm/Gate/TopK组合值得先做轻量边界优化</strong>：稳态每项约3–5 μs、每层重复。先减少启动和中间logits的GM往返；它们位于路由前缀，仍需验证是否真正缩短关键路径。不要为隐藏十几微秒，新增远大于原Gate的投影而未计成本。</li>
+<li><strong>hash/fetch应看整轮频次和带宽竞争</strong>：hash约21 μs、fetch随rank变化，但每轮统一处理一次，不是每层一次。重排只能利用剩余空档；重复查表、重复hash是新增工作。</li>
+</ol>
+<p>输出两次matmul在旧片段合计34.086 μs，连同两次cast约43.034 μs；这只是提前路由可能覆盖的输入生成区间的一部分，<strong>不是已经暴露的通信头部时长</strong>。必须有timer或真实完成事件，才能判断提前ID后还剩多少元数据等待能覆盖。仅凭kernel外观，不能给出头尾各多少纯通信时间。</p>
+<p>把第三节的CSA后提前分数方案代入同一M16：<code>AP</code>约0.403 GFLOPs，残差分支还约0.063 GFLOPs；原Gate仅0.063 GFLOPs、旧例实测5.924 μs。原Wv/Wo仍需生成实际输入。这个比较不能预测新kernel耗时，但已足以要求先做新增工作量/资源竞争筛选，不能把43 μs输入生成时间全部计作净收益。</p>
+<!-- TRACE_COSTS_END -->
+
 <h2 id="_3">三、数学等价视角：能否让路由更早确定</h2>
 <h3 id="31">3.1 按真实顺序逐步展开</h3>
 <p>以下采用行向量约定，批量时在最前面加 M。<code>影响 TopK</code> 指逻辑专家集合是否可能变化，不等于专家混合权重不变。</p>
