@@ -30,12 +30,14 @@
         <a href="#experiments"><span>04</span><strong>性能实验</strong><small>结果 · 项目状态 · 方法</small></a>
         <a href="#downloads"><span>05</span><strong>下载归档</strong><small>Markdown · 配图 · 离线版</small></a>
       </nav>
-      <div class="recent-links"><span>最近更新</span><a href="downloads/megamoe-head-tail-overlap-20261106.html">MegaMoE通信头尾优化分析 ↗</a><a href="downloads/deepinfer-inference-guide-20261102.html">DeepInfer同事入门图解 ↗</a><a href="downloads/deepinfer-token-trace-20261029.html">Token到Token图解教程 ↗</a><a href="downloads/deepinfer-trace-analysis-20261028.html">DeepInfer 时延拆解 ↗</a><a href="downloads/deepinfer-megamoe-workload-20261028.html">MegaMoE 负载分析 ↗</a></div>
+      <div class="recent-links"><span>最近更新</span><a href="downloads/megamoe-math-overlap-20261113.html">MegaMoE数学等价与头尾融合 ↗</a><a href="downloads/megamoe-head-tail-overlap-20261106.html">MegaMoE通信头尾优化分析 ↗</a><a href="downloads/deepinfer-inference-guide-20261102.html">DeepInfer同事入门图解 ↗</a><a href="downloads/deepinfer-token-trace-20261029.html">Token到Token图解教程 ↗</a><a href="downloads/deepinfer-trace-analysis-20261028.html">DeepInfer 时延拆解 ↗</a><a href="downloads/deepinfer-megamoe-workload-20261028.html">MegaMoE 负载分析 ↗</a></div>
     </section>
 
     <section class="directory-section" id="deepinfer-notes" aria-labelledby="inference-title">
       <div class="directory-heading"><div><p class="eyebrow">01 / 推理框架</p><h2 id="inference-title">理解一次推理在做什么</h2></div><p>从入门图解到时延与负载分析，按需要深入；均可在手机直接阅读。</p></div>
       <div class="entry-grid">
+<article class="entry-card" id="megamoe-math-overlap-20261113-entry"><span class="entry-type">框架 × 算子优化 · 数学等价</span><h3><a href="downloads/megamoe-math-overlap-20261113.html">MegaMoE头尾还能融合什么？</a></h3><p>把mHC、Engram、归一化与TopK逐步展开，区分可重排、可折叠和必须等待的计算；含提前路由、尺度证书与尾部渐进写回的成本分析。</p><div class="entry-footer"><a class="text-link" href="downloads/megamoe-math-overlap-20261113.html">阅读数学与流水分析 ↗</a><a class="quiet-link" href="downloads/#megamoe-math-overlap-20261113">下载正文与配图</a></div></article>
+
         <article class="entry-card" id="deepinfer-trace-entry"><span class="entry-type">交互时间轴 · 原始Trace下载</span><h3><a href="deepinfer-trace/">DeepInfer Trace 学习台</a></h3><p>点选71轮，对齐Host提交、主／草稿设备图和kernel执行区间。比较P01与D02的气泡，并下载对应DP0原始Trace。</p><div class="entry-footer"><a class="text-link" href="deepinfer-trace/">打开交互时间轴 ↗</a><a class="quiet-link" href="deepinfer-trace/#trace-downloads">下载原始Trace</a></div></article>
 
         <article class="entry-card" id="megamoe-head-tail-overlap-20261106-entry"><span class="entry-type">框架 × 算子优化 · 通算重叠</span><h3><a href="downloads/megamoe-head-tail-overlap-20261106.html">MegaMoE通信头尾还能放什么计算？</a></h3><p>从D02真实trace画清mHC、MegaMoE和Engram的数据依赖，再看CPU异步、CP多流与kernel内部流水；分析可提前、可延后及逐token消费的候选工作。</p><div class="entry-footer"><a class="text-link" href="downloads/megamoe-head-tail-overlap-20261106.html">阅读分析 ↗</a><a class="quiet-link" href="downloads/#megamoe-head-tail-overlap-20261106">下载Markdown与配图</a></div></article>

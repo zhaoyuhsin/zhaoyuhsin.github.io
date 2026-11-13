@@ -1,0 +1,487 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>MegaMoE头尾还能融合什么：从数据依赖到数学等价</title><style>
+    :root{color-scheme:light dark}*{box-sizing:border-box}body{font:17px/1.85 system-ui,"Microsoft YaHei",sans-serif;color:#1c3448;background:#fff;max-width:960px;padding:28px 24px;margin:auto}
+    h1{font-size:31px;line-height:1.5}h2{margin-top:2.4em;font-size:25px}h3{margin-top:1.8em;font-size:21px}p,li{overflow-wrap:anywhere}a{color:#145f9a}img{display:block;width:100%;height:auto;margin:26px 0 10px}
+    .figure-hint{display:block;text-align:center;color:#536b7c;font-size:14px;margin-bottom:22px}.article-nav{display:flex;gap:12px 24px;flex-wrap:wrap;font-size:15px;border-bottom:1px solid #cfdce6;padding-bottom:18px}.toc{background:#edf3f8;padding:12px 18px;border-radius:7px;margin:20px 0}.toc summary{cursor:pointer}
+    code{font:0.9em Consolas,monospace}pre{padding:16px;background:#edf3f8;overflow-x:auto;border-radius:6px;font-size:14px;line-height:1.7}table{display:block;width:100%;overflow-x:auto;border-collapse:collapse;font-size:15px}td,th{border-bottom:1px solid #cfdce6;padding:10px;text-align:left;min-width:110px}th{background:#edf3f8}.math{max-width:100%;overflow-x:auto;padding:8px 0}mjx-container[display="true"]{margin:1em 0!important}
+    @media(max-width:600px){body{padding:18px 16px;font-size:16px}h1{font-size:26px}h2{font-size:23px}h3{font-size:20px}pre{font-size:13px}}
+    @media(prefers-color-scheme:dark){body{color:#deebf4;background:#14212e}a{color:#8fc9ff}.toc,pre,th{background:#213548}td,th,.article-nav{border-color:#40566b}.figure-hint{color:#b3c8d8}}
+    </style><script>window.MathJax={tex:{inlineMath:[["$","$"]],displayMath:[["\\[","\\]"]]},options:{skipHtmlTags:["script","noscript","style","textarea","pre","code"]},startup:{typeset:true}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script></head><body><nav class="article-nav"><a href="../#deepinfer-notes">首页 · DeepInfer</a><a href="./#megamoe-math-overlap-20261113">资料下载</a><a href="files/megamoe-math-overlap-20261113/article.md" download="MegaMoE头尾还能融合什么：从数据依赖到数学等价.md">Markdown</a><a href="files/megamoe-math-overlap-20261113.zip">含配图完整包</a></nav><h1 id="megamoe">MegaMoE头尾还能融合什么：从数据依赖到数学等价</h1><details class="toc"><summary>文章目录</summary><ol><li><a href="#_1">一、背景：先看清真正的输入和完成边界</a></li><li><a href="#_2">二、数据依赖视角：哪些计算能放进头尾</a></li><li><a href="#_3">三、数学等价视角：能否让路由更早确定</a></li><li><a href="#_4">四、证据、实验优先级与结论</a></li></ol></details><p class="figure-hint">手机阅读：长公式和宽表可横向滑动；配图可点开查看。</p>
+<p>2026-11-13。面向熟悉 MegaMoE、希望进一步优化 DeepInfer 整层性能的同事。</p>
+<p><strong>先给结论：既要寻找“已经独立的计算”，也要寻找“改写后能更早得到的中间结果”。</strong> 前者已有 mHC 系数尾部融合的整网证据；后者包括提前累加 router 分数、提前确认专家集合、按 token 渐进写回。数学改写提供新的调度机会，但增加的计算、存储和舍入变化也必须算进账本。</p>
+<p>本文回答三个问题：哪些计算能填 MegaMoE 头尾；Attention 到 TopK 的每一步能否移动或约简；接下来最值得验证什么。新增方案仅做了 CPU 数学检查，<strong>没有新增 NPU 实现或性能实验</strong>。</p>
+<h2 id="_1">一、背景：先看清真正的输入和完成边界</h2>
+<h3 id="11-kernel">1.1 优化的是完整子层，不是一个 kernel 的名字</h3>
+<p>MegaMoE 的主体包含 Dispatch、专家 GMM1、激活、GMM2、结果回传与归并。开头可能暴露元数据准备、交换和等待，末尾可能暴露回传、归并和慢 rank 拖尾。但这些时段不一定是“所有计算资源空闲”：共享专家、权重供数、量化及 AIV 归约可能已经在运行。</p>
+<p>一次完整 MoE 子层可以概括为：</p>
+<pre><code class="language-text">四路状态 R0
+ ├─ 旧 pre 读出 → RMSNorm → Router / TopK → MegaMoE → y
+ └─ 生成本次 MoE 的 C_F、b_F、a_next
+                    ↓
+             Post → 四路状态 R1
+</code></pre>
+<p>设备侧主要比较边界应是：<strong>相同输入及已有系数就绪 → R1 和 a_next 都能被消费者安全读取</strong>。融合后 kernel 做的工作更多，不能只比较它与原 MegaMoE 的 Duration。</p>
+<h3 id="12">1.2 统一符号，区分三套连接系数</h3>
+<p>本文分析固定版本 DeepInfer <code>553741557a57df44a46fb3ab72b6aafeaf945337</code>，以及此前使用的 V4.1-Flash 配置；不是对未来版本所有模型的概括。</p>
+<table>
+<thead>
+<tr>
+<th>符号</th>
+<th>含义与 shape</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>M</td>
+<td>当前 rank 的位置行数，可能含 padding；不是全局请求数，也不是单个专家的 token 数</td>
+</tr>
+<tr>
+<td>H、r、E、K</td>
+<td>隐藏维 5120、mHC 四路、384 个逻辑路由专家、Top6</td>
+</tr>
+<tr>
+<td>R旧、R0、R1</td>
+<td>Attention 前、Attention 写回后、MoE 写回后的状态，各 <code>[M,4,5120]</code></td>
+</tr>
+<tr>
+<td>A</td>
+<td>CSA/Attention 输出完成对应位置变换后展平，示例 <code>[M,32768]</code></td>
+</tr>
+<tr>
+<td>U、y</td>
+<td>第一次输出投影后 <code>[M,8192]</code>；第二次后 <code>[M,5120]</code></td>
+</tr>
+<tr>
+<td>C_A、b_A、a_F</td>
+<td>Attention 前已生成；前两者负责 Attention 写回，a_F 负责随后 MoE 输入读出</td>
+</tr>
+<tr>
+<td>C_F、b_F、a_next</td>
+<td>从 R0 生成；负责本次 MoE 写回和下一子层读出</td>
+</tr>
+</tbody>
+</table>
+<p>本模型另有 32 个冗余物理槽及 1 个共享专家。<strong>TopK 先选择逻辑专家；EPLB 映射再决定物理副本和发送位置。</strong> 不能把 416 个物理槽当作 416 个独立的逻辑候选。</p>
+<p>关键是 shifted mHC：<strong>当前读出使用上一子层生成的 pre，而当前新生成的 a_next 供下一子层使用。</strong> 非 shifted 配置需要重新检查，不能照搬本结论。<a href="https://github.com/deepseek-ai/DeepInfer/blob/553741557a57df44a46fb3ab72b6aafeaf945337/deepinfer/model_executor/models/v4_modules/hc.py">mHC 语义与实现</a></p>
+<p><a class="figure-link" href="files/megamoe-math-overlap-20261113/assets/01-topk-dependencies.png" target="_blank" rel="noopener"><img alt="真实链路与TopK依赖" src="files/megamoe-math-overlap-20261113/assets/01-topk-dependencies.png" / loading="lazy"></a><span class="figure-hint">点图打开原图，可放大查看。</span></p>
+<p>图中红色步骤一般会影响专家选择；黄色表示只在特定条件下保持排序；绿色分支不参与当前 TopK。图是逻辑依赖，不是按耗时缩放的 trace。</p>
+<h2 id="_2">二、数据依赖视角：哪些计算能放进头尾</h2>
+<h3 id="21">2.1 候选清单：可移动不等于一定更快</h3>
+<table>
+<thead>
+<tr>
+<th>候选计算</th>
+<th>最早可执行时刻 / 必须完成时刻</th>
+<th>可放的位置与约束</th>
+<th>当前证据</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>本次 MoE 的 mHC 系数生成</strong></td>
+<td>R0 就绪 / 本次 Post 和后续读出使用前</td>
+<td>头或尾都满足数据依赖；实际尾部避免与启动段争资源</td>
+<td>已有本版本、小 M 的融合与整网验证</td>
+</tr>
+<tr>
+<td><strong>下一注入层 Engram 的 hash、fetch</strong></td>
+<td>当前有效 token ID 及请求历史确定后 / 对应层投影前</td>
+<td>可提早；实现本就有统一 fetch，先确认是否还有可移动工作；通信可能与 EP 争带宽</td>
+<td>源码允许，新增调度未验收</td>
+</tr>
+<tr>
+<td><strong>Engram 的 K/V 投影</strong></td>
+<td>对应 fetch 的真实数据可读取后 / 门控注入前</td>
+<td>不依赖当前 MoE 输出，可放头尾剩余 Cube 空档；不能抢慢专家 GEMM</td>
+<td>源码和旧 trace 支持独立性，新增融合未实测</td>
+</tr>
+<tr>
+<td><strong>Post 旧状态项 D_F=C_F R0</strong></td>
+<td>C_F 与 R0 就绪后 / 最终写回前</td>
+<td>可先算，等 y 到来再加；额外缓冲和 HBM 往返可能不划算</td>
+<td>数学候选</td>
+</tr>
+<tr>
+<td><strong>Post 完整写回</strong></td>
+<td>该 token 的 y 及 C_F、b_F 都就绪后</td>
+<td>不能放头部；可在尾部按 token/合法片段渐进消费</td>
+<td>已有批次尾部融合；更细粒度仍待实现</td>
+</tr>
+<tr>
+<td><strong>共享专家 FFN</strong></td>
+<td>当前归一化输入就绪后 / 与路由专家合并前</td>
+<td>可覆盖部分 Dispatch 等待，但当前 MegaMoE 已融合共享路径；先检查已有调度</td>
+<td>既有机制，不能重复计作新增收益</td>
+</tr>
+<tr>
+<td><strong>Norm、量化、Gate、TopK 的生产者融合</strong></td>
+<td>对应输入片段就绪后 / 发布路由与发送数据前</td>
+<td>可减少启动和中间读写；它们本身仍是必需生产者，不会因融合就独立</td>
+<td>当前已有部分 Norm/cast 融合；更大融合边界待测</td>
+</tr>
+<tr>
+<td><strong>当前路由元数据</strong></td>
+<td>精确专家 ID、有效行及物理映射确定后</td>
+<td>可以与剩余输入计算重叠；完整 token 数据仍须等输入完成</td>
+<td>新提前路由方案的目标</td>
+</tr>
+<tr>
+<td><strong>Engram 门控、下一层 Q/KV/Attention</strong></td>
+<td>当前 y 经 Post、必要 Engram 注入及读出后</td>
+<td>不能整批提前；只能研究合法 token、KV 依赖及通信协议下的渐进流水</td>
+<td>不是现成的独立旁路</td>
+</tr>
+</tbody>
+</table>
+<p>这里的“融入”分两层：先用调度重排验证工作能否有效重叠，再考虑放进同一 kernel。只改成不同 stream，并不能证明设备资源真的并行。</p>
+<h3 id="22-mhc-engram">2.2 mHC 和 Engram 到底包含什么</h3>
+<p><strong>mHC 系数生成</strong>把 <code>R0[M,4,H]</code> 展平为 <code>T[M,20480]</code>。有效投影权重为 <code>[24,20480]</code>，并计算每行平方和：</p>
+<div class="math">\[v_m=\left(20480^{-1}\sum_k T_{mk}^2+\epsilon\right)^{-1/2},\qquad p_m=(T_mW_c^T)v_m.\]</div>
+
+<p>然后按本模型参数拆成：</p>
+<div class="math">\[a_{next}=\sigma(s_0p_{0:4}+\beta_{0:4})+\epsilon_{pre},\quad
+b_F=2\sigma(s_1p_{4:8}+\beta_{4:8}),\]</div>
+
+<div class="math">\[C_F=\operatorname{Sinkhorn}\!\left(\operatorname{reshape}_{4\times4}(s_2p_{8:24}+\beta_{8:24})\right).\]</div>
+
+<p>Sinkhorn 是对正值矩阵进行交替归一化的迭代，具体初始化、epsilon 与次数必须沿用算子实现。上面保留函数边界，不把它错误简化成一次 softmax。这组结果共 <code>[M,24]</code> FP32；M=16 时只有 1.5 KiB，主要代价不是结果大小，而是投影、读入、归约与多次启动。<a href="https://github.com/deepseek-ai/DeepInfer/blob/553741557a57df44a46fb3ab72b6aafeaf945337/deepinfer/model_executor/models/v4_modules/mhc_ops.py">投影/RMS实现</a></p>
+<p><strong>Engram</strong>分成“与隐藏状态无关”和“有关”两段：</p>
+<pre><code class="language-text">token ID + 同请求历史 → n-gram hash → fetch → e[M,6144]
+e × Wkv[6144,25600] → KV[M,5,5120]
+                               ↓
+                四份 key + 一份共享 value
+当前四路状态 R → 归一化点积、门控 → R + gate × value
+</code></pre>
+<p>只有 hash、fetch、K/V 投影这一侧可提前。门控仍依赖真实 R；在下一层 Attention 入口注入时，它通常需要当前 MoE 的写回结果。M=16 时投影结果若以 BF16 保存约 0.781 MiB，提前量越大、同时在途层越多，生命周期成本越高。</p>
+<p>原代码每个注入层从自己的投影参数计算 K/V；不能将不同层参数不同的投影当作一次共享计算。历史例子只有主模型 L01/L14 注入，也不是每层都有一份 Engram 可拿来填空。<a href="https://github.com/deepseek-ai/DeepInfer/blob/553741557a57df44a46fb3ab72b6aafeaf945337/deepinfer/model_executor/models/v4_modules/engram.py">Engram 投影与门控</a></p>
+<h3 id="23-trace">2.3 旧 trace 能告诉我们多少</h3>
+<p>旧 D02 主模型例子为 M=16，<code>deepinfer:launch_forward_N2_B12</code>，设备 Stream181 / Model62。区间相对 <code>capture:real_requests_prefill_through_completion</code> 起点：</p>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>完整名称或明确分组</th>
+<th>区间 +ms</th>
+<th style="text-align: right;">kernel 累计耗时</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>21679–21682</td>
+<td><code>tf32_hc_prenorm_gemm_kernel_kernel</code> → <code>mhc_reduce_partials_and_rmsnorm_fwd_asc_kernel</code> → <code>mhc_pre_split_mixes_fwd_simd_mhc4_asc_kernel</code> → <code>mhc_sinkhorn_fwd_asc_kernel</code></td>
+<td>2351.504264–2351.523196</td>
+<td style="text-align: right;">18.866 μs</td>
+</tr>
+<tr>
+<td>21687</td>
+<td>MegaMoE，完整编译符号见逐算子附录</td>
+<td>2351.542466–2351.766194</td>
+<td style="text-align: right;">223.728 μs</td>
+</tr>
+<tr>
+<td>21688</td>
+<td><code>mhc_post_fwd_asc_kernel</code></td>
+<td>2351.766216–2351.769596</td>
+<td style="text-align: right;">3.380 μs</td>
+</tr>
+<tr>
+<td>21689</td>
+<td>下一层 Engram K/V 投影，完整 GEMM 符号见逐算子附录</td>
+<td>2351.769618–2351.827613</td>
+<td style="text-align: right;">57.995 μs</td>
+</tr>
+</tbody>
+</table>
+<p>它们说明外围工作存在，<strong>不说明 18.866 或 57.995 μs 都能藏进头尾</strong>。223.728 μs 也是完整 MegaMoE，不是纯专家计算或纯通信时间。形状是固定源码重建，不能假装是所有 profiler 事件直接记录的参数。<a href="https://zhaoyuhsin.github.io/downloads/megamoe-head-tail-overlap-20261106.html">此前依赖分析</a>、<a href="https://zhaoyuhsin.github.io/downloads/deepinfer-inference-guide-20261102-operators.html#task-21677">逐算子定位入口</a></p>
+<h2 id="_3">三、数学等价视角：能否让路由更早确定</h2>
+<h3 id="31">3.1 按真实顺序逐步展开</h3>
+<p>以下采用行向量约定，批量时在最前面加 M。<code>影响 TopK</code> 指逻辑专家集合是否可能变化，不等于专家混合权重不变。</p>
+<p><strong>步骤①：Attention 输出及两次投影。</strong> 令 A 已经过源码要求的位置变换。第一次是分组线性变换，第二次合并到 H 维：</p>
+<div class="math">\[U=AW_1,\qquad y=UW_2.\]</div>
+
+<p>示例 shape 是 <code>[M,8,4096] → [M,8,1024] → [M,8192] → [M,5120]</code>。W1 是 8 组 <code>[4096,1024]</code> 的块对角算子，W2 为 <code>[8192,5120]</code>。<strong>不要真的把 W1 展开成稠密 <code>[32768,8192]</code>，那会破坏分组结构、增加八倍参数槽位。</strong></p>
+<p>投影会影响 router 看到的方向，但纯线性部分可以尝试结合律重排。真实实现夹有逆 RoPE、FP8 cast 和可选 clamp，不能把它们当成两张固定矩阵一起消掉；逆 RoPE 可按已知位置处理，但不是所有位置共用同一固定变换。<a href="https://github.com/deepseek-ai/DeepInfer/blob/553741557a57df44a46fb3ab72b6aafeaf945337/deepinfer/model_executor/models/v4_modules/attn.py">输出投影代码</a></p>
+<p><strong>步骤②：Attention 的 mHC Post。</strong></p>
+<div class="math">\[R_{0,i}=\sum_j C_{A,ij}R_{旧,j}+b_{A,i}y.\]</div>
+
+<p>这一步将旧残差和 y 混合。只用 Attention 输出预测 router，会漏掉残差贡献；即使投影完全线性，也不能忽略它。</p>
+<p><strong>步骤③：MoE 的 mHC Pre 读出。</strong></p>
+<div class="math">\[x=\sum_i a_{F,i}R_{0,i},\qquad x:[M,H].\]</div>
+
+<p>四路权重会影响 x。这里用的是此前 Attention 子层生成的 a_F。与此同时，从 R0 新生成的 C_F、b_F、a_next 不参与当前 x，因而可以延后。</p>
+<p><strong>步骤④：RMSNorm 与激活格式准备。</strong></p>
+<div class="math">\[\rho(x)=\sqrt{H^{-1}\sum_hx_h^2+\epsilon},\qquad z_h=x_h\gamma_h/\rho(x).\]</div>
+
+<p>gamma 是逐通道权重，会改变方向；rho 是同一 token 所有通道共享的正数。router 使用 BF16 归一化输入；专家还需要对应的 FP8 激活及 scale。两条消费路径不能混为一谈。后面的 FP8 专家输入 cast 不用于决定 BF16 router 的专家集合，但它决定发送内容，不能省掉。</p>
+<p><strong>步骤⑤：gating_proj。</strong></p>
+<div class="math">\[\ell=zW_g,\qquad W_g:[H,E],\quad \ell:[M,384].\]</div>
+
+<p>定义固定 Q=<code>diag(gamma)Wg</code>，则在实数算术下 <code>ell=(xQ)/rho(x)</code>。gamma 可以折叠进 Q；这表示保留它的作用，不是说它无影响。</p>
+<p><strong>步骤⑥：非线性打分与校正 bias。</strong></p>
+<div class="math">\[f(t)=\sqrt{\log(1+e^t)},\qquad s_e=f(\ell_e)+\delta_e.\]</div>
+
+<p>f 单调递增。如果没有专家相关 bias，<code>TopK(f(ell))=TopK(ell)</code>。当前路径却有用于选择的校正 bias，必须比较整个 s。这里只讨论正常有限值；mask、并列规则、padding、文本/图像 bias 也须保持原契约。<a href="https://github.com/deepseek-ai/DeepInfer/blob/553741557a57df44a46fb3ab72b6aafeaf945337/deepinfer/model_executor/models/v4_modules/moe.py">Gate 参数</a>、<a href="https://github.com/deepseek-ai/DeepInfer/blob/553741557a57df44a46fb3ab72b6aafeaf945337/deepinfer/model_executor/models/v4_modules/mlp.py">路由调用</a></p>
+<p><strong>步骤⑦：选择、权重及物理映射。</strong> 对有效位置：</p>
+<div class="math">\[S=\operatorname{TopK}_e(s_e),\qquad
+w_e=\lambda\frac{f(\ell_e)}{\sum_{j\in S}f(\ell_j)},\ e\in S.\]</div>
+
+<p>校正 bias 用于选专家，不把它直接加进最终混合权重。lambda 为模型的 routed scaling factor。随后按 EPLB 当前布局映射到物理槽。元数据提前发布需要准确的逻辑 ID、有效行、物理映射版本和计数，不只是一个未经确认的 TopK 猜测。</p>
+<h3 id="32">3.2 排序不变的条件：哪些能约掉，哪些不能</h3>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>专家集合是否一定不变</th>
+<th>本链路能怎样利用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>每个专家分数都加同一个数</td>
+<td>直接取 TopK 时不变</td>
+<td>专家不同的校正 bias 不属于这种情况</td>
+</tr>
+<tr>
+<td>每个专家分数都乘同一个正数</td>
+<td>直接取 TopK 时不变</td>
+<td>若随后再加不同 bias，结论不再普遍成立</td>
+</tr>
+<tr>
+<td>对分数施加同一严格单调函数</td>
+<td>直接取 TopK 时不变</td>
+<td>后面还有不同 bias，不能任意删除这个函数</td>
+</tr>
+<tr>
+<td>按通道乘 gamma、混合四路残差</td>
+<td>不保证</td>
+<td>可折叠/展开，不能直接省略</td>
+</tr>
+<tr>
+<td>连续固定线性映射用结合律合并</td>
+<td>实数上等价</td>
+<td>包含所有分支后才成立；量化、clamp、舍入另验</td>
+</tr>
+<tr>
+<td>TopK 后归一化选中专家权重</td>
+<td>不再改变已经选中的 ID</td>
+<td>权重仍影响最终输出，可以与元数据准备区分</td>
+</tr>
+<tr>
+<td>从 R0 生成本次 C_F、b_F、a_next</td>
+<td>不参与当前 TopK</td>
+<td>shifted mHC 下的独立旁路</td>
+</tr>
+</tbody>
+</table>
+<p>一个最小反例即可否定“rho 永远可以忽略”。取 q=<code>[2,1]</code>，校正 bias=<code>[0,0.1]</code>：</p>
+<table>
+<thead>
+<tr>
+<th>q 的公共缩放</th>
+<th><code>sqrtsoftplus(q)+bias</code></th>
+<th>Top1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>[1.4584,1.2460]</code></td>
+<td>专家0</td>
+</tr>
+<tr>
+<td>0.1</td>
+<td><code>[0.8934,0.9628]</code></td>
+<td>专家1</td>
+</tr>
+</tbody>
+</table>
+<p>另外，即使 bias 为零、专家 ID 不变，f 不是齐次函数，<code>normalize(f(q))</code> 与 <code>normalize(f(0.1q))</code> 仍可能不同。<strong>提前确认专家 ID，不等于专家混合权重已经就绪。</strong></p>
+<h3 id="33-a-mhc-router">3.3 方案 A：把 mHC 展开，提前累加 router 分数</h3>
+<p>同事的 idea 提醒我们，不必等中间大张量全部物化才计算它的某个投影。把步骤②③展开，对每个 token 定义：</p>
+<div class="math">\[\begin{aligned}
+\beta_j&amp;=\sum_i a_{F,i}C_{A,ij},\\
+\alpha&amp;=\sum_i a_{F,i}b_{A,i},\\
+r_{eff}&amp;=\sum_j\beta_jR_{旧,j}.
+\end{aligned}\]</div>
+
+<p>得到：</p>
+<div class="math">\[x=r_{eff}+\alpha AW_1W_2,\]</div>
+
+<div class="math">\[\boxed{q=xQ=r_{eff}Q+\alpha A\underbrace{(W_1W_2Q)}_{P}.}\]</div>
+
+<p>这说明 <strong>mHC 没有自动否定线性改写，但必须把残差项和动态连接系数一起算进去</strong>。C_A、b_A、a_F 已知后，残差贡献甚至可在 Attention 尚未结束时准备。Attention 贡献则等 A 就绪后用 P 投影。</p>
+<p>一个较保守的起点是等第一次输出投影 U 就绪，再算：</p>
+<div class="math">\[q=r_{eff}Q+\alpha U(W_2Q).\]</div>
+
+<p>这少争取了一段提前量，但新增矩阵更小。无论哪种，都还要解决 rho、BF16 归一化舍入和带 bias 的排序；它们目前是<strong>候选分数生产方式，不是已实现的精确提前 TopK</strong>。</p>
+<p><strong>算一下新增成本，避免只看到“提前”。</strong> 下表按本例维度、单 token、稠密乘加数计；不是设备时间预测：</p>
+<table>
+<thead>
+<tr>
+<th>路由分数分支</th>
+<th style="text-align: right;">主要乘加数 / token</th>
+<th style="text-align: right;">新预合成矩阵的 BF16 存储</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>原 router <code>xQ</code></td>
+<td style="text-align: right;">1,966,080</td>
+<td style="text-align: right;">Q 约 3.75 MiB，可能替代原 gate 参数，取决于存储策略</td>
+</tr>
+<tr>
+<td>CSA 后的 Attention 贡献 <code>AP</code></td>
+<td style="text-align: right;">12,582,912，约原 gate 的 6.4 倍</td>
+<td style="text-align: right;">P 约 24 MiB/层；40层约 960 MiB</td>
+</tr>
+<tr>
+<td>U 后的 Attention 贡献 <code>U(W2Q)</code></td>
+<td style="text-align: right;">3,145,728，约原 gate 的 1.6 倍</td>
+<td style="text-align: right;">约 6 MiB/层；40层约 240 MiB</td>
+</tr>
+</tbody>
+</table>
+<p>后两行还没有算 <code>r_eff Q</code> 的约 1,966,080 次乘加、动态系数和尺度。<strong>原两次输出投影仍需生成专家输入，不能从账本里删除。</strong> 把四路各自投影再合并，也可能把一次 gate 变成四次。表中的 BF16 只是存储预算；采用此精度是否满足数值契约尚未验证。</p>
+<h3 id="34-b-shape">3.4 方案 B：归一化尺度也能改写，但本 shape 不一定划算</h3>
+<p>不能说 rho 在数学上绝对要等完整 x 物化。令 U=<code>AW1</code>、G=<code>W2 W2^T</code>，有：</p>
+<div class="math">\[\|x\|^2=\|r_{eff}\|^2
++2\alpha U(W_2r_{eff}^T)
++\alpha^2 UGU^T.\]</div>
+
+<p>这样可从 U、残差和预计算 Gram 矩阵求 rho，而不先输出完整 y。<strong>但 G 是 <code>[8192,8192]</code>，FP32 为 256 MiB/层，40层约 10 GiB</strong>；还增加每 token 的二次型及交叉项计算。本例 J 比 H 大，这通常不是一个自然省算的改写。二次型也可能出现消减误差，数值稳定性需额外检查。</p>
+<p>只有实际权重存在可利用的精确结构、低成本分解，或某些矩阵乘被原流水免费复用时，才值得继续。截断 SVD 等近似不能叫原模型数学等价。</p>
+<h3 id="35-c-logits-topk">3.5 方案 C：不强求完整 logits 提前，先证明 TopK 集合已固定</h3>
+<p>如果能在输入尚未完全就绪时，获得<strong>可靠的</strong>尺度区间 <code>rho∈[L,U]</code>、<code>0&lt;L≤U</code>，对于已准确得到的 q，可构造：</p>
+<div class="math">\[l_e=\min\{f(q_e/L),f(q_e/U)\}+\delta_e,\quad
+u_e=\max\{f(q_e/L),f(q_e/U)\}+\delta_e.\]</div>
+
+<p>对候选集合 S，若：</p>
+<div class="math">\[\boxed{\min_{e\in S}l_e&gt;\max_{e\notin S}u_e,}\]</div>
+
+<p>则区间内所有 rho 都得到同一个专家集合。此时可先做物理映射、计数和无需权重的元数据，精确混合权重稍后补齐。证书不成立就走原路径；不能把猜错后重新发通信当作免费回退。</p>
+<p>还可研究将“选专家”和“算混合权重”分开：精确 ID 已确定后，保留原 Norm 路径，只计算选中6个专家的分数来生成权重，避免后续又完整执行384路 Gate。实数上成立，但专用小投影是否保持原累加/舍入仍要检查；现有同时消费 ID 和权重的通信接口也需要明确拆分，不能只改变 Python 调用顺序。</p>
+<p>这是“求解完整分数”转成“证明选择结果已确定”的新方向，<strong>但当前没有真实模型命中率或可用区间来源</strong>。粗糙范数界可能几乎总回退；计算界的成本也可能超过省下的等待。真实实现还须把 q 的误差、量化、BF16 舍入和并列规则纳入区间。CPU 小例子通过不等于已有可用于发布通信的工程证书。</p>
+<h3 id="36-d">3.6 方案 D：不提前路由，也能缩短路由前缀</h3>
+<p>可以研究把输出投影的完成片段、mHC 写回/读出、平方和归约、Norm 与 Gate 组织为生产者流水，减少独立启动和中间 GM 往返。实数下可边生产 x 的通道块，边累加 <code>sum(x²)</code> 和 <code>xQ</code>，最后再除 rho、打分并 TopK。</p>
+<p>不过原实现的 router 消费的是<strong>逐通道归一化后舍入的 BF16 值</strong>；先累计 <code>xQ</code> 再除 rho 会改变舍入位置，仍须验证。若要求严格保留原数值顺序，可先完整算 rho，再在融合 kernel 内逐块生成原 BF16 norm 值并喂给 Gate。这可能节省物化和启动，但不能声称提前知道 TopK。</p>
+<p>两种改法要分别实验：一个改变数学求值顺序，一个仅改变存储和调度边界。</p>
+<p><a class="figure-link" href="files/megamoe-math-overlap-20261113/assets/02-early-route-pipeline.png" target="_blank" rel="noopener"><img alt="提前路由后可以重叠什么" src="files/megamoe-math-overlap-20261113/assets/02-early-route-pipeline.png" / loading="lazy"></a><span class="figure-hint">点图打开原图，可放大查看。</span></p>
+<p>目标是先知道“发给谁”，与“算出要发的数据”并行。完整 Dispatch 不能只靠 ID；而原 Gate 若已经被前移分支替代，就不应再算一次充当所谓可隐藏工作。图中未给出实测头部窗口或核分配。</p>
+<h3 id="37">3.7 尾部也有数学机会：线性后处理可渐进推进</h3>
+<p>对一个 token，记完整 MoE 输出为：</p>
+<div class="math">\[y=\sum_{e\in S}w_eF_e(z)+F_{shared}(z).\]</div>
+
+<p>Post 是：</p>
+<div class="math">\[R_1=C_FR_0+b_Fy.\]</div>
+
+<p>分配律允许先算旧状态项，或对到达的专家结果逐项累加：</p>
+<div class="math">\[R_1=\underbrace{C_FR_0}_{只加一次}
++\sum_{e\in S}b_Fw_eF_e(z)+b_FF_{shared}(z).\]</div>
+
+<p><strong>数学上可渐进累加，不代表任意部分到达就能让下一层消费。</strong> 实际需确保该 token 全部路由贡献与共享贡献完成、结果可见，再发布 token-ready；不能把残差项按专家加 K 次。把 b_F 乘到远端专家结果还可能扩大通信或改变舍入，不能仅凭分配律就迁移物理实现。</p>
+<p>更保守的方案是：保持原 Combine 求和顺序，某 token 的完整 y 就绪后立刻执行 Post，而其他 token 继续回传。若沿 H 分片，还要等待下一层 Norm 所需的全部通道平方和；逐 token 交接和逐通道交接不是同一个协议。</p>
+<p><a class="figure-link" href="files/megamoe-math-overlap-20261113/assets/03-token-tail.png" target="_blank" rel="noopener"><img alt="尾部逐token写回的完成条件" src="files/megamoe-math-overlap-20261113/assets/03-token-tail.png" / loading="lazy"></a><span class="figure-hint">点图打开原图，可放大查看。</span></p>
+<p>图只展示就绪关系。它不假设现有实现已经提供 token-ready 事件，也不代表可以删除全局协议规定的计数或缓冲释放条件。</p>
+<h3 id="38-engram">3.8 同样的思路还能用于 Engram：查到一部分，就投影一部分</h3>
+<p>本例 Engram 特征由24个256维查表结果拼接。将投影矩阵按输入行拆成24块，可写成：</p>
+<div class="math">\[e=\operatorname{Concat}(e_1,\ldots,e_{24}),\qquad
+eW_{kv}=\sum_{j=1}^{24}e_jW_{kv,j},\quad W_{kv,j}:[256,25600].\]</div>
+
+<p>因此可以研究 fetch 与分组投影流水，而不一定等待完整6144维特征才启动投影。它的意义是把依赖粒度从“所有查表完成”降到“一个合适分组就绪”；代价是小 GEMM 启动、输出累加及缓存流量。工程上应先试少量分组，不能默认拆成24次最快。原量化和累加边界改变后，仍需数值验证。</p>
+<p>另一个看似更激进的办法是预计算每个表项的 <code>e_j Wkv,j</code>。但同类型存储下，表项从256维变成25600维，扩大约100倍，而且不同注入层的投影不同。未经容量分析不能把这个“省计算”写成推荐方案；只有有限热点的受控缓存等条件成立时才值得单独评估。</p>
+<h2 id="_4">四、证据、实验优先级与结论</h2>
+<h3 id="41">4.1 已经验证的收益，和本文新方案分开</h3>
+<p>此前“本次 mHC 系数＋Post 尾部融合”在 16 NPU、EP16/DP16/CP1、固定256条公开 ShareGPT 请求的完整 A1→B1→B2→A2 中得到：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">最大在途请求</th>
+<th style="text-align: right;">原路径 token/s</th>
+<th style="text-align: right;">融合路径 token/s</th>
+<th style="text-align: right;">提升</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">851.25</td>
+<td style="text-align: right;">885.24</td>
+<td style="text-align: right;">3.99%</td>
+</tr>
+<tr>
+<td style="text-align: right;">32</td>
+<td style="text-align: right;">1169.76</td>
+<td style="text-align: right;">1213.03</td>
+<td style="text-align: right;">3.70%</td>
+</tr>
+<tr>
+<td style="text-align: right;">64</td>
+<td style="text-align: right;">1455.85</td>
+<td style="text-align: right;">1489.47</td>
+<td style="text-align: right;">2.31%</td>
+</tr>
+</tbody>
+</table>
+<p>每版本两次独立初始化、每并发点各两遍，共24个全局正式窗口；实际容量、专家布局、完整输出 token ID 一致，正式窗口零 JIT。平均输入272.70、输出166.76 token，每遍42691个输出 token；输出既有自然 EOS 也有长度上限结束。它是直接调用引擎的固定工作闭环测试，不包含 HTTP、分词或网络。</p>
+<p>此结果仅支持该负载、版本与小 M 生效范围；<strong>不是本文提前路由、Engram 新调度或渐进写回的收益</strong>。此前另一机器窗口的一对 A/B 接近持平；在线到达率完整 ABBA 未通过验收，不能宣称在线 SLO 收益。候选仍默认关闭。</p>
+<h3 id="42">4.2 这次实际补做的事情</h3>
+<p>附带 <a href="files/megamoe-math-overlap-20261113/verify_math.py">CPU 验证脚本</a> 和 <a href="files/megamoe-math-overlap-20261113/math-checks.json">结果</a>，使用固定随机种子，验证了：</p>
+<ol>
+<li>包含旧残差、动态 mHC 系数与 gamma 的投影展开，在 FP64 数值容差内一致。</li>
+<li>无 bias 时正缩放及单调函数保持排序；加选择 bias 后给出可复现反例。</li>
+<li>专家集合相同，不保证归一化后的专家混合权重相同。</li>
+<li>gamma 和残差不能直接忽略；Gram 范数改写、Post 分配律、Engram 拼接投影的分解在小 shape 上成立。</li>
+<li>合成尺度区间的严格证书示例通过；同时提供证书无法确认的回退情形。</li>
+<li>FP32 加法改变括号就可能不同，提醒“实数等价”和“逐位等价”不是同一验收。</li>
+</ol>
+<p>这些检查用于排除推导错误，不测试真实模型权重、NPU 指令、同步、量化精度或性能。配图与本文也未启动或恢复资源轮询。</p>
+<h3 id="43">4.3 建议按这个顺序推进</h3>
+<table>
+<thead>
+<tr>
+<th>优先级</th>
+<th>最小实验</th>
+<th>要回答的具体问题</th>
+<th>放弃或继续的依据</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>现有尾部融合上，只加入一项 Engram 投影调度；先选真实注入层及已 fetch 数据</td>
+<td>剩余头尾资源是否能承载它，还是争 Cube/HBM 让主链变慢？</td>
+<td>比较完整输入就绪到注入后状态可消费；收益不可与旧结果相加</td>
+</tr>
+<tr>
+<td>2</td>
+<td>原数值顺序下融合 Norm/Gate/TopK 的存储边界，或减少输入前缀物化</td>
+<td>能否不增加大矩阵，就减少启动和 GM 往返？</td>
+<td>完整子层、数值、寄存器/UB、回退 shape 一起验收</td>
+</tr>
+<tr>
+<td>3</td>
+<td>先做 U 后的提前分数分支，再做 CSA 后分支；使用真实 Attention/残差/系数</td>
+<td>新增成本是否小于可提前的时间，真实 Top6 边界是否稳定？</td>
+<td>完整 logits、ID、权重与原路径对照；不只比较集合命中率</td>
+</tr>
+<tr>
+<td>4</td>
+<td>真实输入上分析第6/7名间隔、可靠尺度/分数区间及证书成本</td>
+<td>能否在不猜路由的情况下提前确定专家集合？</td>
+<td>包含有限精度误差的证书有用，且失败可低成本回退；否则停止</td>
+</tr>
+<tr>
+<td>5</td>
+<td>保留原归并顺序，增加 token 完成后 Post 的渐进消费</td>
+<td>慢 token 回传期间，其他 token 的后处理能否推进？</td>
+<td>每 token 路由/共享计数、完成可见性、缓冲生命周期无遗漏；测完整写回</td>
+</tr>
+</tbody>
+</table>
+<p>Gram 尺度改写暂列低优先级：当前 J=8192 的稠密成本已足够构成反对证据，先找权重结构或复用机会再试。</p>
+<p>所有实验先冻结同节点、源码/原生库/量化布局/模型输入/专家布局/容量；自然路由、共享专家和有效行规则保持一致。小算子精度、性能、独立 timer 流水分开采；timer 不是默认零成本。通过局部筛选后，再做无 profiler、零 JIT 的独立进程 ABBA，并另采 trace 检查融合次数、完整 FFN 和真实路由。</p>
+<p>头部用输入就绪、精确 ID 就绪、元数据发布/完成、激活就绪、首个专家可计算等事件定位；尾部用专家结果真正完成、回传/归并可消费、Post 和 a_next 就绪定位。提交指令或观测到某线程退出，不等于整个数据已完成。只比较真实全 rank 最慢完成时间，不把不同 rank、不同请求的 trace 逐 kernel 强行配对。</p>
+<p><strong>收益条件不是“多塞一个算子”，而是：节省的串行关键路径，大于新增计算、访存、同步和资源竞争的代价。</strong> 例如理想独立任务从串行变重叠时最多省两段时间的较小者；真实融合还受同一资源互斥与依赖约束，不能用这个上界作收益预测。</p>
+<h3 id="44">4.4 本文最后留下的判断</h3>
+<p>最直接的候选仍是本次 mHC 系数和已取回数据的 Engram 投影；完整 Post 则要沿真实完成粒度进入尾部。数学视角的新价值，是把“必须等完整中间张量”改成“只要某个投影、范数或排序证书已经足够”。</p>
+<p>提前路由不是被 mHC 一票否决，而是从两张矩阵的结合律，升级成<strong>残差、动态连接系数、归一化、选择 bias、物理映射与有限精度都完整的推导</strong>。本例 CSA 后分支有明显新增成本，不能预设它是下一项最优方案。</p>
+<p>源码入口及固定身份保存在 <a href="files/megamoe-math-overlap-20261113/source-evidence.json">源码证据清单</a>。建议先读第二节确定可直接调度的任务，再用第三节筛选值得实现的数学方案。</p></body></html>

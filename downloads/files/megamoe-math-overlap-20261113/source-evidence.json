@@ -1,0 +1,73 @@
+{
+  "framework_commit": "553741557a57df44a46fb3ab72b6aafeaf945337",
+  "ascend_native_base_commit": "3a35326271b069b8b5bf1a754435acd6cc91575b",
+  "sources": [
+    {
+      "path": "deepinfer/model_executor/models/v4_modules/hc.py",
+      "sha256": "1dd2d2e880c28deaa77363f040c31b451d1aeedf4ea188ace6803798713e3701",
+      "url": "https://github.com/deepseek-ai/DeepInfer/blob/553741557a57df44a46fb3ab72b6aafeaf945337/deepinfer/model_executor/models/v4_modules/hc.py"
+    },
+    {
+      "path": "deepinfer/model_executor/models/v4_modules/hc_lazy.py",
+      "sha256": "553c9fae0179443d38dd4d3b02f827492f0b2a613238efcdda1f8304b8027a51",
+      "url": "https://github.com/deepseek-ai/DeepInfer/blob/553741557a57df44a46fb3ab72b6aafeaf945337/deepinfer/model_executor/models/v4_modules/hc_lazy.py"
+    },
+    {
+      "path": "deepinfer/model_executor/models/v4_modules/mhc_ops.py",
+      "sha256": "43c676593e8d1b865eddb4732aa185375be650b46cf17fa71074a0a942139f8d",
+      "url": "https://github.com/deepseek-ai/DeepInfer/blob/553741557a57df44a46fb3ab72b6aafeaf945337/deepinfer/model_executor/models/v4_modules/mhc_ops.py"
+    },
+    {
+      "path": "deepinfer/model_executor/models/v4_modules/attn.py",
+      "sha256": "cb228c8fd4c76200e2ec266c51872107cfe7b384fdc88458b3d1c0ff101f3116",
+      "url": "https://github.com/deepseek-ai/DeepInfer/blob/553741557a57df44a46fb3ab72b6aafeaf945337/deepinfer/model_executor/models/v4_modules/attn.py"
+    },
+    {
+      "path": "deepinfer/model_executor/models/v4_modules/moe.py",
+      "sha256": "4e154e1536e5926bf4e4b7b58d5ccc71a692b46c8d26d7edcc56827bfe540de3",
+      "url": "https://github.com/deepseek-ai/DeepInfer/blob/553741557a57df44a46fb3ab72b6aafeaf945337/deepinfer/model_executor/models/v4_modules/moe.py"
+    },
+    {
+      "path": "deepinfer/model_executor/models/v4_modules/mlp.py",
+      "sha256": "2541bcc83b178a9e2f18b387b301d60111d6d603e18e2d31df38196b03d290dd",
+      "url": "https://github.com/deepseek-ai/DeepInfer/blob/553741557a57df44a46fb3ab72b6aafeaf945337/deepinfer/model_executor/models/v4_modules/mlp.py"
+    },
+    {
+      "path": "deepinfer/model_executor/models/v4_modules/engram.py",
+      "sha256": "d2aa096a1f73177e2dd06f5a1fcd6746139c52af56c3bcfb77d5226a3deeae8f",
+      "url": "https://github.com/deepseek-ai/DeepInfer/blob/553741557a57df44a46fb3ab72b6aafeaf945337/deepinfer/model_executor/models/v4_modules/engram.py"
+    }
+  ],
+  "shapes": {
+    "M": "per-rank rows, may include padding",
+    "H": 5120,
+    "r": 4,
+    "D": 32768,
+    "J": 8192,
+    "E_logical": 384,
+    "physical_slots": 416,
+    "K": 6
+  },
+  "shape_origin": "fixed source reconstruction and previously published task appendix, not profiler-complete input metadata",
+  "prior_trace_reference": "https://zhaoyuhsin.github.io/downloads/megamoe-head-tail-overlap-20261106.html",
+  "prior_system_result": {
+    "scope": "fixed-work closed-loop, 16 NPU, 256 requests, two independent processes per version",
+    "baseline_tps": [
+      851.2494180378096,
+      1169.7642078046388,
+      1455.8512652237023
+    ],
+    "candidate_tps": [
+      885.2445990508232,
+      1213.0344376453966,
+      1489.4661314578057
+    ],
+    "concurrency": [
+      16,
+      32,
+      64
+    ],
+    "online_abba_accepted": false
+  },
+  "current_new_work": "CPU math checks, source review and static explanatory figures only; no new NPU runs"
+}

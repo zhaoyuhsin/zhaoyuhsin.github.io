@@ -1,0 +1,93 @@
+{
+  "scope": "CPU float64 identities and explicit counterexamples only; no NPU experiment or speed claim",
+  "seed": 20261113,
+  "checks": {
+    "shifted_mhc_expansion": {
+      "passed": true,
+      "max_abs_error": 1.4210854715202004e-14,
+      "dtype": "float64",
+      "shapes": {
+        "M": 5,
+        "r": 4,
+        "D": 7,
+        "J": 9,
+        "H": 11,
+        "E": 6
+      }
+    },
+    "no_bias_positive_scale_and_monotone_activation": {
+      "passed": true
+    },
+    "scale_with_post_activation_bias_counterexample": {
+      "passed": true,
+      "raw": [
+        2.0,
+        1.0
+      ],
+      "bias": [
+        0.0,
+        0.1
+      ],
+      "scores_scale1": [
+        1.4583991261115636,
+        1.245976303209723
+      ],
+      "scores_scale01": [
+        0.8933861815483782,
+        0.9627842488557442
+      ]
+    },
+    "same_ids_do_not_imply_same_weights": {
+      "passed": true,
+      "weights_scale1": [
+        0.5599803736789323,
+        0.4400196263210678
+      ],
+      "weights_scale01": [
+        0.5087126887467271,
+        0.4912873112532728
+      ]
+    },
+    "gamma_and_residual_cannot_be_omitted": {
+      "passed": true
+    },
+    "gram_norm_identity": {
+      "passed": true,
+      "max_abs_error": 4.547473508864641e-13
+    },
+    "tail_affine_distribution": {
+      "passed": true,
+      "max_abs_error": 3.552713678800501e-15,
+      "residual_added_once": true
+    },
+    "engram_concat_projection_distribution": {
+      "passed": true,
+      "max_abs_error": 1.4210854715202004e-14,
+      "dtype": "float64",
+      "scope": "toy blocks; not real quantized projection"
+    },
+    "interval_certificate_toy": {
+      "passed": true,
+      "certified_cases": 46,
+      "total_cases": 200,
+      "note": "synthetic interval only; not a real-model hit rate; no finite-precision bound certified"
+    },
+    "real_equivalence_not_bitwise_equivalence": {
+      "passed": true,
+      "left_associated": 3.140000104904175,
+      "right_associated": 0.0
+    }
+  },
+  "shape_costs": {
+    "D": 32768,
+    "J": 8192,
+    "H": 5120,
+    "E": 384,
+    "full_early_matrix_elements": 12582912,
+    "full_early_bf16_mib": 24.0,
+    "after_first_proj_bf16_mib": 6.0,
+    "gram_fp32_mib": 256.0,
+    "original_gate_macs_per_token": 1966080,
+    "full_attention_early_macs_per_token": 12582912
+  }
+}
