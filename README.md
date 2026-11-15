@@ -2,6 +2,8 @@
 
 个人网站及MegaMoE工具的静态发布仓库。站点入口是根目录 `index.html`，不需要服务端或npm依赖。
 
+App 下载卡片的更新时间按北京时间显示，统一使用 `YYYY-MM-DD HH:mm`，精确到分钟。每个版本填写对应安装包实际发布的时间；仅修改下载页说明时，不把旧版 APK 的发布时间改成当前时间。
+
 访问地址：`https://zhaoyuhsin.github.io/`。仿真工具位于 `/megamoe/`，交互Wiki位于 `/megamoe/wiki.html#ratio-lab`。
 
 ## 本地查看
