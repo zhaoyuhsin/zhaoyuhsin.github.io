@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="YuHsin 的文件下载：技术笔记、配图与离线阅读资料。">
+  <meta name="description" content="YuHsin 的文件下载：技术笔记、配图、离线阅读资料与自用应用安装包。">
   <title>文件下载 · YuHsin</title>
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../assets/home.css">
@@ -27,8 +27,19 @@
   </header>
   <main id="main" class="downloads-main">
     <p class="eyebrow">FILE LIBRARY / 文件资料</p>
-    <h1>随时取用的笔记。</h1>
-    <p class="downloads-intro">技术笔记与配套文件集中保存在这里。在其他电脑打开本页，即可下载并离线阅读。</p>
+    <h1>随时取用的文件。</h1>
+    <p class="downloads-intro">技术笔记、配套文件与自用应用安装包集中保存在这里。在手机或电脑打开本页，即可下载。</p>
+    <article class="file-card" id="sanguosha-android">
+      <span class="small-tag">Android · APK</span>
+      <h2>三国杀</h2>
+      <p>个人自用测试版本，下载到安卓手机后安装；已安装旧版时，直接覆盖安装即可。</p>
+      <p class="file-meta">更新：2026-11-15 · v1.0.1 · APK：148.8 KiB · Android 8.0 及以上</p>
+      <p><a class="button primary" href="files/sanguosha-v1.0.1.apk" download="三国杀-v1.0.1.apk">下载安装包 APK ↓</a></p>
+      <div class="file-notes">
+        <p>安装时如提示来源限制，请按手机提示允许本次安装。覆盖安装前不要卸载旧版。</p>
+        <p>SHA-256：<code style="overflow-wrap:anywhere">21b624c00bcd5e528a081cd0d506584b5be70867531426bb7ba6d8b6ca7ac60d</code></p>
+      </div>
+    </article>
     <article class="file-card" id="megamoe-math-overlap-20261113"><span class="small-tag">MegaMoE · 数学等价 · 提前路由</span><h2>MegaMoE头尾还能融合什么：从数据依赖到数学等价</h2><p>v2补充旧D02逐算子耗时、算量/逻辑数据量、跨卡有效载荷公式，以及127轮稳态trace的频次、累计耗时和自然路由工作量。</p><p class="file-meta">2026-11-13 · v2 · ZIP 645.1 KiB · Markdown + HTML + 3张PNG + CPU数学验证 + trace成本JSON/CSV</p><p><a class="button primary" href="megamoe-math-overlap-20261113.html">在线阅读 ↗</a></p><p><a href="files/megamoe-math-overlap-20261113/article.md" download="MegaMoE头尾还能融合什么：从数据依赖到数学等价.md">下载Markdown</a> · <a href="files/megamoe-math-overlap-20261113-v2.zip" download>下载v2完整包</a> · <a href="files/megamoe-math-overlap-20261113.zip" download>保留的v1版本包</a></p><div class="file-notes"><p>新增数学方案尚无NPU实现或性能结论；通信预算不冒充链路实测。旧融合收益只对应文内明确列出的既有负载。</p><p>SHA-256：<code style="overflow-wrap:anywhere">03acbd370fcb97f5a182f58769314e321c0d6975793d135db438db881e9503f6</code></p></div></article>
 <article class="file-card" id="deepinfer-dp0-trace-20261109"><span class="small-tag">DeepInfer · 交互时间轴 · 原始Trace</span><h2>DeepInfer Trace 学习台与DP0原始采样</h2><p>71轮Host／Device对照，新增实际kernel事件轨和覆盖统计；可点选P01、D02比较气泡。原始DP0 trace保持字节一致，解压后可导入MindStudio Insight。</p><p class="file-meta">发布：2026-11-09 · ZIP：14.8 MB · JSON：231.6 MB · 仅DP0 driver采样</p><p><a class="button primary" href="../deepinfer-trace/">打开交互学习台 ↗</a></p><p><a href="files/deepinfer-dp0-trace-20261109.zip" download="DeepInfer_DP0_原始Trace_71轮.zip">下载原始Trace ZIP ↓</a> · <a href="../deepinfer-trace/trace-manifest.json">文件校验与范围</a></p><div class="file-notes"><p>短中文请求教学负载，不是生产吞吐基准。71轮不是71条请求；kernel覆盖率不等于MFU。ZIP只含DP0原始JSON、说明和校验值。</p><p>SHA-256：<code style="overflow-wrap:anywhere">b6ed43d7da1cffe331153628a0648b8c44a41f66b4a9bd9fb4e3cce6b23f6102</code></p></div></article>
     <article class="file-card" id="megamoe-head-tail-overlap-20261106"><span class="small-tag">MegaMoE · DeepInfer · 依赖与通算重叠</span><h2>MegaMoE通信头尾还能放什么计算？</h2><p>从D02的mHC系数、Gate、MegaMoE、Engram和下一层Attention画清依赖，结合三张图解释引擎CPU异步、CP多流与融合kernel内部流水。区分已实现机制、允许重排的候选，以及需要实测的资源空档。</p><p class="file-meta">发布：2026-11-06 · ZIP：647.5 KiB · 正文 + HTML阅读版 + 3张PNG + 101条教学任务与证据</p><p><a class="button primary" href="megamoe-head-tail-overlap-20261106.html">在线阅读分析 ↗</a></p><p><a href="files/megamoe-head-tail-overlap-20261106/article.md" download="MegaMoE通信头尾还能放什么计算-从算子依赖到引擎流水.md">下载Markdown</a> · <a href="files/megamoe-head-tail-overlap-20261106.zip" download="MegaMoE_通信头尾优化分析_20261106.zip">下载含配图完整包 ↓</a></p><div class="file-notes"><p>候选方案尚无新增NPU实验；图为逻辑示意，任务时间来自既有trace。原始trace、日志及本机环境不随包公开。</p><p>SHA-256：<code style="overflow-wrap:anywhere">e66cd8e6c4ebe8575c8d4fa6365527a934304f4829c15382c1c7b5c151e40cd7</code></p></div></article>
