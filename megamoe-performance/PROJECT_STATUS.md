@@ -1,5 +1,9 @@
 # 项目状态
 
+## 当前最高优先级：尽早集成组合
+
+按用户最新要求，优先接“就绪驱动远端写Dispatch＋小Wave／Split-K”，用组合阶段反馈反哺两条独立线，不等它们各自净胜才集成。计算接线、通信必要校验、中间结果参考三路并行；当前仅本地准备，未产生组合SDK／NPU或性能结果。先真实head→S2 GMM1→activation，再尽快接两descriptor小Wave／GMM2／Combine与完整筛选。BL独立流水为辅助，正确性和缓冲回收门禁保留。以下性能仍为已完成的独立对照。
+
 ## 当前结论：小Wave的回退被追回，尚无净优化
 
 EP8／BS32／无共享／完整通信同窗首筛：原Wave **587.13μs**，仅小Wave **697.27μs**，小Wave＋一波lookahead（无Split-K）**589.27μs**。主指标timer-off、原kernel后10逐轮rank-max；lookahead追回108.00μs，但仍较原Wave慢0.36%，一次首筛不算稳定收益。三臂原Golden、实际载库、CSV、自然退出与资源释放通过，G2／main保持。
