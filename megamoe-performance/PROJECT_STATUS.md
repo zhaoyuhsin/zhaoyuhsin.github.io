@@ -1,5 +1,9 @@
 # 项目状态
 
+## 17:32Z运行收口
+
+早Dispatch第二次有界启动已解决缺bootstrap部署问题（8份真实私有映射/SHA），越过SHMEM/Plan，但首phase0 report八rank均-99，首错停。17:38Z匹配SDK和实际ISA确认角色守卫静态不可达：混淆AIV逻辑编号与group编号，合法角色全部在report写入前返回；不是通信死锁或MegaMoE性能根因。下一单点修复/CPU负控→新SDK→phase0-only资格，不盲重试。未到payload/ready验收，无新性能；退出观察器的次级错另列，冷存/PID/锁释放已复核。G2/main与历史性能不变。
+
 ## 11月18日凌晨最新（17:05Z）
 
 本轮仍无新端到端性能。早Dispatch真实8rank加载、READY/GO通过，随后原SHMEM初始化因缺少bootstrap动态插件失败，Plan/probe均0；不是新协议已运行后失败。第一条底层错误已在八份本任务日志核实，冷存、自然退出、进程/锁释放已独立审计。下一只补本任务插件依赖路径，并先隔离SHMEM私有日志，原host/kernel/run不改，不盲重跑。
