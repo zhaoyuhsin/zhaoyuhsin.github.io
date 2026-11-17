@@ -8,6 +8,8 @@ description: Tune this project's fused Ascend MegaMoE against layout-optimized D
 ## 当前必行：阶段证据驱动结构创新（2026-11-17）
 
 - Split-K先量实际输出成本而非只看MMAD：小M原本每逻辑tile已有两次半块FIX，S2后可变四次、FP32有效GM写读各4倍；更多FIX/credit/ready服务可表现为后续G2输入WAIT。把调用次数/实际M-N-stride-dtype几何、逐核等待与整kernel PMU交叉核对，不把FIX活跃时间直接当损失。N256合并须同时证明L0C物理布局及unit-flag所有权，单改GM不能修复源布局。
+- 早启动先核真实路由：用实际generator统计各source闭合前缀，不能默认凑16行就有效。EP8/BS32每专家实际M4，head16永不触发；EP32/BS32的head16几乎仍等全部source。切M4/8还需核额外权重请求、scale行距与独立块身份；原M256 ready槽可能让tail提前读取或永远等错计数，地址可切片不代表协议可复用。
+- 首结果更早不等于总延迟更短：同轴同时核首次/末次Combine ISSUE、计算推进和尾部。既有小Wave/S2例中首Combine早28.3μs而末次晚39.1μs；ISSUE不代表远端完成。资源失效与此前的长时间无进展分开记录，不能以最后出现foreign任务抹掉早先活性疑点；未完成样本不填性能。
 - 完成事件的覆盖按真实owner/slice身份核验：本轮G2应有1344个group-slice，不是192个Dispatch段或48个expert。缺事件不当0等待；校验missing/duplicate/unexpected、完整raw重解码、overflow及同call恰一目标CSV后再拆阶段。一个全核并集看似满，逐核仍可能大量等待。
 - 构建、no-init加载、功能与性能是四个门槛；真实调用数从叶子计算，不沿用旧标签（当前性能叶子2pre+10warm+20formal+2post=34）。CPU准备失败且零GO与设备失败分列，保留原件；构建迁机需核相同SDK/编译器和Python，并核实际device ELF而不是host反汇编。
 - 每轮结论固定为“大思路→慢阶段/差额→原始timer和profiling字段→原因假设/反证→下一最小实验→完整端到端验收”。没有指标写未采，不把猜测写成bound已证。

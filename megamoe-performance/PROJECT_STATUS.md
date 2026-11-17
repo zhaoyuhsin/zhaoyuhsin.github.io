@@ -9,6 +9,7 @@
 - 本轮rank0整kernel PMU：MAC基本不变，FIX101.51→158.25μs、Scalar546.37→572.59μs，提示partial输出/服务/同步新增成本，未闭合到具体阶段。下一步先补C同call流水，再测B仅小Wave、L lookahead消融；不盲扫参数。
 - 新A/C配对流水已补齐：实测G1任务1152→2304、Wave8→24；计算推进窗585.327→622.436μs，每核G2输入WAIT中位9.100→41.506μs，逐核G1/G2 ISSUE未增慢。支持partial完成/ready服务成本假设，但不能把timer-on分段当作off32.18μs的精确分摊。
 - L的首次功能窗被后来进入的外部torchrun打断，invalid_resource，无有效L精度/性能；p-L未启动，自身进程/锁释放，不判算法失败。EP32私有CPU准备已齐但最终设备门禁仍被占用阻断，零GO。新窗口继续B/L判别，不重跑旧成功A/C。
+- 后续新窗口：L已通过EP8/BS32两call原Golden/实际8rank身份；同机C→L筛选的C为618.8451μs，L在pre-Golden后长期无进展、随后遇外部任务而中止，没有可用性能。保留活性疑点，不以invalid_resource抹掉，也不直接重跑。紧排L0C单FIX微测已SDK/ISA通过，尚未设备验收；早Dispatch小行head需独立ready身份，研究666bfde已推。
 - 089观察版已采回EP8/BS32独立rank0被动流水和同call原CSV，G2真实完成消费等待1344/1344 owned-slice完整，总控独立重算通过。单次诊断Duration639.760μs不当作timer-off主数或1%开销验收。
 - 早Dispatch原生布局/MTE/逐专家count叶子68项CPU通过，研究源码已推；尚未接active kernel/allocator，不是可测完整性能候选。EP32新鲜资源检查发现他人任务均零GO退出，仍待四节点窗口，不共跑。
 - 原megamoe-decode小时跟进已按用户新授权恢复ACTIVE，按五项结构每小时总结，至原两周收尾日11月25日；下文旧“暂停”和停止Split-K整个方向的表述只作历史。
