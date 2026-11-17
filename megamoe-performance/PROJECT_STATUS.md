@@ -1,5 +1,15 @@
 # 项目状态
 
+## 最新：仅小Wave负向首筛与早Dispatch资格
+
+完整通信EP8／BS32／无共享，同机A→仅小Wave B（无Split-K），timer-off／Level1、各一次独立启动后10逐轮rank-max：**587.2519→695.8325μs，慢18.49%**。两臂原Golden、全部rank实际载库／原CSV、自然退出与自身释放通过；不改G2/main，不认稳定ABBA结论或全域收益。
+
+rank0整kernel MAC288.88→286.26μs未增，Scalar542.11→650.14、MTE2 291.25→318.25、FIX101.69→93.36μs。阶段／等待是假设，计数重叠不可相加，未证Scalar bound。下一A/B配对被动流水核实际任务与Wave数、GMM推进／等待、Combine首末；不与旧窗Split-K结果拼收益，不关闭“小Wave＋补并行＋早Dispatch”方向。
+
+早Dispatch修复角色后的SDK及8rank phase0控制区复位通过，但启动器未自然退出，超时仅清理自身任务；**整项生命周期失败，payload／receive／retire／GMM／性能尚未测**。已保留原件和退出释放证据。只读找到普通入口的元数据DNS反查修正差异，未证是本次挂点；下一CPU-only最小判别，不盲重跑设备。
+
+以下为历史过程，以本节最新状态为准。
+
 ## 17:32Z运行收口
 
 早Dispatch第二次有界启动已解决缺bootstrap部署问题（8份真实私有映射/SHA），越过SHMEM/Plan，但首phase0 report八rank均-99，首错停。17:38Z匹配SDK和实际ISA确认角色守卫静态不可达：混淆AIV逻辑编号与group编号，合法角色全部在report写入前返回；不是通信死锁或MegaMoE性能根因。下一单点修复/CPU负控→新SDK→phase0-only资格，不盲重试。未到payload/ready验收，无新性能；退出观察器的次级错另列，冷存/PID/锁释放已复核。G2/main与历史性能不变。
