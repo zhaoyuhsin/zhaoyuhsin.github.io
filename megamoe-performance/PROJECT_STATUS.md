@@ -2,6 +2,12 @@
 
 ## 2026-11-17最新主线：小Wave＋Split-K、早Dispatch与组合
 
+**最新同机三臂首筛已完成：**EP8／BS32／无共享／完整通信，Profiler Level1、设备timer-off，各一次原34call，后10逐轮rank-max：保留A587.1452、小Wave＋S2＋lookahead／有界partial LFB597.7784、叠加紧排单FIX的LFBQ597.0636μs。共同Event588.6673／599.2489／598.5651μs另列。Q仅少0.7148μs（约0.12%），仍较A慢约1.69%；非ABBA，不认稳定收益，main/G2不改。2025冷存哈希、480原kernel、96原Golden报告合同、24rank四库与退出释放root独审通过。
+
+**本轮反证与止损：**rank0整kernel FIX168.7984→143.0865μs，但Scalar543.5805→551.4876、完整耗时仅少0.7148μs。输出指令减少未解决关键路径，不把重叠计数相加或宣布FIX/Scalar bound；停止单FIX扩参。此前流水将余差指向计算推进窗而非尾部，Q本窗无新阶段timer，partial FULL／merge／credit仍待直接观测。继续架构方向，但先判别partial服务／任务接续，再与早Dispatch组合。
+
+**早Dispatch：**新数据面SDK控制器在最终fresh遇他人八卡任务，零ABI／CMake／编译／ACL／NPU即退出，自己进程和锁已释放、失败冷存；不是SDK失败。只在新真实空闲窗口继续，不影响他人。以下保留历史窗口记录，最新状态以上述三臂为准。
+
 **最新净对照已完成：**EP8/BS32/shared0完整通信、timer-off，同机各一次原34call，后10逐轮rank-max：保留G2 A587.7673→LFB598.4915μs，候选慢10.7242μs／1.82%；共同Event589.2309→599.9497μs，口径一致但单列。64原Golden合同、16rank次实际四库映射、1350hash和16原CSV/320kernel/16samples与释放已独立审计。单对首筛未胜保留基线，不算稳定回退，main/G2不改；下方3.87%仅相对回退父版C。
 
 **配对流水已补齐：**LFB首有效Combine早18.224μs，但计算推进窗口长11.005μs、末Combine晚8.586μs；末G2后的尾9.341→9.137μs基本不变。每核G2-ready WAIT9.136→9.191μs已近A，非ISSUE候选边界/服务区间69.970→79.697μs。更多Wave的早发成立，尚未变成净收益；不是长尾导致本次回退，也未证明FIX/Scalar bound。无10warm且任务事件数不同，不精确分摊timer-off差额或声称timer开销。
