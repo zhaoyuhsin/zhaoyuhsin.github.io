@@ -2,6 +2,8 @@
 
 ## 2026-11-17最新主线：小Wave＋Split-K、早Dispatch与组合
 
+**最新正向首筛：**EP8/BS32完整通信，原无标记34call、timer-off，新同机C620.4002→LFB596.3996μs，降24.0006μs／3.87%。全原CSV、64份Golden合同和跨版32数组逐字节等价由root独立审核，资源释放。只是相对小Wave＋S2父版C的单对首筛，不是保留G2的净收益；A/G2与LFB同窗对照正准备。main/G2不改，LFB研究44211d64已推。
+
 **新首筛已完成：**EP8/BS32完整通信、timer-off、同机C→Q各一次，逐轮rank-max后10均值620.0308→620.4637μs，基本持平。rank0整kernel FIX158.4656→135.7326μs，Scalar572.6395→579.6964μs；计数改善没变成端到端收益，不相加归因。16原CSV／320kernel及64原Golden比较合同独立审核。新C/Q流水因C采完后外部torchrun进入而停止，Q零启动；正在准备另一节点的新独立同窗诊断，不把单C当配对结果。以此段为当前状态；下文保留前轮进度。
 
 **最新：**K3584/14窗口单FIX真实微测四launch通过，独立复算10240 FP32/guard/pair；生产Q a2ff4e23的82＋3 CPU及SDK/no-init、EP8/BS32完整通信两call原Golden/8rank身份/count/repeat通过，589冷存文件独立审核，资源释放。下一步新同窗C/Q首筛，尚无新性能收益。L未来partial受理边界44211d64只做CPU/SDK，硬件活性未定；早Dispatch 7f06856e已完成CPU workunit闭环，未接设备。以Decode攻关页面顶部最新摘要为准；以下保留前轮过程，不把曾经“尚未完成”状态误读为当前结论。
