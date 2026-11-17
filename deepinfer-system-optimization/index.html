@@ -1,0 +1,312 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="DeepInfer系统与算子协同优化：mHC尾部融合完整ABBA吞吐提高2.31%～3.99%；Engram整网增量近持平，区分理论、片段与整网证据。"><meta name="theme-color" content="#f6f7f2"><title>DeepInfer系统级优化探索 · YuHsin</title><link rel="icon" href="../assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="style.css"></head><body><a class="skip" href="#article">跳到正文</a><header><a class="brand" href="../"><b>YH</b> YuHsin <span>/ 推理优化</span></a><nav aria-label="主导航"><a href="../#deepinfer-notes">首页导航</a><a href="../deepinfer-trace/">Trace学习台</a><a href="../downloads/#deepinfer-system-optimization-20261117">资料下载</a></nav></header><main><section class="hero"><p class="eyebrow">INFERENCE / SYSTEM × KERNEL</p><h1>DeepInfer<br><em>系统级优化探索</em></h1><p class="lede">从数据依赖发现机会，到单层筛选，再到整网验证。记录哪些重叠真正省时，哪些还没有变成系统收益。</p><div class="result-grid"><a href="#mhcpost" class="result"><span class="pill good">完整整网 ABBA</span><strong>+2.31%～3.99%</strong><span>mHC 融合 · 本组闭环吞吐</span></a><a href="#engram" class="result"><span class="pill partial">三实例部分结果</span><strong>−0.30%～+0.27%</strong><span>Engram 重叠 · 整网增量近持平</span></a><a href="#engram" class="result"><span class="pill theory">数学候选</span><strong>提前 TopK</strong><span>尚无 NPU 性能结论</span></a></div><p class="scope">数据更新至本地已存证据 · 2026-11-17整理 · 单层降时不等于整网吞吐收益</p></section><div class="reading-layout"><aside><p>阅读目录</p><nav aria-label="文章目录"><a href="#_1">一、背景：优化的是完整路径</a><a href="#mhcpost">二、已验证：mHC系数与Post融合</a><a href="#engram">三、没有明确整网增益：Engram重叠与提前路由</a><a href="#_2">四、如何理解结论，以及下一步</a></nav><div class="downloads"><a href="../downloads/files/deepinfer-system-optimization-20261117/article.md" download="DeepInfer系统级优化探索.md">下载 Markdown</a><a href="../downloads/files/deepinfer-system-optimization-20261117.zip" download>下载完整阅读包</a><a href="../downloads/files/deepinfer-system-optimization-20261117/results-summary.json">查看指标 JSON</a></div></aside><article id="article"><h1 id="deepinfer">DeepInfer系统级优化探索</h1>
+<p>更新：2026-11-17。汇总本聊天截至当前已留存的实验；本次只整理和发布，不代表新完成了NPU测试。</p>
+<p><strong>我们在做系统与算子协同优化：从推理引擎的数据依赖发现机会，再通过跨算子融合或跨流调度缩短完整执行路径。</strong> mHC方案已经修改MegaMoE内部流水；Engram方案目前只调整引擎调度，尚未写入MegaMoE原生kernel。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="可横向滚动的数据表"><table>
+<thead>
+<tr>
+<th>方向</th>
+<th>当前最强证据</th>
+<th>结论</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>mHC系数＋Post尾部融合</td>
+<td>完整整网ABBA，24个正式窗口</td>
+<td>本组闭环吞吐提高 <strong>2.31%～3.99%</strong></td>
+</tr>
+<tr>
+<td>Engram投影双流重叠</td>
+<td>片段筛选＋整网A1/B1/B2</td>
+<td>片段降时约1.86%～3.60%；整网增量接近持平，未建立明确收益</td>
+</tr>
+<tr>
+<td>数学改写，提前确定TopK</td>
+<td>公式推导、CPU数学用例与反例</td>
+<td>尚未完成真实NPU提前路由，没有性能结论</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="_1">一、背景：优化的是完整路径</h2>
+<p>主干残差为 <code>R[M,4,5120]</code>。mHC把四路读成 <code>x[M,5120]</code>，Attention或MoE计算一次，再写回四路。M是当前rank设备图的行数，可能含padding，不等于整机请求数，也不等于每个专家收到的token数。</p>
+<p>我们关心的主线是：</p>
+<pre><code class="language-text">Attention输出 → mHC写回 → 四路读出 → RMSNorm → Router/TopK
+                                                ↓
+                             Dispatch → 专家FFN → Combine/Reduce
+                                                ↓
+                                      mHC Post → 下一子层
+</code></pre>
+<p>MegaMoE把通信和专家计算做成流水，但启动元数据、跨卡到达差异和最后的归并可能留下等待。目标是把无冲突的计算安排进这些等待区间。不能只看MegaMoE一个kernel变快：融合后它承担更多工作，自己的Duration甚至可能增加。</p>
+<p>需要区分三个完成边界：<strong>单算子</strong>回答kernel机制；<strong>完整片段</strong>要求MoE输出、四路写回及消费者需要的结果全部就绪；<strong>整网</strong>还包含调度、Attention、草稿模型、权重轮转和请求排队。三种收益不能相加。</p>
+<h2 id="mhcpost">二、已验证：mHC系数与Post融合</h2>
+<h3 id="21">2.1 为什么能重叠</h3>
+<p>我们研究的V4.1-Flash使用shifted mHC。当前MoE读出使用前一子层留下的pre；从当前残差R生成的新pre、post、mix不决定当前TopK，因而系数生成可以延后。Post仍依赖MoE结果，必须等对应token的结果和系数都就绪。</p>
+<p>系数链为：<code>Flatten [M,20480] → 投影 [M,24] → RMS归一化 → 拆分4+4+16 → Sinkhorn</code>。旧教学D02样本四个系数kernel累计18.866 μs，MegaMoE完整kernel为223.728 μs；前者不是保证可隐藏的时间，后者也不是纯计算或纯通信时间。<a href="https://zhaoyuhsin.github.io/downloads/deepinfer-inference-guide-20261102-operators.html#task-21677">原始逐算子入口</a></p>
+<p><a href="../downloads/files/deepinfer-system-optimization-20261117/DeepInfer系统级优化探索-assets/mhc-tail-pipeline.png" target="_blank" rel="noopener" aria-label="打开配图原尺寸"><img alt="mHC尾部融合的资源与同步关系" src="../downloads/files/deepinfer-system-optimization-20261117/DeepInfer系统级优化探索-assets/mhc-tail-pipeline.png" /></a></p>
+<p>图是逻辑流水，不按实测时间比例绘制。最终策略在原GEMM的FIX阶段不再读取旧L0C后，复用计算资源执行系数投影；归约和Sinkhorn由向量侧接续，MoE收尾通信继续推进。Post在对应结果齐备后执行。保留原投影分块、归约与舍入顺序，以及R的生命周期；并没有删除完成等待。</p>
+<p>这是从系统依赖发现机会、落在原生kernel中的跨算子融合。当前只覆盖<strong>主模型decode、M≤16</strong>；prefill、草稿和大M走原路径。实验候选默认关闭。</p>
+<h3 id="22">2.2 从片段到整网，收益逐级验证</h3>
+<div class="table-scroll" tabindex="0" role="region" aria-label="可横向滚动的数据表"><table>
+<thead>
+<tr>
+<th>验证层次</th>
+<th>已完成结果</th>
+<th>适用边界</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EP16合成完整设备片段</td>
+<td>M8/M16两次独立启动，延迟降低4.86%～5.17%</td>
+<td>无timer性能轮；不包含共同的读出、Norm和Gate</td>
+</tr>
+<tr>
+<td>真实L00/L14/L39输入与模型权重</td>
+<td>两次独立启动，各16rank×9用例逐位通过；多数片段降时约1%～3%</td>
+<td>同层连续8次热回放，不能代替整网40层权重轮转</td>
+</tr>
+<tr>
+<td>固定请求整网</td>
+<td>下表吞吐提高2.31%～3.99%</td>
+<td>含引擎调度、主/草稿模型及完整层执行</td>
+</tr>
+</tbody>
+</table></div>
+<p>收益衡量的完成边界不同，不把片段延迟下降百分数直接叫作系统吞吐提高。</p>
+<h3 id="23-abba">2.3 吞吐：完整ABBA有正收益</h3>
+<p>16张Ascend 950 NPU、EP16/CP1；A是原MegaMoE＋分离mHC，B是融合方案。在同一对节点按A1→B1→B2→A2四次独立初始化，每个并发点各测两遍，共24个正式窗口。每个版本每点有四个窗口，但只有两次独立启动。</p>
+<p><a href="../downloads/files/deepinfer-system-optimization-20261117/DeepInfer系统级优化探索-assets/mhc-throughput.png" target="_blank" rel="noopener" aria-label="打开配图原尺寸"><img alt="mHC整网吞吐对照" src="../downloads/files/deepinfer-system-optimization-20261117/DeepInfer系统级优化探索-assets/mhc-throughput.png" /></a></p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="可横向滚动的数据表"><table>
+<thead>
+<tr>
+<th style="text-align: right;">全局最大在途请求</th>
+<th style="text-align: right;">基线A 输出token/s</th>
+<th style="text-align: right;">融合B 输出token/s</th>
+<th style="text-align: right;">吞吐提高</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">851.25</td>
+<td style="text-align: right;">885.24</td>
+<td style="text-align: right;">+3.99%</td>
+</tr>
+<tr>
+<td style="text-align: right;">32</td>
+<td style="text-align: right;">1169.76</td>
+<td style="text-align: right;">1213.03</td>
+<td style="text-align: right;">+3.70%</td>
+</tr>
+<tr>
+<td style="text-align: right;">64</td>
+<td style="text-align: right;">1455.85</td>
+<td style="text-align: right;">1489.47</td>
+<td style="text-align: right;">+2.31%</td>
+</tr>
+</tbody>
+</table></div>
+<p>每格为该版本四个窗口TPS的算术均值。两次B实例均值都高于两次A；A2相对A1漂移−0.33%～−0.73%，B2相对B1为−0.01%～+0.06%。证据支持本组闭环正收益，尚不足以证明所有业务、硬件或长期统计显著。</p>
+<h3 id="24">2.4 延迟：改善并不覆盖每个指标</h3>
+<p>以下均为“基线A → 融合B”。完成时间是四个窗口真实完成秒数的均值，与“先平均TPS再取倒数”略有差异。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="可横向滚动的数据表"><table>
+<thead>
+<tr>
+<th style="text-align: right;">并发</th>
+<th style="text-align: right;">固定工作完成时间 s</th>
+<th style="text-align: right;">平均TTFT ms</th>
+<th style="text-align: right;">平均TPOT ms/token</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">50.151 → 48.225</td>
+<td style="text-align: right;">1590.80 → 1529.16</td>
+<td style="text-align: right;">6.184 → 5.951</td>
+</tr>
+<tr>
+<td style="text-align: right;">32</td>
+<td style="text-align: right;">36.496 → 35.194</td>
+<td style="text-align: right;">2115.90 → 2039.79</td>
+<td style="text-align: right;">6.709 → 6.493</td>
+</tr>
+<tr>
+<td style="text-align: right;">64</td>
+<td style="text-align: right;">29.324 → 28.662</td>
+<td style="text-align: right;">3066.53 → 3019.43</td>
+<td style="text-align: right;">7.631 → 7.643</td>
+</tr>
+</tbody>
+</table></div>
+<div class="table-scroll" tabindex="0" role="region" aria-label="可横向滚动的数据表"><table>
+<thead>
+<tr>
+<th style="text-align: right;">并发</th>
+<th style="text-align: right;">窗口P99 TTFT均值 ms</th>
+<th style="text-align: right;">窗口P99 TPOT均值 ms/token</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">9898.54 → 9462.69</td>
+<td style="text-align: right;">21.560 → 20.486</td>
+</tr>
+<tr>
+<td style="text-align: right;">32</td>
+<td style="text-align: right;">12721.21 → 12214.86</td>
+<td style="text-align: right;">23.466 → 22.470</td>
+</tr>
+<tr>
+<td style="text-align: right;">64</td>
+<td style="text-align: right;">14414.80 → 14148.59</td>
+<td style="text-align: right;">26.013 → 25.607</td>
+</tr>
+</tbody>
+</table></div>
+<p>TTFT从请求实际提交到引擎起算，<strong>不含闭环准入前等待</strong>；TPOT为每请求<code>(末token时间−首token时间)/(输出token数−1)</code>，每窗仅206条多token请求参与。表中P99先在各窗口计算，再平均，<strong>不是把全部请求合并后的总体P99，也不是逐token间隔P99</strong>。</p>
+<p>并发64平均TPOT从7.631到7.643 ms，约回退0.15%；吞吐增加不意味着每个请求延迟都降低。DFlash可一次接受多个token，TPOT也不等于一次decode forward耗时。</p>
+<h3 id="25-trace">2.5 Trace验证了什么</h3>
+<p>性能测量结束后，另采四实例×rank0/rank2共八份128步trace。每份有1次主模型prefill、127次主模型decode。候选中<code>40层×127轮=5080</code>次主模型MoE采用融合；四个独立系数kernel及Post各减少5080次。40次主模型prefill MoE和381次草稿MoE保留原路径。</p>
+<p>全16rank、40层、127轮decode的Top6路由计数守恒通过。但A/B诊断窗口覆盖的全局query为8010/9162，并非同一请求片段，不能逐kernel相减作收益。Trace负责确认融合实际发生和观察流水；正式吞吐来自无profiler窗口。</p>
+<h2 id="engram">三、没有明确整网增益：Engram重叠与提前路由</h2>
+<h3 id="31-engram">3.1 Engram：有独立计算，但资源并不独立</h3>
+<p>Engram查表由token ID决定，投影可在门控消费前准备。投影为<code>[M,6144] × [6144,25600] → [M,5,5120]</code>，五份向量是四路key和共享value。FP8权重本体约150 MiB，M16算量约5.03 GFLOPs；有数据独立性不代表有空闲带宽或计算资源。</p>
+<p>片段筛选从输入与路由已就绪开始，到四路MoE写回和Engram投影都完成为止。原mHC融合已包含在基线中，门控不在该片段内。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="可横向滚动的数据表"><table>
+<thead>
+<tr>
+<th>片段负载</th>
+<th style="text-align: right;">M</th>
+<th style="text-align: right;">串行中位数 μs</th>
+<th style="text-align: right;">双流中位数 μs</th>
+<th style="text-align: right;">延迟降低</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>全行有效合成，独立启动1</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">331.25</td>
+<td style="text-align: right;">321.38</td>
+<td style="text-align: right;">2.98%</td>
+</tr>
+<tr>
+<td>同配置独立启动2</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">329.67</td>
+<td style="text-align: right;">317.81</td>
+<td style="text-align: right;">3.60%</td>
+</tr>
+<tr>
+<td>全行有效合成，独立启动1</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">343.46</td>
+<td style="text-align: right;">336.41</td>
+<td style="text-align: right;">2.05%</td>
+</tr>
+<tr>
+<td>同配置独立启动2</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">343.40</td>
+<td style="text-align: right;">337.00</td>
+<td style="text-align: right;">1.86%</td>
+</tr>
+<tr>
+<td>按旧trace接收直方图构造，一次启动</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">266.06</td>
+<td style="text-align: right;">259.60</td>
+<td style="text-align: right;">2.43%</td>
+</tr>
+</tbody>
+</table></div>
+<p>每个样本先取16rank完整设备片段时长的最大值，再求中位数；性能轮无timer、无profiler。直方图构造只匹配行数与专家接收计数，不是原激活、原权重、原路由边的完整回放；前三次有效运行中BF16结果逐位相同，FP32系数为无容差相等检查，未区分正负零。</p>
+<p><a href="../downloads/files/deepinfer-system-optimization-20261117/DeepInfer系统级优化探索-assets/engram-fragment-trace.png" target="_blank" rel="noopener" aria-label="打开配图原尺寸"><img alt="Engram片段的实际任务区间" src="../downloads/files/deepinfer-system-optimization-20261117/DeepInfer系统级优化探索-assets/engram-fragment-trace.png" /></a></p>
+<p>这是独立profiler的示例调用，各窗口分别对齐自己的MoE起点。M16投影主要落在尾部，任务区间交集仅4.09 μs；M8虽有40.33 μs交集，两个kernel自身也可能变长。区间交集不等于省时，更不能当作Cube忙时。</p>
+<h3 id="32">3.2 接入整网后，新增收益接近持平</h3>
+<p>整网候选在L00/L13的FFN Norm后、router Gate前提交辅助流投影，L01/L14门控前等待；数学和原投影模块不变，仅主模型decode M≤16启用。<strong>两边都有mHC融合，这里只测Engram的增量。</strong> 该放置点与片段筛选不同，还可能与router竞争资源。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="可横向滚动的数据表"><table>
+<thead>
+<tr>
+<th style="text-align: right;">并发</th>
+<th style="text-align: right;">A1 token/s</th>
+<th style="text-align: right;">B1 token/s</th>
+<th style="text-align: right;">B2 token/s</th>
+<th style="text-align: right;">两次B均值相对A1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">877.65</td>
+<td style="text-align: right;">879.87</td>
+<td style="text-align: right;">880.14</td>
+<td style="text-align: right;">+0.27%</td>
+</tr>
+<tr>
+<td style="text-align: right;">32</td>
+<td style="text-align: right;">1207.30</td>
+<td style="text-align: right;">1206.03</td>
+<td style="text-align: right;">1206.28</td>
+<td style="text-align: right;">-0.10%</td>
+</tr>
+<tr>
+<td style="text-align: right;">64</td>
+<td style="text-align: right;">1484.04</td>
+<td style="text-align: right;">1479.14</td>
+<td style="text-align: right;">1480.10</td>
+<td style="text-align: right;">-0.30%</td>
+</tr>
+</tbody>
+</table></div>
+<p>三次独立启动、18个正式窗口完成远端回执核对，完整输出ID、实际容量和专家布局相同。但A2未验收、原始账本未完整取回复核，TTFT/TPOT及本轮整网诊断trace待补。表中是部分结果，不是完整ABBA。</p>
+<p>当前没有建立明确的新增整网收益。不能把mHC的3.99%与Engram片段的3.60%相加，也不能拿不同日期或节点的绝对TPS横向拼接。另一组早期mHC单对A/B曾观察到+0.35%、+0.23%、−1.06%，同样提醒我们收益依赖测试条件。</p>
+<h3 id="33-topknpu">3.3 提前TopK：数学候选，尚未产生NPU性能数据</h3>
+<p>shifted mHC可将MoE归一化前输入展开为<code>x = r_eff + alpha·A·W1·W2</code>，于是router线性部分可重排成<code>q = r_eff·Q + alpha·A·P</code>，其中<code>Q = diag(gamma)·Wg</code>、<code>P = W1·W2·Q</code>。残差项和动态混合系数必须保留。</p>
+<p>实际选择比较的是<code>sqrt(softplus(q/rho(x))) + 专家校正bias</code>。不同专家的bias破坏了“公共正缩放总不影响TopK”的简化；归一化尺度、BF16舍入、FP8量化也需按真实实现验证。仅实数结合律成立，不代表专家ID或最终token逐位一致。</p>
+<p>CSA后直接计算A·P的算量约为原gate的6.4倍，另需残差分支；从第一次输出投影U后开始约1.6倍，仍非免费。原输出投影要生成真实专家输入，不能删除。现阶段只有CPU数学验证及反例，没有精确提前路由的NPU实现和整网收益。<a href="https://zhaoyuhsin.github.io/downloads/megamoe-math-overlap-20261113.html">完整数学与trace成本分析</a></p>
+<h2 id="_2">四、如何理解结论，以及下一步</h2>
+<h3 id="41">4.1 本轮系统指标的适用范围</h3>
+<p>固定256条公开ShareGPT请求，平均输入272.70 token、最长3961；平均输出166.76、最长794。启用自然EOS且保留原回答长度对应的输出上限：113条自然结束，143条到达上限，不是全部自然结束，也不是4K上下文稳态业务。每窗共42691个输出token。</p>
+<p>TPS=<code>42691 ÷ max_rank(最后输出相对时间)</code>，包含完整工作量在引擎中的排队；直接调用Engine，不包含HTTP、客户端网络和分词。A/B实际KV容量统一260000块，专家布局固定，使用原模型权重和自然router；本实验没有验证EPLB动态重排收益。</p>
+<p>mHC四实例完整输出ID一致、24窗零JIT并通过原始账本复算。Engram三实例目前只是远端回执通过，证据等级不同。正式性能关闭profiler/timer，调试trace单独采集；周期资源监测未检出正式窗口争用，但不能证明采样间隙绝对独占。</p>
+<h3 id="42-slo">4.2 在线SLO仍未验收</h3>
+<p>mHC另做了Poisson 4/7 req/s、15秒预热＋45秒测量的稳定到达率实验，A1/B1/B2完成；A2在基线路径发生Gloo包长断言，整实例失败，不能拼接其部分窗口补成ABBA。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="可横向滚动的数据表"><table>
+<thead>
+<tr>
+<th style="text-align: right;">到达率 req/s</th>
+<th style="text-align: right;">A1 / B1 / B2 输出token/s</th>
+<th style="text-align: right;">A1 / B1 / B2 实验goodput req/s</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">637.14 / 636.24 / 637.02</td>
+<td style="text-align: right;">3.244 / 3.244 / 3.267</td>
+</tr>
+<tr>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">1176.76 / 1173.43 / 1171.69</td>
+<td style="text-align: right;">5.044 / 5.122 / 5.178</td>
+</tr>
+</tbody>
+</table></div>
+<p>此处goodput是满足TTFT≤2秒、请求平均TPOT≤50 ms的到达cohort请求数÷45秒，仅为实验门槛；它不是官方服务SLO。缺少完整A2，不能把小幅goodput变化宣称为稳定在线收益。到达率限制下TPS相近，也不能独立证明容量优化无效。</p>
+<h3 id="43">4.3 后续应做有区分力的验证</h3>
+<ol>
+<li><strong>保留mHC已验收结果，扩大代表性。</strong> 用长上下文、混合长度及更多独立运行验证覆盖范围；修复在线基线通信问题后，再做完整在线对照。</li>
+<li><strong>Engram先解释近持平。</strong> 如能取回A2和账本，先补审计；另采同工作量诊断，对照“Gate前提交”和“TopK后提交”，区分router竞争与尾部执行不足。不能直接把更复杂原生融合当成收益保证。</li>
+<li><strong>提前路由先过精度与成本筛选。</strong> 在真实输入上检查含bias的TopK和路由权重，再测完整路由前缀；有可靠提前量后才考虑发布通信元数据。</li>
+</ol>
+<p>目前可以保留的结论是：<strong>mHC跨算子尾部融合在一组完整闭环实验中带来约2%～4%吞吐改善；Engram的片段正收益尚未转化为明确整网增益；提前路由仍需验证。</strong> 三个候选保持各自证据边界，不累加，不默认扩大到Pro的非shifted mHC。</p>
+<h3 id="_3">阅读与数据</h3>
+<ul>
+<li><a href="https://zhaoyuhsin.github.io/downloads/deepinfer-inference-guide-20261102.html">从一句话到一句话：DeepInfer全流程与Trace图解</a></li>
+<li><a href="https://zhaoyuhsin.github.io/downloads/megamoe-math-overlap-20261113.html">MegaMoE头尾还能融合什么：数学等价与成本分析</a></li>
+<li><a href="../downloads/files/deepinfer-system-optimization-20261117/results-summary.json">本页可公开结果摘要 JSON</a> · <a href="../downloads/files/deepinfer-system-optimization-20261117/results-summary.csv">表格 CSV</a></li>
+</ul>
+<p>公开附件只含文章、配图和聚合指标；不含原始请求文本、token账本、机器访问资料或内部日志。摘要保留来源文件SHA-256，便于核对本地证据身份，不代表原始证据已公开或第三方独立复现。</p></article></div></main><footer><span>YuHsin · 用完整执行路径检验优化</span><a href="../">返回主页 ↑</a></footer></body></html>

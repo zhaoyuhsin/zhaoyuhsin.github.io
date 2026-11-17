@@ -1,0 +1,335 @@
+{
+  "title": "DeepInfer系统级优化探索",
+  "updated": "2026-11-17",
+  "scope": "本聊天已完成实验的证据快照，不是实时任务状态。",
+  "definitions": {
+    "ttft": "first_s-submitted_s; excludes closed-loop admission wait",
+    "tpot": "(last_s-first_s)/(output_tokens-1), output_tokens>1",
+    "aggregation": "compute request mean and P99 within each global 256-request window; average four window statistics per version; throughput arithmetic mean of four windows"
+  },
+  "workload": {
+    "requests_per_window": 256,
+    "output_tokens_per_window": 42691,
+    "requests": 256,
+    "mean_prompt_tokens": 272.69921875,
+    "max_prompt_tokens": 3961,
+    "mean_output_tokens": 166.76171875,
+    "max_output_tokens": 794,
+    "finish_reasons": {
+      "stop": 113,
+      "length": 143
+    }
+  },
+  "mhc": {
+    "status": "complete_abba_audited",
+    "formal_windows": 24,
+    "hardware": "16 Ascend 950 NPU",
+    "parallel": "EP16/CP1",
+    "fixed_kv_blocks": 260000,
+    "measurements": [
+      {
+        "concurrency": 16,
+        "instance_tps": {
+          "A1": 852.650518244452,
+          "B1": 885.2821924591451,
+          "B2": 885.2070056425014,
+          "A2": 849.8483178311672
+        },
+        "throughput_change_percent": 3.993562907963555,
+        "baseline": {
+          "tps": 851.2494180378096,
+          "rps": 5.10458529942328,
+          "completion_s": 50.1513865224988,
+          "ttft_mean_ms": 1590.8035882523848,
+          "ttft_p50_ms": 1236.780892497336,
+          "ttft_p99_ms": 9898.539963132853,
+          "tpot_mean_ms": 6.184007077017579,
+          "tpot_p50_ms": 5.688366603646044,
+          "tpot_p99_ms": 21.56004786033568,
+          "tpot_n": 206
+        },
+        "optimized": {
+          "tps": 885.2445990508231,
+          "rps": 5.308440124546409,
+          "completion_s": 48.22540265751013,
+          "ttft_mean_ms": 1529.158937128443,
+          "ttft_p50_ms": 1189.7591787455895,
+          "ttft_p99_ms": 9462.688803619667,
+          "tpot_mean_ms": 5.951183021374625,
+          "tpot_p50_ms": 5.496354668391642,
+          "tpot_p99_ms": 20.48561661831627,
+          "tpot_n": 206
+        }
+      },
+      {
+        "concurrency": 32,
+        "instance_tps": {
+          "A1": 1173.758568671291,
+          "B1": 1212.753727424847,
+          "B2": 1213.315147865946,
+          "A2": 1165.7698469379864
+        },
+        "throughput_change_percent": 3.699055720123745,
+        "baseline": {
+          "tps": 1169.7642078046388,
+          "rps": 7.014584741467464,
+          "completion_s": 36.49603862999356,
+          "ttft_mean_ms": 2115.9031965532336,
+          "ttft_p50_ms": 1558.8094574959541,
+          "ttft_p99_ms": 12721.214840248633,
+          "tpot_mean_ms": 6.70928653130666,
+          "tpot_p50_ms": 6.143423135932094,
+          "tpot_p99_ms": 23.466279876083718,
+          "tpot_n": 206
+        },
+        "optimized": {
+          "tps": 1213.0344376453966,
+          "rps": 7.274058139589645,
+          "completion_s": 35.19404314499843,
+          "ttft_mean_ms": 2039.7932893068287,
+          "ttft_p50_ms": 1504.0373525043833,
+          "ttft_p99_ms": 12214.859854375738,
+          "tpot_mean_ms": 6.492971086860612,
+          "tpot_p50_ms": 5.952058853803626,
+          "tpot_p99_ms": 22.47009899256227,
+          "tpot_n": 206
+        }
+      },
+      {
+        "concurrency": 64,
+        "instance_tps": {
+          "A1": 1461.1811684274194,
+          "B1": 1489.0251595293648,
+          "B2": 1489.9071033862465,
+          "A2": 1450.5213620199854
+        },
+        "throughput_change_percent": 2.3089492063557815,
+        "baseline": {
+          "tps": 1455.8512652237023,
+          "rps": 8.730128689823799,
+          "completion_s": 29.32443734750268,
+          "ttft_mean_ms": 3066.533136748319,
+          "ttft_p50_ms": 1728.9289237451158,
+          "ttft_p99_ms": 14414.800439745157,
+          "tpot_mean_ms": 7.631146386203167,
+          "tpot_p50_ms": 6.974687412598491,
+          "tpot_p99_ms": 26.012642623390995,
+          "tpot_n": 206
+        },
+        "optimized": {
+          "tps": 1489.4661314578057,
+          "rps": 8.931702926921323,
+          "completion_s": 28.66195102999336,
+          "ttft_mean_ms": 3019.4306328813527,
+          "ttft_p50_ms": 1669.4651312536735,
+          "ttft_p99_ms": 14148.589767249357,
+          "tpot_mean_ms": 7.642966057800352,
+          "tpot_p50_ms": 6.99591166792042,
+          "tpot_p99_ms": 25.60667038560495,
+          "tpot_n": 206
+        }
+      }
+    ],
+    "limits": [
+      "直接Engine调用，不含HTTP/分词/客户端网络",
+      "每版两次独立启动，不证明长期或总体统计显著",
+      "TTFT从实际提交起，不含闭环准入等待；P99为各窗口P99的均值",
+      "并发64平均TPOT略有回退",
+      "周期资源观测未检出争用，不是连续独占证明"
+    ]
+  },
+  "engram": {
+    "status": "partial_three_instances",
+    "full_abba_audited": false,
+    "formal_windows": 18,
+    "measurements": [
+      {
+        "concurrency": 16,
+        "A1_tps": 877.6450163255739,
+        "B1_tps": 879.8660663879906,
+        "B2_tps": 880.1364523400865,
+        "B_mean_vs_A1_percent": 0.268473357067478,
+        "B_independent_drift_percent": 0.03073035345093622
+      },
+      {
+        "concurrency": 32,
+        "A1_tps": 1207.3031740485671,
+        "B1_tps": 1206.0274449575445,
+        "B2_tps": 1206.2841479487379,
+        "B_mean_vs_A1_percent": -0.09503641008233865,
+        "B_independent_drift_percent": 0.021285004107207683
+      },
+      {
+        "concurrency": 64,
+        "A1_tps": 1484.0383204862555,
+        "B1_tps": 1479.1395956235965,
+        "B2_tps": 1480.0989719958598,
+        "B_mean_vs_A1_percent": -0.2977710626151153,
+        "B_independent_drift_percent": 0.06486043474880354
+      }
+    ],
+    "instances": [
+      {
+        "instance": "A1",
+        "cases": {
+          "fixed-c16-r1": {
+            "requests": 256,
+            "output_tokens": 42691,
+            "completion_s": 48.780193820013665,
+            "output_tokens_per_s": 875.170774382709,
+            "request_outputs_sha256": "4d40b0db9bc87172250a1e3bc0e73cad2ffe0551d44457bec409796cd999707a"
+          },
+          "fixed-c16-r2": {
+            "requests": 256,
+            "output_tokens": 42691,
+            "completion_s": 48.50592644000426,
+            "output_tokens_per_s": 880.1192582684388,
+            "request_outputs_sha256": "4d40b0db9bc87172250a1e3bc0e73cad2ffe0551d44457bec409796cd999707a"
+          },
+          "fixed-c32-r1": {
+            "requests": 256,
+            "output_tokens": 42691,
+            "completion_s": 35.36150935996557,
+            "output_tokens_per_s": 1207.2731275529911,
+            "request_outputs_sha256": "4d40b0db9bc87172250a1e3bc0e73cad2ffe0551d44457bec409796cd999707a"
+          },
+          "fixed-c32-r2": {
+            "requests": 256,
+            "output_tokens": 42691,
+            "completion_s": 35.35974929999793,
+            "output_tokens_per_s": 1207.333220544143,
+            "request_outputs_sha256": "4d40b0db9bc87172250a1e3bc0e73cad2ffe0551d44457bec409796cd999707a"
+          },
+          "fixed-c64-r1": {
+            "requests": 256,
+            "output_tokens": 42691,
+            "completion_s": 28.64042263000738,
+            "output_tokens_per_s": 1490.5855458735946,
+            "request_outputs_sha256": "4d40b0db9bc87172250a1e3bc0e73cad2ffe0551d44457bec409796cd999707a"
+          },
+          "fixed-c64-r2": {
+            "requests": 256,
+            "output_tokens": 42691,
+            "completion_s": 28.8942519800039,
+            "output_tokens_per_s": 1477.4910950989165,
+            "request_outputs_sha256": "4d40b0db9bc87172250a1e3bc0e73cad2ffe0551d44457bec409796cd999707a"
+          }
+        }
+      },
+      {
+        "instance": "B1",
+        "cases": {
+          "fixed-c16-r1": {
+            "requests": 256,
+            "output_tokens": 42691,
+            "completion_s": 48.39693727000849,
+            "output_tokens_per_s": 882.1012735129325,
+            "request_outputs_sha256": "4d40b0db9bc87172250a1e3bc0e73cad2ffe0551d44457bec409796cd999707a"
+          },
+          "fixed-c16-r2": {
+            "requests": 256,
+            "output_tokens": 42691,
+            "completion_s": 48.643458179954905,
+            "output_tokens_per_s": 877.6308592630487,
+            "request_outputs_sha256": "4d40b0db9bc87172250a1e3bc0e73cad2ffe0551d44457bec409796cd999707a"
+          },
+          "fixed-c32-r1": {
+            "requests": 256,
+            "output_tokens": 42691,
+            "completion_s": 35.27896404999774,
+            "output_tokens_per_s": 1210.0978911823443,
+            "request_outputs_sha256": "4d40b0db9bc87172250a1e3bc0e73cad2ffe0551d44457bec409796cd999707a"
+          },
+          "fixed-c32-r2": {
+            "requests": 256,
+            "output_tokens": 42691,
+            "completion_s": 35.517909579968546,
+            "output_tokens_per_s": 1201.956998732745,
+            "request_outputs_sha256": "4d40b0db9bc87172250a1e3bc0e73cad2ffe0551d44457bec409796cd999707a"
+          },
+          "fixed-c64-r1": {
+            "requests": 256,
+            "output_tokens": 42691,
+            "completion_s": 28.854887560009956,
+            "output_tokens_per_s": 1479.5067182713801,
+            "request_outputs_sha256": "4d40b0db9bc87172250a1e3bc0e73cad2ffe0551d44457bec409796cd999707a"
+          },
+          "fixed-c64-r2": {
+            "requests": 256,
+            "output_tokens": 42691,
+            "completion_s": 28.869214689999353,
+            "output_tokens_per_s": 1478.7724729758127,
+            "request_outputs_sha256": "4d40b0db9bc87172250a1e3bc0e73cad2ffe0551d44457bec409796cd999707a"
+          }
+        }
+      },
+      {
+        "instance": "B2",
+        "cases": {
+          "fixed-c16-r1": {
+            "requests": 256,
+            "output_tokens": 42691,
+            "completion_s": 48.36959035997279,
+            "output_tokens_per_s": 882.5999906612402,
+            "request_outputs_sha256": "4d40b0db9bc87172250a1e3bc0e73cad2ffe0551d44457bec409796cd999707a"
+          },
+          "fixed-c16-r2": {
+            "requests": 256,
+            "output_tokens": 42691,
+            "completion_s": 48.64112737000687,
+            "output_tokens_per_s": 877.6729140189328,
+            "request_outputs_sha256": "4d40b0db9bc87172250a1e3bc0e73cad2ffe0551d44457bec409796cd999707a"
+          },
+          "fixed-c32-r1": {
+            "requests": 256,
+            "output_tokens": 42691,
+            "completion_s": 35.260091189993545,
+            "output_tokens_per_s": 1210.745592516087,
+            "request_outputs_sha256": "4d40b0db9bc87172250a1e3bc0e73cad2ffe0551d44457bec409796cd999707a"
+          },
+          "fixed-c32-r2": {
+            "requests": 256,
+            "output_tokens": 42691,
+            "completion_s": 35.521878460014705,
+            "output_tokens_per_s": 1201.822703381389,
+            "request_outputs_sha256": "4d40b0db9bc87172250a1e3bc0e73cad2ffe0551d44457bec409796cd999707a"
+          },
+          "fixed-c64-r1": {
+            "requests": 256,
+            "output_tokens": 42691,
+            "completion_s": 28.833113180007786,
+            "output_tokens_per_s": 1480.6240218833168,
+            "request_outputs_sha256": "4d40b0db9bc87172250a1e3bc0e73cad2ffe0551d44457bec409796cd999707a"
+          },
+          "fixed-c64-r2": {
+            "requests": 256,
+            "output_tokens": 42691,
+            "completion_s": 28.853576940018684,
+            "output_tokens_per_s": 1479.5739221084025,
+            "request_outputs_sha256": "4d40b0db9bc87172250a1e3bc0e73cad2ffe0551d44457bec409796cd999707a"
+          }
+        }
+      }
+    ],
+    "limits": [
+      "两边都已有mHC融合，只测Engram重叠增量",
+      "A2未验收，原始账本未完整取回复核",
+      "TTFT/TPOT与整网诊断trace待补",
+      "不将片段收益相加或与旧mHC绝对TPS混算"
+    ]
+  },
+  "provenance": [
+    {
+      "id": "mhc-system-audit",
+      "sha256": "f715f0854d6623be64fd7195c33132b794a161a0cc77c4b86f5fcbf507955e16"
+    },
+    {
+      "id": "mhc-latency-summary",
+      "sha256": "560ea23d80d4841f5c61cc80744709cff69264db2b24e45d0de4a23c5ea99810"
+    },
+    {
+      "id": "engram-partial-review",
+      "sha256": "6e49a441e1e9408182262fd7239d2df78314dc5c9cce3136d0930fc4b24bf98f"
+    }
+  ]
+}
