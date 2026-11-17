@@ -1,5 +1,13 @@
 # 项目状态
 
+## 11月18日凌晨更新
+
+本轮无新端到端成绩，G2／main不变。离线拆解发现：小Wave版每核G1↔G2转换15→45次，跨阶段nonISSUE累计16.76→38.65μs，但单次1.12→0.86μs；G2内部间隙回收10.61μs。不是每次切换更慢或每次都排空；全部nonISSUE净增9.73μs只是诊断线索，不等同硬件空闲。
+
+owner对齐／本地FP32 partial探索在CPU最小前缀发现FIFO环和单槽串行风险，guard仅解除该前缀环；独立事件资源尚未全证，未改生产或上NPU。早Dispatch数据面新SDK单次配置／编译通过，真实native和冷件／释放已复核；仅构建metadata修正，未加载／运行探针，无数据正确性或性能结论。
+
+下一步优先有界数据面资格：实际缺count／旧epoch／补发／全M4字节和metadata／真实回收。全组runtime/加载身份就绪后才放行probe，仍不跑GMM；通过后才组合早Dispatch与小Wave。详见Decode攻关页顶部。以下为历史窗口，原始口径保留。
+
 ## 2026-11-17最新主线：小Wave＋Split-K、早Dispatch与组合
 
 **最新同机三臂首筛已完成：**EP8／BS32／无共享／完整通信，Profiler Level1、设备timer-off，各一次原34call，后10逐轮rank-max：保留A587.1452、小Wave＋S2＋lookahead／有界partial LFB597.7784、叠加紧排单FIX的LFBQ597.0636μs。共同Event588.6673／599.2489／598.5651μs另列。Q仅少0.7148μs（约0.12%），仍较A慢约1.69%；非ABBA，不认稳定收益，main/G2不改。2025冷存哈希、480原kernel、96原Golden报告合同、24rank四库与退出释放root独审通过。
