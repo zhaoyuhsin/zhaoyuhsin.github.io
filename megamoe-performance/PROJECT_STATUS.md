@@ -1,5 +1,15 @@
 # 项目状态
 
+## 当前结论：小Wave的回退被追回，尚无净优化
+
+EP8／BS32／无共享／完整通信同窗首筛：原Wave **587.13μs**，仅小Wave **697.27μs**，小Wave＋一波lookahead（无Split-K）**589.27μs**。主指标timer-off、原kernel后10逐轮rank-max；lookahead追回108.00μs，但仍较原Wave慢0.36%，一次首筛不算稳定收益。三臂原Golden、实际载库、CSV、自然退出与资源释放通过，G2／main保持。
+
+慢因证据：前一配对流水将仅小Wave回退定位到GMM2输入ready等待（每核9.33→112.86μs），头尾未劣化。新BL整kernel Scalar从B654.41回到541.47μs，MAC基本不变；**新BL阶段流水未采，不直接宣称WAIT已恢复或已证某种bound**。下一补完整被动rank0流水及同callCSV，不扫常规参数。
+
+早Dispatch首次接收ready0失败已保留；实际SDK／ISA指向研究probe原子发布后即时读的观察竞态候选。仅研究探针的有界观察／完整report修复已本地CPU通过，尚未新SDK／设备资格。先过真实payload／epoch／回收，再接首descriptor→GMM1，最后组合小Wave／Split-K。目标仍为统一版本在EP8／EP32、BS32／64／96完整端到端胜强小算子；不把准备或局部回收当SOTA。
+
+以下为历史状态，不能作为新运行权限或当前成绩。
+
 ## 最新：小Wave回退落在GMM2输入ready等待
 
 EP8／BS32完整通信原timer-off首筛仍为587.2519→695.8325μs。新rank0配对被动诊断已完成：头至首次GMM1 36.351→34.268μs，GMM推进窗583.030→693.702，末ISSUE后Scalar尾8.866→8.878。**主要劣化在中段，不是尾部Combine。**
