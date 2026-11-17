@@ -2,7 +2,7 @@
 
 ## 当前最高优先级：尽早集成组合
 
-按用户最新要求，优先接“就绪驱动远端写Dispatch＋小Wave／Split-K”，用组合阶段反馈反哺两条独立线，不等它们各自净胜才集成。计算接线、通信必要校验、中间结果参考三路并行；当前仅本地准备，未产生组合SDK／NPU或性能结果。先真实head→S2 GMM1→activation，再尽快接两descriptor小Wave／GMM2／Combine与完整筛选。BL独立流水为辅助，正确性和缓冲回收门禁保留。以下性能仍为已完成的独立对照。
+按用户最新要求，优先接“就绪驱动远端写Dispatch＋小Wave／Split-K”，用组合阶段反馈反哺两条独立线，不等它们各自净胜才集成。**早Dispatch已过EP8／BS32真实数据资格**：8rank、88快照、40个payload字节摘要独立核验和两轮epoch回收通过。组合84043b33已接真实head→32组S2 GMM1→原activation，root独立4 CPU检查通过，正在准备SDK；尚无组合SDK／NPU／性能结果，不外推EP32。随后尽快接两descriptor小Wave／GMM2／Combine与完整筛选。BL流水为辅助，必要精度／容量／回收门禁保留。以下性能仍为已完成独立对照，main不改。
 
 ## 当前结论：小Wave的回退被追回，尚无净优化
 
@@ -10,7 +10,7 @@ EP8／BS32／无共享／完整通信同窗首筛：原Wave **587.13μs**，仅�
 
 慢因证据：前一配对流水将仅小Wave回退定位到GMM2输入ready等待（每核9.33→112.86μs），头尾未劣化。新BL整kernel Scalar从B654.41回到541.47μs，MAC基本不变；**新BL阶段流水未采，不直接宣称WAIT已恢复或已证某种bound**。下一补完整被动rank0流水及同callCSV，不扫常规参数。
 
-早Dispatch首次接收ready0失败已保留；实际SDK／ISA指向研究probe原子发布后即时读的观察竞态候选。仅研究探针的有界观察／完整report修复已本地CPU通过，尚未新SDK／设备资格。先过真实payload／epoch／回收，再接首descriptor→GMM1，最后组合小Wave／Split-K。目标仍为统一版本在EP8／EP32、BS32／64／96完整端到端胜强小算子；不把准备或局部回收当SOTA。
+早Dispatch首次接收ready0失败原件保留；研究probe原子发布后即时读的问题以有界同flag观察修复，生产协议和数学不改。新SDK、实际数据和退出已通过，**尚未证明组合GMM活性、数值正确或端到端提速**。目标仍为统一版本在EP8／EP32、BS32／64／96完整端到端胜强小算子；不把功能资格当SOTA。
 
 以下为历史状态，不能作为新运行权限或当前成绩。
 
