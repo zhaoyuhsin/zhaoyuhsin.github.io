@@ -71,6 +71,7 @@
 <li>观测线：已做六份旧trace互斥阶段账和负控；准备08964ce完成等待修复的真实SDK/采集。</li>
 <li>root：独立审计、唯一资源分配、完整链路验收与每小时总结。</li>
 </ul>
+<p>源码研究保存点已推个人仓库：<a href="https://gitcode.com/Yancy_/DeepEP/tree/codex/decode-wave-splitk-1117">完整通信S2候选C</a>（cc763928）、<a href="https://gitcode.com/Yancy_/DeepEP/tree/codex/decode-wave-splitk-lookahead-1117">静态lookahead控制L</a>（4752554）、<a href="https://gitcode.com/Yancy_/DeepEP/tree/codex/megamoe-decode-head-push-1117">早Dispatch CPU协议</a>（692dae4）。C/L各82项CPU通过，头部协议11项通过；均不等于新SDK/NPU资格。早Dispatch尚未native集成，不能直接拿CPU协议分支测性能。</p>
 <p>冻结对照为基线／仅小Wave／小Wave＋S2／仅早Dispatch／二者组合，按证据逐步实施，不一次铺满参数矩阵。当前新资源扫描SSH不通，跳转入口亦不可达，是连接阻塞而不是设备忙；本地工作继续，<strong>本轮暂无新增NPU性能</strong>。</p>
 <p>已复用原小时任务恢复跟进，每小时报告：大思路、现状/实测、慢阶段、指标与原因证据、下一实验/阻塞。历史性能表保留，未达到SOTA不宣称完成。</p>
 &lt;details&gt;
@@ -305,7 +306,7 @@
 &lt;/details&gt;
 
 <h1>1111 Decode攻关</h1>
-<p>更新时间：2026-11-17T13:09:15+08:00</p>
+<p>更新时间：2026-11-17T13:11:34+08:00</p>
 <p>目标：EP8／EP32、每卡BS32／64／96，统一版本优于强级联参考。A2及其G2后续版已有小幅完整EP8收益，尚未验收为统一最优；main未因本轮实验改变。</p>
 <h2>完整通信原A基线</h2>
 <p>c5冻结源码，warmup10／iters20取后10；主性能timer-off、kernel Duration。主指标为逐轮全rank最大值的均值；rank-min另列，不与用户历史小算子event耗时混算收益。</p>
