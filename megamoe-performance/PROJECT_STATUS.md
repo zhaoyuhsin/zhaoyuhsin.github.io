@@ -2,7 +2,9 @@
 
 ## 当前最高优先级：尽早集成组合
 
-按用户最新要求，优先接“就绪驱动远端写Dispatch＋小Wave／Split-K”，用组合阶段反馈反哺两条独立线，不等它们各自净胜才集成。**早Dispatch已过EP8／BS32真实数据资格**：8rank、88快照、40个payload字节摘要独立核验和两轮epoch回收通过。组合已接真实head→32组S2 GMM1→原activation；原型仅修两报告类型后为[cf4e5b24研究分支](https://gitcode.com/Yancy_/DeepEP/tree/codex/decode-head-splitk-integration-1118)，新SDK编译和root独立冷审通过，首构建失败原件保留。下一是真实单／双head的原生数值与活性，再接GMM2／Combine。**尚无组合NPU／性能结果，不外推EP32，不改main。** BL流水为辅助，以下仍为既成独立对照。
+按用户最新要求，优先集成“就绪驱动远端写Dispatch＋小Wave／Split-K”，用组合反馈反哺单线。**首组合原生功能通过**：[cf4e5b24研究分支](https://gitcode.com/Yancy_/DeepEP/tree/codex/decode-head-splitk-integration-1118)，EP8／BS32真实head→32组S2 GMM1→原activation；8rank单／双head共64原生调用。root独立重算16实际scratch中的24unit，原容差未变；后续count仍Pending，16 Runtime／8 Store关闭及进程锁释放通过。原失败保留，main不改。
+
+**分阶段功能不等于通算重叠或提速。** 组合尚无完整G2／Combine／调度／端到端、阶段timer或PMU结果，不外推EP32。下一接descriptor完整消费，再接单kernel真实生产／消费与全部head／tail，同父完整对照。BL流水辅助、不抢组合窗口，以下性能仍为既成独立对照。
 
 ## 当前结论：小Wave的回退被追回，尚无净优化
 
