@@ -1,5 +1,15 @@
 # 项目状态
 
+## 2026-11-17最新主线：小Wave＋Split-K、早Dispatch与组合
+
+- 用户指定按“慢阶段→timer/Profiler/PMU指标→原因假设→下一判别→完整端到端”推进。方法已写入调优SKILL与本地METHOD.md；重叠不重复求和、缺指标不填0。
+- 重开小Wave＋S2的完整通信探索：旧纯算慢5.1%不包含Combine收益；配对最晚AIC核G2输入WAIT 2.113→13.316μs，G1 ISSUE反而90.017→86.310μs。先查partial/激活/scale发布依赖，再测真实通算重叠，不直接删等待。
+- 找回9月早Dispatch push/pull源码链，部分push确实删除输入公共拉齐；约230μs反馈与最终push追平尚缺原始CSV/trace资格，不先验认成已复现。
+- 三探索agent（Sol/high）＋root并行，五臂为基线/小Wave/S2/早Dispatch/组合。现有网络连接阻塞，暂无本轮新NPU数据；本地CPU实现/账本继续，main和G2不变。
+- 原megamoe-decode小时跟进已按用户新授权恢复ACTIVE，按五项结构每小时总结，至原两周收尾日11月25日；下文旧“暂停”和停止Split-K整个方向的表述只作历史。
+
+## 以下为本日此前已收口实验
+
 ## 2026-11-17：四路结构探索，无新保留收益
 
 - 保留G2 `113b464`，main未改。新整块owner经过联合CPU图、真实SDK/lowering与单卡原Golden验证，但EP8/BS32对应纯计算557.0855→606.5096μs，慢8.87%；旧Dual同窗600.1524μs。每臂一次独立启动、timer-off，非ABBA、非完整通信。原CSV/输出本地冷存，总控独立重算。

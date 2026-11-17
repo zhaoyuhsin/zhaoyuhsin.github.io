@@ -5,6 +5,15 @@ description: Tune this project's fused Ascend MegaMoE against layout-optimized D
 
 # 调优 SKILL
 
+## 当前必行：阶段证据驱动结构创新（2026-11-17）
+
+- 每轮结论固定为“大思路→慢阶段/差额→原始timer和profiling字段→原因假设/反证→下一最小实验→完整端到端验收”。没有指标写未采，不把猜测写成bound已证。
+- 阅读账本：头部、开头Dispatch暴露、GMM1、GMM2、计算内候选气泡、尾部Combine/同步/Reduce。G1/G2跨核重叠需单列；Dispatch/SwiGLU/partial merge/Combine作为重叠侧轨，不重复求和；非ISSUE不自动表示硬件空闲。每核累计、全核区间并集、最晚核和全rank主指标分开。
+- 贯彻“小Wave+真Split-K让少量任务利用AIC、增加通算重叠”和“去全卡拉齐、就绪即远端写Dispatch、首GMM提前”，再验证两者组合。不将某个负实现泛化为整个架构方向无效。
+- 旧小Wave+S2相对原Wave慢5.1%是无通信纯计算；必须定位新增代价，并在完整通信中测是否被少暴露的Dispatch/Combine/尾段抵消，不能只凭纯算回退关闭方向。
+- 用基线/仅小Wave/小Wave+S2/仅早Dispatch/组合做逐步消融；参数只服务结构假设，不盲扫。主性能timer-off，诊断被动流水与同调用CSV配对，task-block分AIC/AIV0/AIV1，PMU字段按工具实际能力采。
+- 每小时总结：大思路、现状/实测、慢阶段、指标与原因证据、下一实验/阻塞。无新NPU数据也明确写出，不拿CPU/SDK成果充数。
+
 适用于本项目的 MegaMoE 性能实验。目标、当前候选和下一步以项目状态MD为准；最终性能结论进入离线看板。这里只维护能改变下一次实验决策的方法，不按实验次数判断进展。
 
 ## 1. 固定对照，再找差距
@@ -77,7 +86,7 @@ msprof --task-time=on --task-block=on --aic-metrics=PipeUtilization --type=text 
 - 远端长测冻结脚本路径和字节，不能运行中覆盖Bash文件。重试保留旧失败状态，用新节点；源码上传先核对完整SHA。设备测量有效性与控制器返回码分别审计，不能静默改写失败记录。
 - 先确认优化路径真的启用：rail快路由在当前版本仅用于BS≤256，把它改快不能解释BS512/1024；同一VF覆盖Direct后才是对应shape的有效实验。
 - 发射成功、kernel运行成功和有效性能行是三个门槛。SIMT迁移必须核对动态shared、静态区、VF栈及手工UB布局；只有alignment kernel的CSV不能算MegaMoE变快。失败即保留原始runtime日志，不能放宽kernel筛选掩盖异常。
-- CPU指令桩要先核对实际overload的地址单位；同名Gather并不等价。[Reg Gather的索引是元素](http[机器本地路径未公开])，GatherB是字节偏移。用非均匀位型、尾向量和保护区测试，不能只用均衡常数数据验证地址公式。
+- CPU指令桩要先核对实际overload的地址单位；同名Gather并不等价。[Reg Gather的索引是元素](https://www.hiascend.com/document/detail/en/CANNCommunityEdition/910/API/ascendcopapi/docs/en/api/SIMD-API/basic_api/reg_vector_compute/reg_data_load/Gather_discrete.md)，GatherB是字节偏移。用非均匀位型、尾向量和保护区测试，不能只用均衡常数数据验证地址公式。
 - 计时边界以原始区间为准，而非外层C++作用域：本项目EndWait会重写tile ISSUE起点，实测WAIT和ISSUE不重叠。把预取移到WAIT之前后，一部分工作会进入未分类区间；不能把ISSUE下降全部称为纯计算收益。用区间并/交集检查，并以完整Duration验收。
 - R32带权metadata的反例：单份BS512流水中Dispatch ISSUE约120→57μs，但完整kernel两轮均值回退约7μs；供数组合R33仍没有净收益。局部成本可能被重叠，等待归属也会改变；不能强行保留“更像DS”的机制。独立无益也不自动排除瓶颈变化后的组合，组合必须实际测。
 - 跨EP二分先确认改动的真实边界：旧master的大BS GM Combine也是双槽，不能因全局上限6便误报6→2。若C5在多机已慢于master，就把二分前移，不再把全部损失归到C5之后的FP4布局。缓存/布局诊断与通信调度诊断分域留档。
