@@ -2,7 +2,7 @@
 
 ## 当前最高优先级：尽早集成组合
 
-按用户最新要求，优先接“就绪驱动远端写Dispatch＋小Wave／Split-K”，用组合阶段反馈反哺两条独立线，不等它们各自净胜才集成。**早Dispatch已过EP8／BS32真实数据资格**：8rank、88快照、40个payload字节摘要独立核验和两轮epoch回收通过。组合84043b33已接真实head→32组S2 GMM1→原activation，root独立4 CPU检查通过，正在准备SDK；尚无组合SDK／NPU／性能结果，不外推EP32。随后尽快接两descriptor小Wave／GMM2／Combine与完整筛选。BL流水为辅助，必要精度／容量／回收门禁保留。以下性能仍为已完成独立对照，main不改。
+按用户最新要求，优先接“就绪驱动远端写Dispatch＋小Wave／Split-K”，用组合阶段反馈反哺两条独立线，不等它们各自净胜才集成。**早Dispatch已过EP8／BS32真实数据资格**：8rank、88快照、40个payload字节摘要独立核验和两轮epoch回收通过。组合已接真实head→32组S2 GMM1→原activation；原型仅修两报告类型后为[cf4e5b24研究分支](https://gitcode.com/Yancy_/DeepEP/tree/codex/decode-head-splitk-integration-1118)，新SDK编译和root独立冷审通过，首构建失败原件保留。下一是真实单／双head的原生数值与活性，再接GMM2／Combine。**尚无组合NPU／性能结果，不外推EP32，不改main。** BL流水为辅助，以下仍为既成独立对照。
 
 ## 当前结论：小Wave的回退被追回，尚无净优化
 
