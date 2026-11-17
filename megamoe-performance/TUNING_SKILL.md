@@ -98,5 +98,6 @@ msprof --task-time=on --task-block=on --aic-metrics=PipeUtilization --type=text 
 - 跨EP二分先确认改动的真实边界：旧master的大BS GM Combine也是双槽，不能因全局上限6便误报6→2。若C5在多机已慢于master，就把二分前移，不再把全部损失归到C5之后的FP4布局。缓存/布局诊断与通信调度诊断分域留档。
 - 保留、拒绝或待验证都记录理由。凭据不入文档/网页/Git；只用空闲卡，不终止他人程序。每轮更新项目状态、性能证据和本SKILL。
 - 有针对性的反例比计数器猜因更有价值：单FIX控制让rank0整kernel FIX计数少22.73μs，完整耗时却基本持平。它排除了“减少这些FIX活跃时间就会等额提速”的解释；仍须用同窗阶段流水检查等待、服务次序和失去的重叠，不能宣称所有FIX都不在关键路径。
+- 珍惜设备窗口：脚本/依赖闭包、绝对与相对库路径schema、Shell行尾先在CPU完成资格，Windows生成远端Shell显式写LF并校验所有.sh。bash -n不执行set选项，不能单独发现pipefail后残留CR。此类启动链失败与设备协议/性能失败分开留档，不能据0次kernel调用否定方案。
 - Split-K输出服务不能只数FIX指令：先检查真实M、L0C两半跨度、srcStride、unit flag与连续复用。缩短L0C跨度并合成一次FIX不等于减少FP32 partial的GM字节量；短K微测通过后，还需长K循环、完整原Golden及同窗父版性能控制，不能用微测wall time冒充收益。
 - 异步队列活性要画跨流水依赖环：Scalar继续发射不代表无死锁；未来FULL等待可能排在共享MTE/V队列前，阻止当前结果消费和EMPTY归还。CPU反例先证明依赖可构造，真实硬件队列可达性及跨调用复用另做有界验证，不能据CPU模型宣布已找到设备根因。
