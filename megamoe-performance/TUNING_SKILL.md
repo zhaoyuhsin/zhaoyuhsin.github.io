@@ -7,6 +7,8 @@ description: Tune this project's fused Ascend MegaMoE against layout-optimized D
 
 ## 当前必行：阶段证据驱动结构创新（2026-11-17）
 
+- 完成事件的覆盖按真实owner/slice身份核验：本轮G2应有1344个group-slice，不是192个Dispatch段或48个expert。缺事件不当0等待；校验missing/duplicate/unexpected、完整raw重解码、overflow及同call恰一目标CSV后再拆阶段。一个全核并集看似满，逐核仍可能大量等待。
+- 构建、no-init加载、功能与性能是四个门槛；真实调用数从叶子计算，不沿用旧标签（当前性能叶子2pre+10warm+20formal+2post=34）。CPU准备失败且零GO与设备失败分列，保留原件；构建迁机需核相同SDK/编译器和Python，并核实际device ELF而不是host反汇编。
 - 每轮结论固定为“大思路→慢阶段/差额→原始timer和profiling字段→原因假设/反证→下一最小实验→完整端到端验收”。没有指标写未采，不把猜测写成bound已证。
 - 阅读账本：头部、开头Dispatch暴露、GMM1、GMM2、计算内候选气泡、尾部Combine/同步/Reduce。G1/G2跨核重叠需单列；Dispatch/SwiGLU/partial merge/Combine作为重叠侧轨，不重复求和；非ISSUE不自动表示硬件空闲。每核累计、全核区间并集、最晚核和全rank主指标分开。
 - 贯彻“小Wave+真Split-K让少量任务利用AIC、增加通算重叠”和“去全卡拉齐、就绪即远端写Dispatch、首GMM提前”，再验证两者组合。不将某个负实现泛化为整个架构方向无效。
