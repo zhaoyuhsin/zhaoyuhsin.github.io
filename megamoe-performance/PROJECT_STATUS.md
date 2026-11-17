@@ -4,7 +4,7 @@
 
 本轮仍无新端到端性能。早Dispatch真实8rank加载、READY/GO通过，随后原SHMEM初始化因缺少bootstrap动态插件失败，Plan/probe均0；不是新协议已运行后失败。第一条底层错误已在八份本任务日志核实，冷存、自然退出、进程/锁释放已独立审计。下一只补本任务插件依赖路径，并先隔离SHMEM私有日志，原host/kernel/run不改，不盲重跑。
 
-计算线并行准备本地UB保留FP32 partial的有界研究实现：对比真实原GM scale64与CV raw再×64，严格位级数值、保护区和双槽复用核对。仅本地实现/CPU负控，尚无新SDK/NPU或性能；完整融合/净收益须后验。保留G2/main，最近完整首筛A587.1452、LFB597.7784、LFBQ597.0636μs不变。
+计算线本地UB partial研究源已封dabca2e1（11新文件/生产0改），两项CPU目标root独立复跑通过；真实原GM scale64与CV raw再×64、物理stride/FTZ/跨pipe活性仍须SDK/NPU验证，无新性能。B仅小Wave/noS2完整本地包和真实host身份已找回，功能/性能仍unknown；下一最小A/B隔离Wave，不把多因素差额全归partial。保留G2/main，最近完整首筛A587.1452、LFB597.7784、LFBQ597.0636μs不变。
 
 以下保留此前分析，不把旧“下一步”作为新权限。
 
