@@ -2,6 +2,12 @@
 
 ## 2026-11-17最新主线：小Wave＋Split-K、早Dispatch与组合
 
+**最新净对照已完成：**EP8/BS32/shared0完整通信、timer-off，同机各一次原34call，后10逐轮rank-max：保留G2 A587.7673→LFB598.4915μs，候选慢10.7242μs／1.82%；共同Event589.2309→599.9497μs，口径一致但单列。64原Golden合同、16rank次实际四库映射、1350hash和16原CSV/320kernel/16samples与释放已独立审计。单对首筛未胜保留基线，不算稳定回退，main/G2不改；下方3.87%仅相对回退父版C。
+
+**配对流水已补齐：**LFB首有效Combine早18.224μs，但计算推进窗口长11.005μs、末Combine晚8.586μs；末G2后的尾9.341→9.137μs基本不变。每核G2-ready WAIT9.136→9.191μs已近A，非ISSUE候选边界/服务区间69.970→79.697μs。更多Wave的早发成立，尚未变成净收益；不是长尾导致本次回退，也未证明FIX/Scalar bound。无10warm且任务事件数不同，不精确分摊timer-off差额或声称timer开销。
+
+下一仅CPU准备在LFB父上复验Q的FP32紧排单FIX；旧Q在C上持平不能外推组合，若仍无端到端改善即止损。早Dispatch独立数据面CPU探针已修Reader→原Store credit并通过缺count/旧epoch/回收负控，尚未新SDK/设备，不叠加到LFB。main/G2不变。
+
 **最新正向首筛：**EP8/BS32完整通信，原无标记34call、timer-off，新同机C620.4002→LFB596.3996μs，降24.0006μs／3.87%。全原CSV、64份Golden合同和跨版32数组逐字节等价由root独立审核，资源释放。只是相对小Wave＋S2父版C的单对首筛，不是保留G2的净收益；随后的A/G2与LFB净对照在启动前遇外部任务，两臂均零设备调用，下一新空闲窗口优先验证。main/G2不改，LFB研究44211d64已推。
 
 **早Dispatch本小时：**真实B080 SDK编译通过，设备ELF三臂／六角色符号和退出/锁释放独立核对；零host-load/ACL/NPU，不能报功能或收益。下一步先做真实远端写→quiet→epoch→M4读取/回收的有界数据面验证，再接GMM。缺配对LFB阶段流水，不把整kernel Scalar降幅直接当作G2等待节省；原历史记录见下。
