@@ -97,3 +97,5 @@ msprof --task-time=on --task-block=on --aic-metrics=PipeUtilization --type=text 
 - R32带权metadata的反例：单份BS512流水中Dispatch ISSUE约120→57μs，但完整kernel两轮均值回退约7μs；供数组合R33仍没有净收益。局部成本可能被重叠，等待归属也会改变；不能强行保留“更像DS”的机制。独立无益也不自动排除瓶颈变化后的组合，组合必须实际测。
 - 跨EP二分先确认改动的真实边界：旧master的大BS GM Combine也是双槽，不能因全局上限6便误报6→2。若C5在多机已慢于master，就把二分前移，不再把全部损失归到C5之后的FP4布局。缓存/布局诊断与通信调度诊断分域留档。
 - 保留、拒绝或待验证都记录理由。凭据不入文档/网页/Git；只用空闲卡，不终止他人程序。每轮更新项目状态、性能证据和本SKILL。
+- Split-K输出服务不能只数FIX指令：先检查真实M、L0C两半跨度、srcStride、unit flag与连续复用。缩短L0C跨度并合成一次FIX不等于减少FP32 partial的GM字节量；短K微测通过后，还需长K循环、完整原Golden及同窗父版性能控制，不能用微测wall time冒充收益。
+- 异步队列活性要画跨流水依赖环：Scalar继续发射不代表无死锁；未来FULL等待可能排在共享MTE/V队列前，阻止当前结果消费和EMPTY归还。CPU反例先证明依赖可构造，真实硬件队列可达性及跨调用复用另做有界验证，不能据CPU模型宣布已找到设备根因。

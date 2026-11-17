@@ -2,6 +2,8 @@
 
 ## 2026-11-17最新主线：小Wave＋Split-K、早Dispatch与组合
 
+**最新：**K3584/14窗口单FIX真实微测四launch通过，独立复算10240 FP32/guard/pair；生产Q a2ff4e23的82＋3 CPU及SDK/no-init通过，正在做原两call完整功能，尚无新性能收益。L未来partial受理边界44211d64只做CPU/SDK，硬件活性未定；早Dispatch 7f06856e已完成CPU workunit闭环，未接设备。以Decode攻关页面顶部最新摘要为准；以下保留前轮过程，不把曾经“尚未完成”状态误读为当前结论。
+
 - 用户指定按“慢阶段→timer/Profiler/PMU指标→原因假设→下一判别→完整端到端”推进。方法已写入调优SKILL与本地METHOD.md；重叠不重复求和、缺指标不填0。
 - 重开小Wave＋S2的完整通信探索：旧纯算慢5.1%不包含Combine收益；配对最晚AIC核G2输入WAIT 2.113→13.316μs，G1 ISSUE反而90.017→86.310μs。先查partial/激活/scale发布依赖，再测真实通算重叠，不直接删等待。
 - 找回9月早Dispatch push/pull源码链，部分push确实删除输入公共拉齐；约230μs反馈与最终push追平尚缺原始CSV/trace资格，不先验认成已复现。
