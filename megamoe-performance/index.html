@@ -17,6 +17,7 @@
 <section class="panel" id="shared-comparison-1112"><h2>共享专家性能对照 · EP8 / EP32</h2><p>新增 11 个 BS 的 FP8 W8A8 共享专家双轮对照：绝对 kernel 耗时、我们相对布局 DS 的劣化百分比和实现策略。全部 rank / 测量调用 timer-on，按要求未测精度；旧候选无共享结果单列，不与本次相减。</p><p><a href="shared-expert-comparison.html">查看完整表格与计时边界 ↗</a> · <a href="shared-expert-comparison.json" download>下载公开聚合 JSON ↓</a></p></section>
 <section class="panel" id="decode-comparison-1112"><h2>Decode 优化 · MegaMoE vs 小算子拼接</h2><p>独立实验台：EP8 / EP32、11个BS、每配置双轮实测；decode与prefill路径分开标注，保留小BS回退。切换rank-min / rank-max，查看耗时、收益、两次启动差异及计时边界。</p><p><a href="../decode-optimization/">进入 Decode 优化实验台 ↗</a> · <a href="../decode-optimization/results.json" download>下载聚合 JSON ↓</a></p></section>
 <section class="panel" id="decode-1111"><h2>最新进展：单FIX计数降低，但端到端持平（11月17日）</h2>
+<p>最新运行：修复Shell行尾后的LFB有界控制已自然完成，8rank均推进完原2次Golden＋10次warmup并通过既有末尾sync/digest/barrier，正在冷存和独立审计。它是带host标记的活性正例，尚非性能收益或旧停滞唯一根因证明。下一项准备使用原无标记性能路径做同窗C/LFB首筛，不叠加Q。</p>
 <p>EP8/BS32、完整通信、timer-off，新同机C→Q各一次独立启动；10warm／20formal取后10、逐轮rank-max再均值。C为小Wave＋S2，Q只改FP32 partial紧排单FIX。不是ABBA，没有稳定收益结论。</p>
 <table>
 <thead>
@@ -475,7 +476,7 @@
 &lt;/details&gt;
 
 <h1>1111 Decode攻关</h1>
-<p>更新时间：2026-11-17T19:44:56+08:00</p>
+<p>更新时间：2026-11-17T19:50:16+08:00</p>
 <p>目标：EP8／EP32、每卡BS32／64／96，统一版本优于强级联参考。A2及其G2后续版已有小幅完整EP8收益，尚未验收为统一最优；main未因本轮实验改变。</p>
 <h2>完整通信原A基线</h2>
 <p>c5冻结源码，warmup10／iters20取后10；主性能timer-off、kernel Duration。主指标为逐轮全rank最大值的均值；rank-min另列，不与用户历史小算子event耗时混算收益。</p>
