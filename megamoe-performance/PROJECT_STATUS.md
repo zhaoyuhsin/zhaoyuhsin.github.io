@@ -1,5 +1,11 @@
 # 项目状态
 
+## 11月18日最新：组合到G2/远端Combine功能通过
+
+[c951e1a6研究分支](https://gitcode.com/Yancy_/DeepEP/tree/codex/decode-head-splitk-combine-1118)：8rank真实早Dispatch→Split-K G1→原SwiGLU→G2→远端Combine，单/双head功能通过。root独立重算24unit、96行实际peer逐位核验，原容差未变，实际载库/关闭/自身释放通过。**尚非单kernel重叠、全专家/最终归约或完整性能，本轮无新阶段timer/PMU；main及历史性能不改。** 下方旧“尚无G2/Combine”是历史状态。
+
+优先接完整组合而非继续堆probe：原balanced EP8 BS32全部专家M4实证已得；计算接24双head wave和原最终输出，通信接并行release与跨call消费ack，测量冻结原完整参考。双ack有限CPU正负控通过不等于硬件活性；输入ack须保护payload/route/count/epoch全部写，输出ack等旧归约最后读。下一完整功能后立即同父阶段/性能首筛，未达目标不称SOTA。
+
 ## 当前最高优先级：尽早集成组合
 
 按用户最新要求，优先集成“就绪驱动远端写Dispatch＋小Wave／Split-K”，用组合反馈反哺单线。**首组合原生功能通过**：[cf4e5b24研究分支](https://gitcode.com/Yancy_/DeepEP/tree/codex/decode-head-splitk-integration-1118)，EP8／BS32真实head→32组S2 GMM1→原activation；8rank单／双head共64原生调用。root独立重算16实际scratch中的24unit，原容差未变；后续count仍Pending，16 Runtime／8 Store关闭及进程锁释放通过。原失败保留，main不改。
