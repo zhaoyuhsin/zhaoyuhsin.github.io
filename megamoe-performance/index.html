@@ -18,6 +18,40 @@
 <section class="panel" id="decode-comparison-1112"><h2>Decode 优化 · MegaMoE vs 小算子拼接</h2><p>独立实验台：EP8 / EP32、11个BS、每配置双轮实测；decode与prefill路径分开标注，保留小BS回退。切换rank-min / rank-max，查看耗时、收益、两次启动差异及计时边界。</p><p><a href="../decode-optimization/">进入 Decode 优化实验台 ↗</a> · <a href="../decode-optimization/results.json" download>下载聚合 JSON ↓</a></p></section>
 <section class="panel" id="decode-1111"><p>目标不变：统一可维护版本，在EP8／EP32、每卡BS32／64／96完整端到端优于强小算子。优先组合“早Dispatch＋小Wave／真正Split-K”，用组合暴露的问题反哺两条单线，不等它们各自净胜。</p>
 <h2>11月18日当前：完整组合已验证，性能首筛回退</h2>
+<h3>09:45Z：完整被动流水已取回，主要时间在GMM推进窗口</h3>
+<p>组合研究版新增完整被动timer已实际SDK编译并推送；EP8／BS32八卡完整调用、原Golden、连续epoch、实际加载库与正常关闭均通过。完整96轨raw、JSON与同调用原CSV已成对保存到本地，旧性能结果和失败原件不覆盖。</p>
+<table>
+<thead>
+<tr>
+<th>本次rank0诊断调用的阶段</th>
+<th align="right">μs</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Process起点→首次Dispatch ISSUE</td>
+<td align="right">44.918</td>
+</tr>
+<tr>
+<td>首次Dispatch ISSUE→首次G1 ISSUE</td>
+<td align="right">99.203</td>
+</tr>
+<tr>
+<td>首次G1 ISSUE→最后G2 ISSUE</td>
+<td align="right">1270.889</td>
+</tr>
+<tr>
+<td>最后G2 ISSUE→Process包络结束</td>
+<td align="right">117.113</td>
+</tr>
+<tr>
+<td>Process包络</td>
+<td align="right">1532.123</td>
+</tr>
+</tbody></table>
+<p>同调用Profiler kernel为1538.918μs；未覆盖6.795μs不归入头尾。它是<strong>单次timer-on诊断，不是主性能或timer开销验收</strong>，也不能与另一机器timer-off的1405.5353μs直接相减。原时钟换算未拟合，未触发单位一致性告警。</p>
+<p>具体线索：32个AIC各自提交窗口平均1259.249μs，其中G1/G2 ISSUE之外平均387.050μs；不是硬件空泡证明。跨核合并后的非ISSUE只有36.968μs，说明“全图看起来满”会遮住每核推进间隙。所有本卡发送owner的SOURCE_RELEASE最晚54.550μs，首G1到144.121μs才提交；因此“本地发送前缀尚未结束”不能单独解释这个启动延迟。group0专家0的四行Dispatch提交约58／86／103／121μs，准入等待结束约143μs，值得继续查接收服务／就绪发布与重复Scalar控制。</p>
+<p>下一步只做两个判别，不扩大shape或扫参数：①现成普通S2＋小Wave＋lag1对照，区分Split-K后端与早Dispatch组合编排的成本；②审查同epoch不可变descriptor是否被反复GM bypass读取／校验，先CPU验证缓存生命周期，再决定设备消融。第二项只是待验证原因；当前没有新收益，继续保留G2。常规对照原节点认证失效，唯一启动尝试在连接前失败、零kernel，正在核另一空闲节点的现成产物，不影响别人任务。</p>
+<p>新timer研究分支：<a href="https://gitcode.com/Yancy_/DeepEP/tree/codex/decode-balanced-m4-passive-timer-1118">codex/decode-balanced-m4-passive-timer-1118</a>。不改变main/G2默认入口。</p>
 <h3>07:55Z：首个完整性能对照回退，保留G2</h3>
 <p>同机、EP8／每卡BS32、balanced、无共享专家，原G2与完整组合各一次独立启动；timer-off、Profiler Level1，10预热／20正式，原CSV后10次逐轮8rank-max均值。<strong>这是一次首筛，不是ABBA。</strong></p>
 <table>
@@ -380,7 +414,7 @@
 &lt;/details&gt;
 
 <h1>1111 Decode攻关</h1>
-<p>更新时间：2026-11-18T16:11:37+08:00</p>
+<p>更新时间：2026-11-18T17:43:55+08:00</p>
 <p>目标：EP8／EP32、每卡BS32／64／96，统一版本优于强级联参考。A2及其G2后续版已有小幅完整EP8收益，尚未验收为统一最优；main未因本轮实验改变。</p>
 <h2>完整通信原A基线</h2>
 <p>c5冻结源码，warmup10／iters20取后10；主性能timer-off、kernel Duration。主指标为逐轮全rank最大值的均值；rank-min另列，不与用户历史小算子event耗时混算收益。</p>
