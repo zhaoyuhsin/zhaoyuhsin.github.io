@@ -1,5 +1,9 @@
 # 项目状态
 
+## 11月18日新增：找到组合接入的确定失败路径
+
+真实Base为每槽3行打包，迁移helper硬要求1行；真实表达式组合CPU验证64owner在发送前全被拒绝。这足以解释一种全调度等待路径，但旧NPU没有现场状态，未证明唯一根因。已改真实容量/地址/对齐校验，未改变Base、数学和通信语义。诊断SDK首构建的声明/枚举类型错误原件已保存；最小修复4299dc4已推、4CPU及新SDK实际编译/冷审通过，尚未hostload/NPU。下一有界验证同一真实前端，再回接完整组合。没有新性能/阶段timer/PMU，完整组合和main尚不替换。
+
 ## 11月18日完整组合：已编译，功能尚未通过
 
 [研究分支1e701663](https://gitcode.com/Yancy_/DeepEP/tree/codex/decode-balanced-m4-full-1118)已接真实早Dispatch、24小Wave/Split-K、G2/Combine与原最终归约，SDK两SO/设备ELF通过。完整8卡功能验证已过READY/GO、Runtime/Plan和一次setup，随后epoch1路径超时，无完整输出；监督182.52秒也计180秒预算失败，自身任务和资源已释放。不能算精度/性能通过，目前缺阶段timer/PMU，不能认定卡在哪段，main与性能表不改。
