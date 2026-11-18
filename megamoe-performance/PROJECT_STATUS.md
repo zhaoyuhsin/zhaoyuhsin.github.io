@@ -1,5 +1,13 @@
 # 项目状态
 
+## 最新：c8完整组合八卡功能/生命周期通过，下一测性能
+
+EP8/BS32、全部48本地专家、连续两epoch的原完整Golden/计数/repeat/消费ack与正常关闭通过。root独立重算3,670,016个输出值，最大绝对误差6.10e-5，原容差未改；原始数据已本地保存，自身任务/锁释放。**尚无新性能收益或其他BS/EP资格**；下一同父A/E首筛与阶段分析，main/G2与性能表不变。下方“待功能验证”为历史准备状态。
+
+## 当前：本核reset-ready修复已编译，完整组合功能待验
+
+[c8ea5f11研究分支](https://gitcode.com/Yancy_/DeepEP/tree/codex/decode-balanced-m4-reset-ready-1118)只加本核清零完成epoch，避免新issued被迟清零覆盖；不是全卡拉齐，不增DSB/布局或改数学。6CPU与真实SDK通过，旧未修构建范围撤销未用；完整Golden、连续epoch和自然关闭仍待新功能运行。无新端到端性能或PMU，main/G2、历史性能表不变。
+
 ## 11月18日最新：低UB修复数据层通过，完整组合继续验证
 
 真实八卡1536行FP8/scale/meta逐位匹配原输入，384专家准入与count/epoch/dispatch/sealed均正确。严格诊断仍FAIL：5/512个owner终态标记异常，正常全组close未获资格；未放宽验收，原因仍查证。原始失败/字节审计已保存，本任务已退出、锁释放。
