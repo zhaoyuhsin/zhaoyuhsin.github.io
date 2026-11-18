@@ -18,6 +18,11 @@
 <section class="panel" id="decode-comparison-1112"><h2>Decode 优化 · MegaMoE vs 小算子拼接</h2><p>独立实验台：EP8 / EP32、11个BS、每配置双轮实测；decode与prefill路径分开标注，保留小BS回退。切换rank-min / rank-max，查看耗时、收益、两次启动差异及计时边界。</p><p><a href="../decode-optimization/">进入 Decode 优化实验台 ↗</a> · <a href="../decode-optimization/results.json" download>下载聚合 JSON ↓</a></p></section>
 <section class="panel" id="decode-1111"><p>目标不变：统一可维护版本，在EP8／EP32、每卡BS32／64／96完整端到端优于强小算子。优先组合“早Dispatch＋小Wave／真正Split-K”，用组合暴露的问题反哺两条单线，不等它们各自净胜。</p>
 <h2>11月18日当前：完整组合已验证，性能首筛回退</h2>
+<h3>10:19Z：进一步定位控制路径；普通Split-K对照尚无性能</h3>
+<p>对同一原流水逐核求交：每AIC平均387.050μs的非ISSUE区间中，descriptor获取路径覆盖266.891μs（68.96%）、G2输入WAIT覆盖78.014μs（20.16%）、两者未覆盖42.145μs（10.89%）。其中121.930μs发生于同核此前已成功读取该专家descriptor之后；不能全部解释成等首次就绪。稳态单次获取区间中位数约2.08μs。<strong>这是慢段落点，不是已验证可节省时间。</strong></p>
+<p>实际设备指令核对：每次成功获取有12条Scalar LD_DEV32；发布是11条ST_DEV32加一次DSB，没有每字段一次flush/fence。下一步应区分重复Scalar读取／校验与真实发布／服务等待，不按“删同步”优化。</p>
+<p>只缓存Partial当前专家已验证身份的最小候选已通过CPU负控并推送：<a href="https://gitcode.com/Yancy_/DeepEP/tree/codex/decode-balanced-m4-partial-cache-1118">研究分支</a>。未缓存任何FULL／数据ready，首次校验、数学、UB／GM布局与同步不变；每rank最小任务集少9216次Word读取，但设备收益和寄存器spill尚未测。推荐基线仍为G2。</p>
+<p>普通“小Wave＋Split-K＋lag1”对照已完成环境复用和唯一控制器启动，但在READY／GO前因竞争启动器门禁退出，零性能kernel／零性能数据。自身13个身份已结束、锁释放；随后确有外部任务使用设备，不干预、不共跑、不原地盲重跑。准备新的有限恢复，保留原失败；<strong>本轮没有新增NPU性能收益</strong>。</p>
 <h3>09:45Z：完整被动流水已取回，主要时间在GMM推进窗口</h3>
 <p>组合研究版新增完整被动timer已实际SDK编译并推送；EP8／BS32八卡完整调用、原Golden、连续epoch、实际加载库与正常关闭均通过。完整96轨raw、JSON与同调用原CSV已成对保存到本地，旧性能结果和失败原件不覆盖。</p>
 <table>
@@ -414,7 +419,7 @@
 &lt;/details&gt;
 
 <h1>1111 Decode攻关</h1>
-<p>更新时间：2026-11-18T17:43:55+08:00</p>
+<p>更新时间：2026-11-18T18:19:44+08:00</p>
 <p>目标：EP8／EP32、每卡BS32／64／96，统一版本优于强级联参考。A2及其G2后续版已有小幅完整EP8收益，尚未验收为统一最优；main未因本轮实验改变。</p>
 <h2>完整通信原A基线</h2>
 <p>c5冻结源码，warmup10／iters20取后10；主性能timer-off、kernel Duration。主指标为逐轮全rank最大值的均值；rank-min另列，不与用户历史小算子event耗时混算收益。</p>
