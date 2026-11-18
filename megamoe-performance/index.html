@@ -17,6 +17,46 @@
 <section class="panel" id="shared-comparison-1112"><h2>共享专家性能对照 · EP8 / EP32</h2><p>新增 11 个 BS 的 FP8 W8A8 共享专家双轮对照：绝对 kernel 耗时、我们相对布局 DS 的劣化百分比和实现策略。全部 rank / 测量调用 timer-on，按要求未测精度；旧候选无共享结果单列，不与本次相减。</p><p><a href="shared-expert-comparison.html">查看完整表格与计时边界 ↗</a> · <a href="shared-expert-comparison.json" download>下载公开聚合 JSON ↓</a></p></section>
 <section class="panel" id="decode-comparison-1112"><h2>Decode 优化 · MegaMoE vs 小算子拼接</h2><p>独立实验台：EP8 / EP32、11个BS、每配置双轮实测；decode与prefill路径分开标注，保留小BS回退。切换rank-min / rank-max，查看耗时、收益、两次启动差异及计时边界。</p><p><a href="../decode-optimization/">进入 Decode 优化实验台 ↗</a> · <a href="../decode-optimization/results.json" download>下载聚合 JSON ↓</a></p></section>
 <section class="panel" id="decode-1111"><p>目标不变：统一可维护版本，在EP8／EP32、每卡BS32／64／96完整端到端优于强小算子。优先组合“早Dispatch＋小Wave／真正Split-K”，用组合暴露的问题反哺两条单线，不等它们各自净胜。</p>
+<h2>11:35Z：身份复用已真机通过，但大幅总耗时差不能算优化收益</h2>
+<p>新候选仅让G2复用同核同epoch、已被G1完整验证的专家身份；真实epoch、SwiGLU数据等待和完成／释放通知保留。EP8／BS32／balanced／无共享专家，候选与父版本在同一节点各完成一次完整被动诊断：16次原Golden、全行计数／重复、实际库映射及正常关闭均通过，完整JSON与同调用CSV已成对冷存。未合main，未扩BS／EP。</p>
+<table>
+<thead>
+<tr>
+<th>同节点、单次候选→父的rank0诊断／μs</th>
+<th align="right">父版本</th>
+<th align="right">身份复用候选</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Profiler完整kernel</td>
+<td align="right">2138.094</td>
+<td align="right">1460.268</td>
+</tr>
+<tr>
+<td>Process起点→首Dispatch ISSUE</td>
+<td align="right">44.757</td>
+<td align="right">44.260</td>
+</tr>
+<tr>
+<td>首Dispatch→首G1 ISSUE</td>
+<td align="right">766.773</td>
+<td align="right">145.480</td>
+</tr>
+<tr>
+<td>首G1→末G2 ISSUE结束</td>
+<td align="right">1260.590</td>
+<td align="right">1180.187</td>
+</tr>
+<tr>
+<td>末G2 ISSUE结束→Process结束</td>
+<td align="right">59.265</td>
+<td align="right">82.857</td>
+</tr>
+</tbody></table>
+<p><strong>不能把两次约678μs的差额归给身份复用。</strong> 首G1之前已经相差约622μs；父版本expert0第0→1行Dispatch之间出现约691μs间隙，发生在后续G2身份复用之前。当前没有peer实际启动／入站到达／Reader服务的独立时间，根因未证。</p>
+<p>计算窗口内另有有价值的线索：各AIC自身窗口内，HEAD获取路径覆盖由261.081降至161.965μs／核，G2数据WAIT由81.252变为85.945μs／核；nonISSUE由384.449变为298.135μs／核。它们是同核区间交集，不是可直接兑现的端到端收益或硬件空泡。</p>
+<p>发现一个测量风险：现有单次trace在Store放行后，各rank还要独立执行20个大Exp前缀，再启动唯一被测kernel；此时可能仍有启动／队列错位。源码允许这种情况，但没有证据证明它就是本次691μs间隙的原因。下一最小控制保留同样前缀，<strong>连续20次正式调用，仅最后一次rank0完整打点</strong>，用稳态流水复核；不为对齐增加kernel全卡同步、不重编SDK、不扫参数。此新测量尚未执行，不报32%收益。</p>
+<p>本轮一次启动前因外部上下文入场而中止，零worker／kernel；已冷存并释放自身进程／锁，未干预其他任务。失败不冒充算法回退。</p>
 <h2>11月18日当前：完整组合已验证，性能首筛回退</h2>
 <h3>10:30Z：普通“小Wave＋真Split-K”完整对照已跑通，597.536μs</h3>
 <p>EP8／每卡BS32／balanced／无共享专家，原C442公开前向、S2＋两专家Wave＋lag1；完整通信，timer-off、Profiler Level1，10预热／20正式取后10逐轮8rank-max均值：<strong>kernel 597.536μs，Event 599.029μs</strong>。一次独立首筛，非ABBA；原32次Golden、所有rank完整输出／计数／重复、160条原CSV、实际库映射和自然关闭均通过，自身70个身份已结束、锁释放。</p>
@@ -425,7 +465,7 @@
 &lt;/details&gt;
 
 <h1>1111 Decode攻关</h1>
-<p>更新时间：2026-11-18T18:47:23+08:00</p>
+<p>更新时间：2026-11-18T19:36:29+08:00</p>
 <p>目标：EP8／EP32、每卡BS32／64／96，统一版本优于强级联参考。A2及其G2后续版已有小幅完整EP8收益，尚未验收为统一最优；main未因本轮实验改变。</p>
 <h2>完整通信原A基线</h2>
 <p>c5冻结源码，warmup10／iters20取后10；主性能timer-off、kernel Duration。主指标为逐轮全rank最大值的均值；rank-min另列，不与用户历史小算子event耗时混算收益。</p>
