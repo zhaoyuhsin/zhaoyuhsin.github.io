@@ -1,5 +1,11 @@
 # 项目状态
 
+## 11月18日最新：低UB修复数据层通过，完整组合继续验证
+
+真实八卡1536行FP8/scale/meta逐位匹配原输入，384专家准入与count/epoch/dispatch/sealed均正确。严格诊断仍FAIL：5/512个owner终态标记异常，正常全组close未获资格；未放宽验收，原因仍查证。原始失败/字节审计已保存，本任务已退出、锁释放。
+
+下一用新构建/新Runtime验证早Dispatch＋小Wave/Split-K完整组合的原Golden和连续epoch，不以独立诊断的数据成功代替完整成功。无新完整性能/PMU，main与历史性能不改；下方旧“尚未真机”是历史状态。
+
 ## 11月18日设备实证：前端已返回，定位到传输UB合同
 
 八卡通信准入诊断真实返回、验收失败：每rank64owner实读pack3/44352、本地routeDone63，但全部专家count epoch0/copied0，接收预算耗尽。原件完整冷存，任务/锁/上下文释放；无GMM/性能结果。锁定SHMEM对超过192KiB的UB源put静默返回，而研究scratch在240KiB尾部；实际源码CPU反例重现本地Done但未写远端。最小修a5f6012已推、CPU通过，scratch改到库可接受范围并提前校span，不改依赖/数学/LaunchUB。修后真机对照尚未完成；main及性能表不变。
