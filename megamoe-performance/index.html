@@ -17,6 +17,46 @@
 <section class="panel" id="shared-comparison-1112"><h2>共享专家性能对照 · EP8 / EP32</h2><p>新增 11 个 BS 的 FP8 W8A8 共享专家双轮对照：绝对 kernel 耗时、我们相对布局 DS 的劣化百分比和实现策略。全部 rank / 测量调用 timer-on，按要求未测精度；旧候选无共享结果单列，不与本次相减。</p><p><a href="shared-expert-comparison.html">查看完整表格与计时边界 ↗</a> · <a href="shared-expert-comparison.json" download>下载公开聚合 JSON ↓</a></p></section>
 <section class="panel" id="decode-comparison-1112"><h2>Decode 优化 · MegaMoE vs 小算子拼接</h2><p>独立实验台：EP8 / EP32、11个BS、每配置双轮实测；decode与prefill路径分开标注，保留小BS回退。切换rank-min / rank-max，查看耗时、收益、两次启动差异及计时边界。</p><p><a href="../decode-optimization/">进入 Decode 优化实验台 ↗</a> · <a href="../decode-optimization/results.json" download>下载聚合 JSON ↓</a></p></section>
 <section class="panel" id="decode-1111"><p>目标不变：统一可维护版本，在EP8／EP32、每卡BS32／64／96完整端到端优于强小算子。优先组合“早Dispatch＋小Wave／真正Split-K”，用组合暴露的问题反哺两条单线，不等它们各自净胜。</p>
+<h2>11:58Z：稳态流水支持Scalar控制路径改善，仍未验收主性能收益</h2>
+<p>同节点父733→身份复用候选122，各一次独立启动；EP8／BS32／balanced／无共享专家，setup1＋warm10＋formal20，<strong>仅末次epoch30／rank0完整被动打点</strong>，不重编SDK、不增加kernel同步。完整20条原CSV保留，与末次raw严格配对。</p>
+<p>**验收限制优先说明：**父版完整冷审通过。候选控制器自然完成，原16Golden／全行计数与重复／32次加载映射／ack30与正常关闭均检查通过，本任务26个身份结束、锁释放；但下载后健康检查遇到新外部任务，严格冷审停在最后环境门禁，仍保留FAIL。外部进程启动晚于冷归档进程，未停止它、未补健康结果或重跑。这一对只作流水与PMU诊断，<strong>不是主性能PASS、ABBA或SOTA收益</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>同调用rank0流水／μs</th>
+<th align="right">父733</th>
+<th align="right">候选122</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>头部：Process起点→首G1 ISSUE</td>
+<td align="right">129.208</td>
+<td align="right">134.386</td>
+</tr>
+<tr>
+<td>GMM提交窗口：首G1→末G2 ISSUE结束</td>
+<td align="right">1273.205</td>
+<td align="right">1185.375</td>
+</tr>
+<tr>
+<td>尾部：末G2 ISSUE结束→Process结束</td>
+<td align="right">63.166</td>
+<td align="right">65.849</td>
+</tr>
+<tr>
+<td>Process包络</td>
+<td align="right">1465.579</td>
+<td align="right">1385.610</td>
+</tr>
+<tr>
+<td>原Profiler kernel</td>
+<td align="right">1471.548</td>
+<td align="right">1391.684</td>
+</tr>
+</tbody></table>
+<p>此次头尾接近，约80μs差额主要落在计算推进窗口，未重现前一对约622μs的启动端点差。每AIC自身窗内，HEAD获取路径覆盖260.668→152.157μs；G2数据WAIT72.120→77.843μs，G2 ISSUE累计299.514→329.911μs，部分收益被其他推进／等待变化抵消。覆盖量不等于纯硬件等待或可相加E2E成本。</p>
+<p>同调用整kernel PMU也提供交叉线索：AIC Scalar961.825→878.380μs，聚合AIV Scalar1021.174→931.860μs；AIC MAC733.230→738.996μs、AIV Vector212.315→212.375μs、MTE3约268μs基本不变。<strong>更符合重复Scalar控制减少，不支持“矩阵乘算术本身快了”。</strong> 这些活跃区间重叠、不能相加；本轮尚未分AIV0／AIV1，不能凭聚合AIV指标认定AIV1收益。</p>
+<p>下一单变量已实现并推送：<a href="https://gitcode.com/Yancy_/DeepEP/tree/codex/decode-balanced-m4-partial-issued-first-1118">AIV1 Partial先查issued</a>，<code>90bce7ea</code>（独立基于父733，不叠身份复用）。仅把廉价issued检查移到完整descriptor解析之前，避免无结果时反复读wire；消费前原epoch／完整校验、FIX／FULL／EMPTY与ResetReady依赖保留。实际函数CPU正负控及root复测通过，SDK包仅本地准备，<strong>未SDK／NPU／性能验收</strong>。先看它能否缩短AIV1服务／回收反压，再考虑组合，不改main／保留G2基线。</p>
 <h2>11:35Z：身份复用已真机通过，但大幅总耗时差不能算优化收益</h2>
 <p>新候选仅让G2复用同核同epoch、已被G1完整验证的专家身份；真实epoch、SwiGLU数据等待和完成／释放通知保留。EP8／BS32／balanced／无共享专家，候选与父版本在同一节点各完成一次完整被动诊断：16次原Golden、全行计数／重复、实际库映射及正常关闭均通过，完整JSON与同调用CSV已成对冷存。未合main，未扩BS／EP。</p>
 <table>
@@ -465,7 +505,7 @@
 &lt;/details&gt;
 
 <h1>1111 Decode攻关</h1>
-<p>更新时间：2026-11-18T19:36:29+08:00</p>
+<p>更新时间：2026-11-18T19:56:46+08:00</p>
 <p>目标：EP8／EP32、每卡BS32／64／96，统一版本优于强级联参考。A2及其G2后续版已有小幅完整EP8收益，尚未验收为统一最优；main未因本轮实验改变。</p>
 <h2>完整通信原A基线</h2>
 <p>c5冻结源码，warmup10／iters20取后10；主性能timer-off、kernel Duration。主指标为逐轮全rank最大值的均值；rank-min另列，不与用户历史小算子event耗时混算收益。</p>
