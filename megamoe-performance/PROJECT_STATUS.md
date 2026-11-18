@@ -1,5 +1,11 @@
 # 项目状态
 
+## 11月18日完整组合：已编译，功能尚未通过
+
+[研究分支1e701663](https://gitcode.com/Yancy_/DeepEP/tree/codex/decode-balanced-m4-full-1118)已接真实早Dispatch、24小Wave/Split-K、G2/Combine与原最终归约，SDK两SO/设备ELF通过。完整8卡功能验证已过READY/GO、Runtime/Plan和一次setup，随后epoch1路径超时，无完整输出；监督182.52秒也计180秒预算失败，自身任务和资源已释放。不能算精度/性能通过，目前缺阶段timer/PMU，不能认定卡在哪段，main与性能表不改。
+
+下一先用同一前端做有界通信/准入-only诊断，具体记录owner/source/count/epoch/descriptor，不启动GMM或制造假ready；同时补host launch/stream边界、收紧未来停止预算，不盲重跑full。详见Decode攻关顶部。下方先前所选head功能PASS不代表全专家/跨call已通过。
+
 ## 11月18日最新：组合到G2/远端Combine功能通过
 
 [c951e1a6研究分支](https://gitcode.com/Yancy_/DeepEP/tree/codex/decode-head-splitk-combine-1118)：8rank真实早Dispatch→Split-K G1→原SwiGLU→G2→远端Combine，单/双head功能通过。root独立重算24unit、96行实际peer逐位核验，原容差未变，实际载库/关闭/自身释放通过。**尚非单kernel重叠、全专家/最终归约或完整性能，本轮无新阶段timer/PMU；main及历史性能不改。** 下方旧“尚无G2/Combine”是历史状态。
