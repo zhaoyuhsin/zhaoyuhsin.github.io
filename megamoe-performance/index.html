@@ -22,7 +22,8 @@
 <p>EP8／每卡BS32／balanced／无共享专家，原C442公开前向、S2＋两专家Wave＋lag1；完整通信，timer-off、Profiler Level1，10预热／20正式取后10逐轮8rank-max均值：<strong>kernel 597.536μs，Event 599.029μs</strong>。一次独立首筛，非ABBA；原32次Golden、所有rank完整输出／计数／重复、160条原CSV、实际库映射和自然关闭均通过，自身70个身份已结束、锁释放。</p>
 <p>这是新的有效设备数据。此前组合E约1405.535μs在另一节点／窗口，不能作精确配对相减；但普通小Wave＋真Split-K本身可在约598μs完成，<strong>不能再把组合回退笼统归为“Split-K必然太慢”</strong>。优先查组合新增的准入和消费者控制路径；尚未证明descriptor解释全部差距。C这轮只有主性能／Profiler，没有新增设备内部timer；同窗E控制与C原生阶段流水仍缺。</p>
 <p>C rank0整kernel计数器：AIC MAC290.59／Scalar544.84／MTE1 468.30／FIX168.45μs；聚合AIV Scalar363.05／Vector212.58μs。与历史E的MAC733.81／AIV Scalar953.57形成线索，但不是同窗分阶段计数，不能相加归因或当MFU。</p>
-<p>下一最小候选已独立封存：<a href="https://gitcode.com/Yancy_/DeepEP/tree/codex/decode-balanced-m4-g2-identity-1118">G2复用G1已验证身份</a>。仅16B同核／epoch证明状态；保留首次G1完整校验、G2真实epoch观察、SwiGLU数据等待和全部完成／释放同步。它直接针对已观测的重复获取区间，不叠加Partial缓存；CPU测试通过，<strong>SDK／寄存器spill／NPU收益待验证</strong>。main／推荐G2未改。</p>
+<p>下一最小候选已独立封存：<a href="https://gitcode.com/Yancy_/DeepEP/tree/codex/decode-balanced-m4-g2-identity-1118">G2复用G1已验证身份</a>。仅16B同核／epoch证明状态；保留首次G1完整校验、G2真实epoch观察、SwiGLU数据等待和全部完成／释放同步。它直接针对已观测的重复获取区间，不叠加Partial缓存；CPU测试通过，main／推荐G2未改。</p>
+<p><strong>10:47Z更新：新SDK实际编译37.76秒、冷审通过，但尚未运行NPU。</strong> 原生指令显示proof有对象内存读写，G2的栈调整增大，不能把“少读字段”直接当性能收益。下一准备原精度／连续epoch／完整被动流水验证，再看对应重复获取区间和完整耗时是否同时减少；未测前不合main、不报收益。</p>
 <h3>10:19Z：进一步定位控制路径；普通Split-K对照尚无性能</h3>
 <p>对同一原流水逐核求交：每AIC平均387.050μs的非ISSUE区间中，descriptor获取路径覆盖266.891μs（68.96%）、G2输入WAIT覆盖78.014μs（20.16%）、两者未覆盖42.145μs（10.89%）。其中121.930μs发生于同核此前已成功读取该专家descriptor之后；不能全部解释成等首次就绪。稳态单次获取区间中位数约2.08μs。<strong>这是慢段落点，不是已验证可节省时间。</strong></p>
 <p>实际设备指令核对：每次成功获取有12条Scalar LD_DEV32；发布是11条ST_DEV32加一次DSB，没有每字段一次flush/fence。下一步应区分重复Scalar读取／校验与真实发布／服务等待，不按“删同步”优化。</p>
@@ -424,7 +425,7 @@
 &lt;/details&gt;
 
 <h1>1111 Decode攻关</h1>
-<p>更新时间：2026-11-18T18:35:44+08:00</p>
+<p>更新时间：2026-11-18T18:47:23+08:00</p>
 <p>目标：EP8／EP32、每卡BS32／64／96，统一版本优于强级联参考。A2及其G2后续版已有小幅完整EP8收益，尚未验收为统一最优；main未因本轮实验改变。</p>
 <h2>完整通信原A基线</h2>
 <p>c5冻结源码，warmup10／iters20取后10；主性能timer-off、kernel Duration。主指标为逐轮全rank最大值的均值；rank-min另列，不与用户历史小算子event耗时混算收益。</p>
