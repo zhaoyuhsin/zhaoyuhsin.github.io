@@ -18,6 +18,7 @@
 <section class="panel" id="decode-comparison-1112"><h2>Decode 优化 · MegaMoE vs 小算子拼接</h2><p>独立实验台：EP8 / EP32、11个BS、每配置双轮实测；decode与prefill路径分开标注，保留小BS回退。切换rank-min / rank-max，查看耗时、收益、两次启动差异及计时边界。</p><p><a href="../decode-optimization/">进入 Decode 优化实验台 ↗</a> · <a href="../decode-optimization/results.json" download>下载聚合 JSON ↓</a></p></section>
 <section class="panel" id="decode-1111"><p>目标不变：统一可维护版本，在EP8／EP32、每卡BS32／64／96完整端到端优于强小算子。优先组合“早Dispatch＋小Wave／真正Split-K”，用组合暴露的问题反哺两条单线，不等它们各自净胜。</p>
 <h2>11月18日当前：完整组合八卡功能已通过，性能待测</h2>
+<p>**07:30Z执行状态：**已迁移现成性能包；首个基线控制器在共享运行锁处退出，零worker、零READY/GO、零NPU kernel，失败原件已保存到本地，自身进程退出。锁后来已释放，先前持有者身份未知，不绕过或强行解锁。正在准备复用只读产物的新独立窗口；不是算法失败，也没有新性能/分段/PMU。完整被动流水的独立接线已通过CPU测试，尚未设备验证或认定开销。</p>
 <p><strong>最新覆盖下述准备状态：c8完整组合的八卡功能和正常生命周期已通过。</strong> 全部48本地专家、完整32行输出、同一Runtime连续两epoch，原Golden/计数/repeat/消费ack及正常关闭均通过；root从原始NPZ独立重算3,670,016个输出值，最大绝对误差6.10e-5，原容差未改。控制器自然退出，原始证据已保存到本地，自身任务和锁已释放。</p>
 <p>这是“真实早Dispatch→S2 G1/merge→原SwiGLU→G2→远端Combine→最终归约”的完整功能资格，<strong>不是性能收益</strong>，也不外推其他BS/EP。下一同父完整A/E性能首筛，继而采阶段流水；目前新组合仍无E2E/timer/PMU数据。</p>
 <p><a href="https://gitcode.com/Yancy_/DeepEP/tree/codex/decode-balanced-m4-reset-ready-1118">c8ea5f11研究分支</a>已推。启动前静态发现：一核可能已发布新issued，配对AIV1却迟清零旧计数，存在通知覆盖的可行顺序；不是已证旧设备超时根因。最小修复只让AIC/AIV0等待<strong>本核</strong>清零完成epoch，不恢复全核/全卡拉齐，不增加DSB或改数学。</p>
@@ -315,7 +316,7 @@
 &lt;/details&gt;
 
 <h1>1111 Decode攻关</h1>
-<p>更新时间：2026-11-18T14:08:50+08:00</p>
+<p>更新时间：2026-11-18T15:29:14+08:00</p>
 <p>目标：EP8／EP32、每卡BS32／64／96，统一版本优于强级联参考。A2及其G2后续版已有小幅完整EP8收益，尚未验收为统一最优；main未因本轮实验改变。</p>
 <h2>完整通信原A基线</h2>
 <p>c5冻结源码，warmup10／iters20取后10；主性能timer-off、kernel Duration。主指标为逐轮全rank最大值的均值；rank-min另列，不与用户历史小算子event耗时混算收益。</p>
