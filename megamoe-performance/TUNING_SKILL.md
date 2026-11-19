@@ -5,6 +5,13 @@ description: Tune this project's fused Ascend MegaMoE against layout-optimized D
 
 # 调优 SKILL
 
+## 新增：就绪工作推进与反证（2026-11-19下午）
+
+- 一次Advance只做一步时，可以按真实状态机步数设计有限Progress连推，Pending立即让出；预算不是可盲扫的调优参数。保留MTE最后读、真实ready和Ack，检查是否延后FULL/partial服务及增大栈帧。
+- 首行不早但后续行间隔缩短，才较支持推进改善；Dispatch ISSUE之前可能还有payload load/MTE2，不能把全部间隔当调度空泡。首G1提前量还须扣看后续GMM窗口、尾部是否变长。
+- 想做ready换序，先数是否存在“后一个工作已就绪但被前一个堵住”的样本。若实际24Wave无此观测，降低优先级；数据不足时不直接引入通用队列，也不把接收SYNC当精确admission发布时间。
+- 外部任务打断四臂窗口就保留部分首筛，不拼前后节点或把采后健康FAIL改PASS。重复在不同节点看到正向信号可以分列，但不合并为同机ABBA或与历史收益相加。
+
 ## 新增：组合中的控制协议成本（2026-11-19）
 
 - 数据ready与不可变描述符验证分开。可研究唯一发布者验证、消费者观察真实epoch并重建可推导几何，但必须保留真实payload/partial/activation ready、credit和Ack；明确非法wire损坏检测责任是否改变，不把固定M4实验推广到其他shape。

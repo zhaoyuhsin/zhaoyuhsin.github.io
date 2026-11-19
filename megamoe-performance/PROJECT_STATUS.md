@@ -1,6 +1,14 @@
 # 项目状态
 
-## 最新：11月19日，组合内控制路径ABBA降耗18.11%
+## 最新：11月19日下午，接收推进两次首筛约6%，完整ABBA待补
+
+[cd8b3b4e研究版](https://gitcode.com/Yancy_/DeepEP/tree/codex/decode-balanced-m4-receive-progress-1119)直接父ab412，只让Receive在真实Progress时有界连推、Pending立即退，不改ready/信用/封口/Ack/数学。固定EP8 BS32 balanced/shared0 M4，柜1两台各一对timer-off完整kernel首筛：723.6045→681.9177μs（5.7610%）、724.8600→681.6043μs（5.9675%）。四个受理臂原精度、加载、原CSV/Event及资源回收通过。
+
+独立流水定位：首Dispatch暴露80.413→37.242μs，四行间隔约17→约3μs；GMM窗反增5.746μs，不能说所有阶段都快。完整ABBA被外部占用打断，第二窗口B2严格采后健康FAIL已排除，A2未启动；不拼窗、不合并节点均值、不与旧18.11%相加。原JSON/CSV已成对本地保存。
+
+下一步先补完整重复与保留G2/强参考同窗账本，再选供数/通信结构实验；独立证据暂不支持pair内ready换序，不扫burst参数。当前原生实现仅M4，尚不能泛化BS64/96/EP32，main/G2和历史性能矩阵不改。详细证据见“Decode攻关”顶部。
+
+## 此前：组合内控制路径ABBA降耗18.11%
 
 完整早Dispatch＋两descriptor小Wave＋真正Split-K2，固定EP8／BS32／balanced／无共享专家M4：父139两次885.8535／885.4993μs，ab412两次724.5561／726.0417μs；timer-off同机ABBA均值**885.6764→725.2989μs**，降耗18.1079%，两个配对方向18.2081%／18.0076%。原64Golden／128加载映射／32CSV640kernel640Event、跨四臂output/counts及资源回收通过。不是相对保留G2、强小算子或布局DS的收益，未替换main。
 
