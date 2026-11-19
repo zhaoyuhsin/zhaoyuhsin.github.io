@@ -6,7 +6,7 @@ import {fileURLToPath} from 'node:url';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const source=process.argv[2];
 if(!source)throw Error('请指定网页目录：node scripts/build-tools.mjs <MegaMoe-Offline目录>');
-const files=['index.html','benchmark.html','wiki.html','wiki-standalone.html','memory.html','mfu-standalone.html','trace-v2.html','trace.html','trace-standalone.html','catlass-wave.js','catlass-network.js','gemm-memory.js','memory-model.js','memory-page.js','trace-analysis.js','trace-page.js','memory-audit.md'];
+const files=['index.html','benchmark.html','wiki.html','wiki-standalone.html','memory.html','mfu-standalone.html','trace-v2.html','trace.html','trace-standalone.html','catlass-wave.js','catlass-network.js','gemm-memory.js','memory-model.js','memory-page.js','trace-analysis.js','trace-page.js','memory-audit.md','aiv.html','aiv.css','aiv-model.js','aiv-page.js'];
 for(const file of files)if(!fs.statSync(path.join(source,file)).isFile())throw Error('缺少工具文件：'+file);
 const destination=path.join(root,'megamoe');fs.mkdirSync(destination,{recursive:true});
 const nav='<div style="padding:9px 20px;background:#f6f7f2;color:#245c48;font:12px/1.6 system-ui,sans-serif;display:flex;gap:20px;flex-wrap:wrap"><a style="color:inherit" href="../index.html">← YuHsin 个人主页</a><a style="color:inherit" href="index.html">流水仿真</a><a style="color:inherit" href="wiki.html#ratio-lab">通算比例</a><a style="color:inherit" href="trace-v2.html">Trace分析</a></div>';

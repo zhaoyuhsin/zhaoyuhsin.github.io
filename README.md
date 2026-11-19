@@ -65,3 +65,7 @@ node scripts/check-site.mjs
 ```
 
 构建器不修改性能数值；隐藏机器绝对路径和地址，只发布明确列出的摘要文件。数值一致性、Markdown SHA、脚本语法、三界面数据及凭据特征由检查脚本验证。`publication.json` 记录输入和公开 HTML 的 SHA256。原始离线看板不被修改。
+### AIV 子步骤仿真
+
+`/megamoe/aiv.html` 提供权重展开、Quant、SwiGLU＋量化和 Unpermute 预设。页面显示服务下界和有限块排程，可在浏览器本地导出 shape、资源参数、结果与块事件。
+

@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MegaMoE · AIV 子步骤仿真</title>
+  <link rel="stylesheet" href="aiv.css">
+  <script defer src="aiv-model.js"></script>
+  <script defer src="aiv-page.js"></script>
+</head>
+<body>
+<div style="padding:9px 20px;background:#f6f7f2;color:#245c48;font:12px/1.6 system-ui,sans-serif;display:flex;gap:20px;flex-wrap:wrap"><a style="color:inherit" href="../index.html">← YuHsin 个人主页</a><a style="color:inherit" href="index.html">流水仿真</a><a style="color:inherit" href="wiki.html#ratio-lab">通算比例</a><a style="color:inherit" href="trace-v2.html">Trace分析</a></div>
+  <header>
+    <nav aria-label="MegaMoE 工具"><a href="index.html">流水仿真</a><a href="memory.html#gemm-memory">AIC / MTE 资源账本</a><a href="trace-v2.html">Trace 分析</a><a href="aiv.html" aria-current="page">AIV 子步骤</a></nav>
+    <h1>AIV 子步骤仿真</h1>
+    <p>输入 shape 和资源速率，查看各段服务时间、缓冲约束和任务完成时间。</p>
+  </header>
+  <main>
+    <form id="inputs">
+      <h2>任务输入</h2>
+      <label>任务预设
+        <select id="preset">
+          <option value="dq1">AIV0 · GMM1 权重展开</option>
+          <option value="dq2">AIV0 · GMM2 权重展开</option>
+          <option value="quant">AIV · BF16 → MXFP8</option>
+          <option value="swiglu">AIV1 · SwiGLU + MXFP8</option>
+          <option value="unpermute">AIV · 加权 Unpermute</option>
+        </select>
+      </label>
+      <div id="shape" class="fields"></div>
+      <details>
+        <summary>频率、吞吐与带宽</summary>
+        <div id="hardware" class="fields"></div>
+        <p class="muted">GM 聚合上限填 0 时使用单核参数。CPI 表示稳态平均指令周期。转换与归约默认值可调，属于模型输入。</p>
+      </details>
+      <div class="actions"><button type="button" id="reset">恢复预设</button><button type="button" id="export">导出 JSON</button></div>
+      <p id="error" role="alert" hidden></p>
+    </form>
+    <article id="results" aria-label="仿真结果">
+      <section>
+        <div class="metrics" aria-live="polite">
+          <div><span>服务下界</span><strong id="floor"></strong><small id="bound"></small></div>
+          <div><span>有限块排程</span><strong id="finish"></strong><small id="extra"></small></div>
+          <div><span id="third-label">全部串行</span><strong id="third"></strong><small id="third-detail"></small></div>
+        </div>
+        <p id="scope" class="muted"></p>
+      </section>
+      <section>
+        <h2>按块排程</h2>
+        <div id="pipeline" aria-label="MTE2、Vector 与 MTE3 模拟时间轴"></div>
+        <p id="selected" class="muted"></p>
+      </section>
+      <section>
+        <h2>服务时间与工作量</h2>
+        <div class="scroll"><table><thead><tr><th>资源</th><th>工作量 / 最忙核</th><th>服务时间</th></tr></thead><tbody id="services"></tbody></table></div>
+        <div class="scroll"><table><thead><tr><th>Vector 子步骤</th><th>指令 / 有效吞吐</th><th>UB 带宽</th><th>服务时间</th></tr></thead><tbody id="vector"></tbody></table></div>
+      </section>
+      <section class="method">
+        <h2>参数来源与排程口径</h2>
+        <p>每块依次经过 MTE2、Vector、MTE3。后续块可在独立管线上重叠。输入槽等 Vector 读完，输出槽等 MTE3 完成后复用。Unpermute 原位槽随 MTE3 归还。服务下界取各管线总服务量的最大值，有限块排程另计首块依赖和末块排空。</p>
+        <p>权重展开预设采用 Ascend950DT 上的历史 32 组独立微测，DeepEP <code>18ada75</code> 小 M 供数分支。单 AIV 的 GM→UB 为 124.949 / 125.428 GB/s，含 UB 的 Vector 位展开为 760.257 / 751.847 GOPS，UB→L1 为 209.428 / 207.174 GB/s。完整任务参考来自独立计时，包含最后一次写入完成。</p>
+        <p>其他预设使用 DavidV100 微架构的带宽与指令参考。Vector 逐子步取发射与 UB 传输的较大值。依赖链延迟、地址指令、VF 启动、AIC credit、跨核同步和真实缓存争用需要匹配实测。额外延迟可手动录入，单位为 μs。</p>
+      </section>
+    </article>
+  </main>
+</body>
+</html>

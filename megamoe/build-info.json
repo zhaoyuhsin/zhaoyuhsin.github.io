@@ -3,7 +3,7 @@
   "files": [
     {
       "file": "index.html",
-      "sha256": "2c767f4f6d9626c5cc1407d7e014ee4c8c433e72e7ab4997b07de089ee7f01d9"
+      "sha256": "330faa071eec5e8392fd792d2148eb85b6d8804aa75818f67345682636c106c3"
     },
     {
       "file": "benchmark.html",
@@ -19,7 +19,7 @@
     },
     {
       "file": "memory.html",
-      "sha256": "43c34ae8f276022db6f575355a1906f3794a70533cf1dda74ca339aaf8755ddc"
+      "sha256": "f7d3f7e80bce0238300b62b0458c59091f1ff2af16bf3c262e0bf1e634064706"
     },
     {
       "file": "mfu-standalone.html",
@@ -68,6 +68,22 @@
     {
       "file": "memory-audit.md",
       "sha256": "3efe1a820ce7279ee62c4b83d66dac8db5a541ca0da095b87dead1376463a385"
+    },
+    {
+      "file": "aiv.html",
+      "sha256": "c7d1f86aac3a19797a7d5b8ecf33602bee823d77d6e6ae5f0073514e879c27af"
+    },
+    {
+      "file": "aiv.css",
+      "sha256": "f87765784d44416d08e7b8f36c82884baaa71e010190d5036715b613df5748fd"
+    },
+    {
+      "file": "aiv-model.js",
+      "sha256": "214685f6d0724fe8cbcb8e97f6c384f21f016d1760267333df7e13094b97d245"
+    },
+    {
+      "file": "aiv-page.js",
+      "sha256": "c7e4bbcc7a88822eb79b2d1d095f99724e5cf12e4b0189b8e5ccc7a3c37f8b64"
     }
   ]
 }
