@@ -5,6 +5,12 @@ description: Tune this project's fused Ascend MegaMoE against layout-optimized D
 
 # 调优 SKILL
 
+## 普通后端控制要先补，别拿显眼计数器当墙钟
+
+- 新普通C控制597.6335μs，稍早同节点G2 588.4161、cd8 680.6205μs。C仅多9.2174μs但FIX活动多67.0327μs；不能据整kernel FIX/Scalar增量分摊83或92μs损失。C后来独立启动，不冒三臂同窗ABBA。
+- 相同24Wave、两专家/Wave和lag1仍可能有不同等待位置。激活立即等待写回与下一轮顶端退休，是可单独验证的编排差异；不是通过同任务数就能判执行等价。
+- pending只跨本轮Combine/Receive，下一轮任何Partial/G2 FULL之前必须退休；最后tile也要退休。保持MTE3→V→MTE2硬件Release不动，失败消费本地事件但不发布成功ready。资源/事件不冲突只是必要条件，通信quiet可能吸收潜在重叠，实际净收益须设备证据。
+
 ## 看见FIX长，不等于已经找到了那92μs
 
 - 先与准确有用基线同窗：本轮G2 588.42、组合680.62μs，才能说组合慢15.67%；此前相对慢父版的收益不够回答是否值得保留。
