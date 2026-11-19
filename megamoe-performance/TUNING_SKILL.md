@@ -5,6 +5,13 @@ description: Tune this project's fused Ascend MegaMoE against layout-optimized D
 
 # 调优 SKILL
 
+## 新反例：挪走18μs激活等待，没有变快
+
+- 延后退休81a5的真实8rank功能/原Golden/加载/回收通过，但单对rank0末调用687.723→688.106μs，kernel持平；不是主timer-off性能验收。
+- activation SYNC每核累计21.7152→3.5707μs，GMM窗口却573.123→574.686μs，G2WAIT与末Combine也未改善。等的位置改变可使图更好看，不代表MTE写回本体更快或损失减少；累计等待不能相加成墙钟收益。
+- Consumer帧+80B／Activate+40B是真实原生代价，但没有单独消融就不说是栈抵消了收益；Vector同为212.113μs、MTE接近也不能排除控制/就绪发布代价。
+- 在此止损，不扫lag、Wave或pending字段。下一优先普通小Wave＋S2与Full组合的可比阶段流水，核真实timer协议/被动边界后再用稀缺设备；阶段未定位前，不继续细调廉价guard。
+
 ## 普通后端控制要先补，别拿显眼计数器当墙钟
 
 - 新普通C控制597.6335μs，稍早同节点G2 588.4161、cd8 680.6205μs。C仅多9.2174μs但FIX活动多67.0327μs；不能据整kernel FIX/Scalar增量分摊83或92μs损失。C后来独立启动，不冒三臂同窗ABBA。

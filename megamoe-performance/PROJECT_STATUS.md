@@ -1,5 +1,21 @@
 # 项目状态
 
+## 11月19日18:25：激活等待挪走了，完整耗时未改善
+
+新候选81a5d75已完成CPU、一次SDK编译/实际ISA及真实8rank功能/配对流水；不是仅准备。EP8 BS32／balanced/shared0/M4、柜2同一节点：父cd8→延后退休的单次rank0 timer-on完整kernel **687.723→688.106μs，基本持平**。各一次独立31call，只在末epoch30/rank0启用timer；不是timer-off ABBA、全rank-max或整网收益，不与旧588/598/681μs拼窗口算收益。
+
+```text
+当前架构组合：尚未超过保留G2
+├─ 新单点的功能／原精度／实际加载／回收均通过
+├─ 激活SYNC每核累计21.715→3.571μs
+├─ GMM窗口573.123→574.686μs，末Combine未提前
+└─ 完整耗时持平：停止该单点，不继续扫参数
+```
+
+两臂32原Golden／64实际映射边界、16个rank/epoch输出/counts/packing字节一致、31call与最终双Ack／Runtime/Store关闭、严格健康回收通过。每核G2输入WAIT9.408→10.432μs；PMU Vector同为212.113μs、搬运接近。新ISA帧Consumer+80B／Activate+40B，但未证明成本抵消原因；不把少18μs累计等待当收益。两臂均已关闭，无活动controller，main/G2不改。
+
+下一步普通C442计时入口已查清：native已支持被动timer，无需重编，但实验前端固定timer=None，不能直接开环境变量或将旧三次functional诊断当稳态。下一只接有限诊断前端，用C与Full各自原parser和末formal CSV比较公共阶段，明确83μs在哪段；不继续挪guard或调整lag/pending。完整证据原件本地保存，历史性能矩阵不改。
+
 ## 11月19日17:00：普通小Wave＋S2控制完成
 
 新增C442完整通信实测：EP8 BS32／balanced/shared0/M4、柜1同一节点、Profiler-on/timer-off，后10逐轮8rank-max **597.6335μs**，Event599.0858μs。32原Golden、8rank原CSV/计数/重复/实际加载/正常关闭/回收健康通过。稍早同节点G2 588.4161、组合cd8 680.6205μs；C是后续单次启动，非三臂同窗ABBA，不混算精确机制收益。
