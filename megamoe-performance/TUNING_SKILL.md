@@ -5,6 +5,12 @@ description: Tune this project's fused Ascend MegaMoE against layout-optimized D
 
 # 调优 SKILL
 
+## worker启动与模型kernel执行分开记
+
+- 本轮controller/worker实际启动后，原监控在READY/GO前发现外部NPU上下文，MegaMoE forward为0。不能写成零hostload，也不能将启动成功当功能或性能成功。
+- 自身进程空、锁释放与采后健康PASS是不同结论。本次前两项成立，采后仍FAIL；原失败判定、日志和窗口封口都保留，不事后补过。
+- 多次被其他任务插入时先协调稳定独占窗口，不靠反复造新scope或绕外部上下文门禁；签权接连续启动只能少耽搁，不能保证占有未来资源。
+
 ## 补齐缓存后，仍以真正启动门禁为准
 
 - 本轮只恢复132件原字节私有依赖，复用已有native，不为换节点重新编译。两版前端/依赖实际核验与CPU-stage完成，不能叫NPU实验成功。
