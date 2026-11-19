@@ -5,6 +5,13 @@ description: Tune this project's fused Ascend MegaMoE against layout-optimized D
 
 # 调优 SKILL
 
+## 把观测闭包准备好，再占设备窗口
+
+- 本轮普通C已编译被动timer，缺的是实验前端；保原34call，仅rank0末formal19带timer，不重编、不把旧3call功能trace冒稳态。真实调用序列CPU测试和原CSV配对负控先完成。
+- 完整raw为456192000B，不是Full的小容量；必须保原parser、完整raw及可恢复稀疏件，同一共享T0覆盖导出/冷存，不能只改worker超时却漏掉压包截止。
+- 初扫空闲不代表启动时仍空闲。最新门禁发现外部全占用即零GO退出，窗口关闭，不共跑/排除外部PID；CPU-stage、签本地票据、真正worker/GO/kernel四个状态分开报。
+- 本小时没有新NPU样本，不给83μs编造阶段原因。下一新scope复用冻结前端，只做同节点公共阶段对照；缺缓存就明确缺缓存，不把搬环境当算法进展。
+
 ## 新反例：挪走18μs激活等待，没有变快
 
 - 延后退休81a5的真实8rank功能/原Golden/加载/回收通过，但单对rank0末调用687.723→688.106μs，kernel持平；不是主timer-off性能验收。
