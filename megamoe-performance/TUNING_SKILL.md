@@ -5,6 +5,12 @@ description: Tune this project's fused Ascend MegaMoE against layout-optimized D
 
 # 调优 SKILL
 
+## 稀缺窗口先验证净价值
+
+- 组合内优化追回明显成本后，优先与准确保留基线/强参考同窗，不无限重复“胜过慢父版”。核源码、原生库及真实派发，不能拿自动启用候选机制的包当原基线。
+- 迁移前用实际schema检验node/hostname/boot/key/路径/端口完整身份及反例；工具文字替换不是验证。准备、零GO、已运行但严格排除、有效性能分列，CPU通过不冒充NPU收益。
+- 资源反复变化时复用缓存、不重编、不追逐无穷窗口。保持原门禁与失败收据；采后健康FAIL不事后改PASS，原始结果不补拼。
+
 ## 新增：就绪工作推进与反证（2026-11-19下午）
 
 - 一次Advance只做一步时，可以按真实状态机步数设计有限Progress连推，Pending立即让出；预算不是可盲扫的调优参数。保留MTE最后读、真实ready和Ack，检查是否延后FULL/partial服务及增大栈帧。
