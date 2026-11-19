@@ -12,7 +12,9 @@ decode目标：未达成，继续保留G2
    └─ 下一单点：激活完成等待推迟到下一轮开头，本轮先推进Combine/Receive
 ```
 
-C和cd8都是24Wave、两专家/Wave、lag1；代码差异不是lag条件。C的FIX比G2多67.03μs，完整耗时却只多9.22μs，不能把FIX活动增量等同损失。cd8立即等激活写回、C延后退休，是新待验证假设，不是83μs的已证原因。本次缺内部阶段timer/分AIV0与AIV1 task-block；候选仅本地实现/CPU进行中，须保原硬件credit、先退休再等G2 FULL。历史结果与失败原件均保留，main未改。
+C和cd8都是24Wave、两专家/Wave、lag1；代码差异不是lag条件。C的FIX比G2多67.03μs，完整耗时却只多9.22μs，不能把FIX活动增量等同损失。cd8立即等激活写回、C延后退休，是新待验证假设，不是83μs的已证原因。本次缺内部阶段timer/分AIV0与AIV1 task-block；须保原硬件credit、先退休再等G2 FULL。历史结果与失败原件均保留，main未改。
+
+17:15：[候选81a5d75](https://gitcode.com/Yancy_/DeepEP/tree/codex/decode-deferred-activation-1119)已推送，原agent与root各23CPU PASS，347源码闭包/SDK准备已冻结；SDK授权前发现机器全占用，零部署/编译/NPU，准备窗封口。当前无本任务controller，无新候选性能；下一新窗口接SDK/实际ISA，再完整功能/成对阶段流水，不重测已完成A/B/C。
 
 ## 最新实测：EP8 BS32组合仍慢15.67%，G2继续保留
 
