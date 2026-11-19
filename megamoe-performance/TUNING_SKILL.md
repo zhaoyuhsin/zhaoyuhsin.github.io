@@ -5,6 +5,13 @@ description: Tune this project's fused Ascend MegaMoE against layout-optimized D
 
 # 调优 SKILL
 
+## 新增：组合中的控制协议成本（2026-11-19）
+
+- 数据ready与不可变描述符验证分开。可研究唯一发布者验证、消费者观察真实epoch并重建可推导几何，但必须保留真实payload/partial/activation ready、credit和Ack；明确非法wire损坏检测责任是否改变，不把固定M4实验推广到其他shape。
+- 结构优化须保持Wave数、任务数、输入/packing/数学可比，联合看阶段关键路径、同核互斥HEAD/G2WAIT与Scalar、Vector/MTE。HEAD覆盖与Scalar同时下降支持控制瓶颈，但未采失败poll或GM事务就不精确归因；成功SwiGLU/Combine侧轨变长也不必然意味着E2E更慢。
+- 分析器有自己的合同：epoch11单调用不得读取formal20冒配；steady31按精确StartTime选epoch30/index19，原raw与原CSV哈希绑定。单对末次被动打点是诊断，不混进timer-off主ABBA，也不用于稀释打点开销估计。
+- 调用数按真实协议记录：本轮setup1＋warm10＋formal20＝31次/每rank，另一些历史叶子为34次。独立启动次数、重复调用次数和Golden覆盖分列，阶段差不得拿去解释不同窗口的主结果。
+
 ## 当前必行：阶段证据驱动结构创新（2026-11-17）
 
 - Split-K先量实际输出成本而非只看MMAD：小M原本每逻辑tile已有两次半块FIX，S2后可变四次、FP32有效GM写读各4倍；更多FIX/credit/ready服务可表现为后续G2输入WAIT。把调用次数/实际M-N-stride-dtype几何、逐核等待与整kernel PMU交叉核对，不把FIX活跃时间直接当损失。N256合并须同时证明L0C物理布局及unit-flag所有权，单改GM不能修复源布局。

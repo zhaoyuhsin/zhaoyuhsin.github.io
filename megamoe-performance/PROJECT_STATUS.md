@@ -1,5 +1,15 @@
 # 项目状态
 
+## 最新：11月19日，组合内控制路径ABBA降耗18.11%
+
+完整早Dispatch＋两descriptor小Wave＋真正Split-K2，固定EP8／BS32／balanced／无共享专家M4：父139两次885.8535／885.4993μs，ab412两次724.5561／726.0417μs；timer-off同机ABBA均值**885.6764→725.2989μs**，降耗18.1079%，两个配对方向18.2081%／18.0076%。原64Golden／128加载映射／32CSV640kernel640Event、跨四臂output/counts及资源回收通过。不是相对保留G2、强小算子或布局DS的收益，未替换main。
+
+独立完整被动流水显示：GMM窗721.695→568.743μs，每AIC非ISSUE中的HEAD覆盖157.901→25.334μs；Vector/MTE接近，支持减少重复控制读取。不是SwiGLU算术变快，未采失败poll／真实GM事务／分AIV0与AIV1 task-block，阶段覆盖不当精确因果。JSON/CSV已成对本地保存，私有原件不公开。
+
+[ab412研究分支](https://gitcode.com/Yancy_/DeepEP/tree/codex/decode-balanced-m4-producer-ticket-1119)由唯一发布者校验、计算侧观察真实epoch并重建固定M4几何，数据ready／credit／双Ack不改；非法wire十字段交叉检测责任减弱，不泛化BS64/96或EP32。下一步查首Dispatch→首GMM1约81μs的真实到达／Progress推进，仍需强参考同窗及跨shape验收。目标仍是统一可维护版本在EP8／EP32 decode胜强小算子，最终扩至EP8/32/64/128胜布局优化DS。
+
+下方按时间保留历史探索，旧“尚无完整功能／性能”已被本节更新；最新完整证据看“Decode攻关”顶部。
+
 ## 最新：c8完整组合八卡功能/生命周期通过，下一测性能
 
 EP8/BS32、全部48本地专家、连续两epoch的原完整Golden/计数/repeat/消费ack与正常关闭通过。root独立重算3,670,016个输出值，最大绝对误差6.10e-5，原容差未改；原始数据已本地保存，自身任务/锁释放。**尚无新性能收益或其他BS/EP资格**；下一同父A/E首筛与阶段分析，main/G2与性能表不变。下方“待功能验证”为历史准备状态。
