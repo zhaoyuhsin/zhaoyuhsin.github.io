@@ -5,6 +5,12 @@ description: Tune this project's fused Ascend MegaMoE against layout-optimized D
 
 # 调优 SKILL
 
+## 访问与缓存恢复只解决执行条件，不算优化收益
+
+- 认证失败不等于VPN断网；先有界核对既有授权路径，不猜口令/新增主机信任。普通SSH子系统运输与端口转发不同，但都要实际验证目标主机身份，不能伪造目标transport。
+- 恢复前先逐SHA区分共享环境、匹配缓存、缺失私有原件和冲突；只补缺件，冲突拒绝、共享文件只读。本轮69共享及1396总依赖匹配，不证明模型正确性或速度。
+- 传输/CPU-stage通过之后仍需新鲜启动门禁；SMI空闲但有外部launcher或运行时上下文仍零GO。备用节点私有缓存全缺时停止无目标迁移，不将搬环境写成架构实验成功。
+
 ## worker启动与模型kernel执行分开记
 
 - 本轮controller/worker实际启动后，原监控在READY/GO前发现外部NPU上下文，MegaMoE forward为0。不能写成零hostload，也不能将启动成功当功能或性能成功。
