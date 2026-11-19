@@ -5,6 +5,12 @@ description: Tune this project's fused Ascend MegaMoE against layout-optimized D
 
 # 调优 SKILL
 
+## 补齐缓存后，仍以真正启动门禁为准
+
+- 本轮只恢复132件原字节私有依赖，复用已有native，不为换节点重新编译。两版前端/依赖实际核验与CPU-stage完成，不能叫NPU实验成功。
+- 初查idle8/context0不授予持续占用资格；实际start发现4个外部上下文仍零GO退出，原失败窗封口，不拿稍早空闲状态覆盖当前门禁。
+- 下一派生新小scope复用已核缓存，不重复搬依赖/35项CPU测试。有效恢复页只留当前状态和动作，旧活动日志按原字节归档，避免每小时重复加载过期上下文。
+
 ## 把观测闭包准备好，再占设备窗口
 
 - 本轮普通C已编译被动timer，缺的是实验前端；保原34call，仅rank0末formal19带timer，不重编、不把旧3call功能trace冒稳态。真实调用序列CPU测试和原CSV配对负控先完成。
