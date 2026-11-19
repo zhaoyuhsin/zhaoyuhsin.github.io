@@ -18,6 +18,7 @@
 <section class="panel" id="decode-comparison-1112"><h2>Decode 优化 · MegaMoE vs 小算子拼接</h2><p>独立实验台：EP8 / EP32、11个BS、每配置双轮实测；decode与prefill路径分开标注，保留小BS回退。切换rank-min / rank-max，查看耗时、收益、两次启动差异及计时边界。</p><p><a href="../decode-optimization/">进入 Decode 优化实验台 ↗</a> · <a href="../decode-optimization/results.json" download>下载聚合 JSON ↓</a></p></section>
 <section class="panel" id="decode-1111"><p>目标不变：统一可维护版本，在EP8／EP32、每卡BS32／64／96完整端到端优于强小算子。优先组合“早Dispatch＋小Wave／真正Split-K”，用组合暴露的问题反哺两条单线，不等它们各自净胜。</p>
 <h2>11月19日上午：组合控制路径新候选完成原生构建</h2>
+<p>本轮补充：父139／候选ab412的完整融合两臂诊断包已预置并核齐；三个候选节点均在启动前被新外部任务占用，全部停在门禁，<strong>零NPU启动、没有新增耗时或PMU</strong>，不是算法负结果。已找到并核通新的跳转连接，后续优先复用已缓存节点，避免重复搬包和编译；空闲资格每次重新核验，不共跑。当前仍是下述SDK资格与历史已验结果。</p>
 <p><a href="https://gitcode.com/Yancy_/DeepEP/tree/codex/decode-balanced-m4-producer-ticket-1119">发布者验证＋计算侧epoch票据</a>／<code>ab412631</code>直接基于139，不叠Receive退休。针对组合计算窗口里的重复身份获取：唯一发布者保原校验与真实数据发布，计算侧观察真实epoch并重建固定M4几何；实际数据ready、信用与双Ack保留。</p>
 <p>本轮完成独立CPU编译、实际ELF反汇编及原件冷审，<strong>没有执行NPU kernel，没有新增性能数字</strong>。四条GMM获取路径的epoch读取仍在重试环；AIC GMM2帧增加8B，其余所核帧同父。更少静态读取不等于更少DRAM事务或更快，需同父完整融合对照。两路子agent额度中断后由总控接手，未把准备当收益。</p>
 <p>检测责任变化明示：计算侧不再交叉核验非法wire十字段突变，依赖唯一发布者验证与immutable协议；只限EP8／BS32／balanced／无共享专家M4，不冒称任意GM损坏等价或泛化其它shape。下一步新同窗steady31，检查GMM窗口和HEAD控制覆盖是否缩短，是否被GMM2等待或尾段抵消；未采PMU不补数。main及历史性能表不变。</p>
@@ -676,7 +677,7 @@
 &lt;/details&gt;
 
 <h1>1111 Decode攻关</h1>
-<p>更新时间：2026-11-19T10:27:08+08:00</p>
+<p>更新时间：2026-11-19T11:38:35+08:00</p>
 <p>目标：EP8／EP32、每卡BS32／64／96，统一版本优于强级联参考。A2及其G2后续版已有小幅完整EP8收益，尚未验收为统一最优；main未因本轮实验改变。</p>
 <h2>完整通信原A基线</h2>
 <p>c5冻结源码，warmup10／iters20取后10；主性能timer-off、kernel Duration。主指标为逐轮全rank最大值的均值；rank-min另列，不与用户历史小算子event耗时混算收益。</p>
