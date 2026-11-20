@@ -1,5 +1,9 @@
 # 项目状态
 
+## 11月20日22:38：ready-first未提前首GMM，新协调者待有效窗口
+
+本轮无新增正式收益。原精度和原生流水通过，但16份快照全pair0，首GMM从历史单调用67.780到84.848μs，dispatch→首GMM宽区间多18.697μs；单调用685.476→691.595μs不是ABBA，不能全归因selector。中段少10.562μs也不能称计算更快。新版本仅把协调职责交给无Receive-owner的AIV1，保留全部接收者／原数学／timer；CPU与实际SDK通过，但设备窗在READY前被上下文门禁中止，零目标kernel。原FAIL保持，新恢复窗待全空闲门禁，不重编SDK、不共跑。下一核实际choice／首GMM／完整调用，可信改善才做ABBA；单head先发是未实现候选。G2/main继续保留，六shape未达；上轮ACK的1.08%不重复算本轮成果。
+
 ## 11月20日21:41：输出ACK批量完整ABBA降低1.08%
 
 新增真机：EP8每卡BS32、均衡、无共享专家，timer-off／Profiler-on，后10轮逐轮rank-max。完整组合父版681.016→候选673.645μs，两组分别1.19%／0.98%；Event同方向。仅输出8put各quiet改成8put末1quiet，原All64、源UB寿命、末quiet和原Golden不改。64原Golden、32CSV／640kernel、实际装载／自然关闭通过，原CSV第二路径复算及输出跨臂逐位一致。
