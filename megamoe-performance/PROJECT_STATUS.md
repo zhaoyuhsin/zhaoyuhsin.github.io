@@ -1,5 +1,9 @@
 # 项目状态
 
+## 11月20日23:08：非零pair已实际发布，但仅有warm10部分证据
+
+本轮无新增正式性能收益。空闲AIV1协调者保持全部Receive-owner、数学和timer不变，warm10实际pair依rank为[18,21,18,21,18,20,19,20]，不再全pair0；保住的8卡完整输出通过原Golden，已有装载映射/epoch/count吻合。但READY8/GO后检出未登记runtime，原窗口FAIL并关闭。无formal30/complete/最终raw和CSV，不能说首G1提前、完整功能或性能通过，selector时间/PMU仍缺。连续两次资源窗中断后不盲开第三次：先落实稳定8卡排他窗口，再复用已冷审SDK采choice→实际首G1→完整头尾。历史ACK批量1.08%不重复计功，G2/main不换，六shape未达。
+
 ## 11月20日22:38：ready-first未提前首GMM，新协调者待有效窗口
 
 本轮无新增正式收益。原精度和原生流水通过，但16份快照全pair0，首GMM从历史单调用67.780到84.848μs，dispatch→首GMM宽区间多18.697μs；单调用685.476→691.595μs不是ABBA，不能全归因selector。中段少10.562μs也不能称计算更快。新版本仅把协调职责交给无Receive-owner的AIV1，保留全部接收者／原数学／timer；CPU与实际SDK通过，但设备窗在READY前被上下文门禁中止，零目标kernel。原FAIL保持，新恢复窗待全空闲门禁，不重编SDK、不共跑。下一核实际choice／首GMM／完整调用，可信改善才做ABBA；单head先发是未实现候选。G2/main继续保留，六shape未达；上轮ACK的1.08%不重复算本轮成果。
