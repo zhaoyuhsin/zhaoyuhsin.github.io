@@ -1,5 +1,31 @@
 # 项目状态
 
+## 11月20日11:35：两个机制候选已落代码，本轮未新增NPU实测
+
+这轮把上一轮的头尾定位转成了可验证改动：共享就绪首Wave，以及输出ACK的批量完成等待。**目前只有本地源码／CPU证据，没有新SDK、Golden或性能收益。** 推荐仍G2，历史性能表不改。
+
+```text
+组合：早Dispatch＋小Wave＋真正Split-K
+├─ P0 首GMM启动：共享ready-first候选已提交
+│  ├─ 唯一协调者发布epoch顺序，计算／消费者共同改，Combine仍原序
+│  ├─ 相关CPU9项通过，异步Reset／FULL与错映射负控通过
+│  └─ 完整pair门槛和选择成本可能反退，尚未SDK／NPU
+└─ P1 输出尾部
+   ├─ 三段被动timer v4：相关CPU13项通过
+   │  └─ 拆MTE3退休／本卡All64／Publish，不增加同步
+   ├─ 输出ACK批量候选：同v4相关CPU9项通过
+   │  └─ 输出连续8put、末1quiet；输入保原8quiet，原最后读门槛不动
+   └─ SDK小包已做原字节／失败路径复核，尚未部署或构建
+```
+
+尾部候选的依据很具体：冻结SHMEM实现中put_nbi直接提交DataCopyPad，quiet包含PIPE_ALL及完成／缓存处理；原输出ACK在源epoch不变的情况下每peer各quiet一次。候选先校验全部peer，源UB保持不变直到末quiet，之后才允许原lastEpoch发布。延迟读取源、两epoch及删末quiet的反例已验证，但CPU不能证明实际MTE队列或跨PE可见性，更不能把少7次quiet折算成收益。
+
+头部判断也更收敛：原trace中pair36/37的输入SYNC比首G1早11.548μs，但缺ticket发布与全角色早期可见性，不能说能追回42.307μs。另一个源码线索是SendPrefix每AIV有多次串行quiet及UB复用门槛；静态次数不是PMU，不拿它解释全部头开销。
+
+已核的6个柜5／柜7节点均被外部NPU任务占用；柜6两个既有密钥入口被拒。没有新设备controller／GO，未共跑、重置或影响他人。三归档约1.83MB，完整SDK payload约6.1MB，不再搬90MB运行时或重复全CPU矩阵。
+
+下一顺序：有合格资源立即构建同v4基线，先采尾部三段，再只切ACK批量机制；ready-first保持独立，不同时叠加。若Publish不在关键尾段或完整无净收益就止损。EP32／BS64／96仍未补本轮证据，统一目标未达。
+
 ## 11月20日10:45：组合回退已定位，主要慢在头尾
 
 本次新增柜5同节点EP8、每卡BS32的成对被动诊断：普通小Wave＋S2（C）完整kernel608.070μs，早Dispatch＋小Wave＋S2组合版685.721μs。**还没有新性能胜利**；这是一组rank0最后调用的timer-on诊断，不是timer-off ABBA，也不是小算子拼接验收。
